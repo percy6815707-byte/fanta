@@ -426,6 +426,10 @@ button {
   padding: 16px;
 }
 
+.modal.hidden {
+  display: none;
+}
+
 .modal-card {
   width: min(640px, 96vw);
   border: 1px solid var(--line);
