@@ -30,11 +30,13 @@
       <div class="phase-center">
         <h1>방랑 마도사의 길</h1>
         <div id="phase-pill" class="phase-pill">준비</div>
-        <div id="heart-text" class="heart-text">마나 하트: 4 / 4</div>
+        <div id="heart-text" class="heart-text">마나 하트: 0 / 0</div>
+
         <section class="enemy-portrait-area" aria-label="적 초상화">
           <div id="enemy-portrait-frame" class="enemy-portrait-frame">
             <div class="portrait-placeholder">ENEMY</div>
           </div>
+          <div id="enemy-status-bar" class="enemy-status-bar"></div>
         </section>
       </div>
 
@@ -49,15 +51,9 @@
       </div>
     </header>
 
-    <section class="loadout-panel">
-      <div>
-        <h2>전투 제어</h2>
-        <p>자동 전투가 진행되며, 하단 주문바의 상태가 실시간으로 반영됩니다.</p>
-      </div>
-      <div class="loadout-actions">
-        <button id="start-btn" class="btn-primary">전투 시작</button>
-        <button id="reset-btn" class="btn-secondary">전투 초기화</button>
-      </div>
+    <section class="control-panel">
+      <button id="start-btn" class="btn-primary">전투 시작</button>
+      <button id="reset-btn" class="btn-secondary">전투 초기화</button>
     </section>
 
     <main class="battle-panel">
@@ -71,6 +67,17 @@
       <div id="spell-slots" class="spell-slots"></div>
     </footer>
   </div>
+
+  <section id="rearrange-panel" class="rearrange-panel hidden" aria-live="polite">
+    <div class="rearrange-card">
+      <h2>마법서 재배치 시간</h2>
+      <p id="rearrange-timer-text">남은 시간: 10.0초</p>
+      <p id="rearrange-heart-text">마나 하트: 0 / 0</p>
+      <p id="rearrange-error" class="rearrange-error"></p>
+      <div id="rearrange-slots" class="rearrange-slots"></div>
+      <button id="ready-btn" class="btn-primary">준비 완료</button>
+    </div>
+  </section>
 
   <script src="game.js"></script>
 </body>
