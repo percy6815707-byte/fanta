@@ -30,7 +30,12 @@
       <div class="phase-center">
         <h1>방랑 마도사의 길</h1>
         <div id="phase-pill" class="phase-pill">준비</div>
-        <div id="heart-text" class="heart-text">마나 하트: 0 / 3</div>
+        <div id="heart-text" class="heart-text">마나 하트: 4 / 4</div>
+        <section class="enemy-portrait-area" aria-label="적 초상화">
+          <div id="enemy-portrait-frame" class="enemy-portrait-frame">
+            <div class="portrait-placeholder">ENEMY</div>
+          </div>
+        </section>
       </div>
 
       <div class="bar-group">
@@ -46,38 +51,13 @@
 
     <section class="loadout-panel">
       <div>
-        <h2>로드아웃 구성</h2>
-        <p>주문은 최대 4개 장착할 수 있으며, 마나 하트 총합이 최대치를 넘을 수 없습니다.</p>
+        <h2>전투 제어</h2>
+        <p>자동 전투가 진행되며, 하단 주문바의 상태가 실시간으로 반영됩니다.</p>
       </div>
-      <div class="phase-guide">
-        <p>페이즈 1 (100%~71%): 기본 공격 주기 2초</p>
-        <p>페이즈 2 (70%~41%): 공격력이 상승합니다.</p>
-        <p>페이즈 3 (40%~0%): 공격이 매우 빨라지고 강해집니다.</p>
-      </div>
-      <div id="loadout-selects" class="loadout-selects"></div>
       <div class="loadout-actions">
-        <label for="memory-stage-select">기억 단계</label>
-        <select id="memory-stage-select">
-          <option value="1">1단계 - 잔향</option>
-          <option value="2">2단계 - 파편</option>
-          <option value="3">3단계 - 균열</option>
-          <option value="4">4단계 - 왜곡</option>
-          <option value="5">5단계 - 각성</option>
-        </select>
         <button id="start-btn" class="btn-primary">전투 시작</button>
         <button id="reset-btn" class="btn-secondary">전투 초기화</button>
       </div>
-    </section>
-
-    <section class="story-panel">
-      <h3 id="scene-title">씬 진행</h3>
-      <div id="scene-body" class="scene-body"></div>
-      <div id="scene-choices" class="scene-choices"></div>
-    </section>
-
-    <section class="codex-panel">
-      <h3>주문 도감</h3>
-      <div id="spell-compendium" class="compendium-grid"></div>
     </section>
 
     <main class="battle-panel">
@@ -85,36 +65,11 @@
         <h3>전투 로그</h3>
         <ul id="combat-log" class="combat-log"></ul>
       </section>
-
-      <section class="status-panel">
-        <h3>상태 효과</h3>
-        <div class="status-columns">
-          <div>
-            <h4>플레이어</h4>
-            <div id="player-statuses" class="status-list"></div>
-          </div>
-          <div>
-            <h4>보스</h4>
-            <div id="boss-statuses" class="status-list"></div>
-          </div>
-        </div>
-      </section>
     </main>
 
     <footer class="spell-panel">
-      <h3>주문 슬롯</h3>
       <div id="spell-slots" class="spell-slots"></div>
     </footer>
-  </div>
-
-  <div id="phase-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="phase-title">
-    <div class="modal-card">
-      <h2 id="phase-title">페이즈 전환</h2>
-      <p id="phase-desc">전투가 일시정지됩니다. 강화 1개를 선택하면 즉시 전투가 재개됩니다.</p>
-      <div id="phase-guide" class="phase-guide hidden"></div>
-      <div id="modal-loadout" class="modal-loadout hidden"></div>
-      <div id="phase-choices" class="phase-choices"></div>
-    </div>
   </div>
 
   <script src="game.js"></script>
