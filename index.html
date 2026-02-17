@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Path of the Wandering Mage</title>
+  <title>방랑 마도사의 길</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,7 +12,7 @@
       <div class="bar-group">
         <div class="bar-wrap">
           <div class="bar-label-row">
-            <span>Player HP</span>
+            <span>플레이어 HP</span>
             <span id="player-hp-text">0 / 0</span>
           </div>
           <div class="meter hp"><div id="player-hp-fill" class="meter-fill"></div></div>
@@ -20,7 +20,7 @@
 
         <div class="bar-wrap">
           <div class="bar-label-row">
-            <span>Player MP</span>
+            <span>플레이어 MP</span>
             <span id="player-mp-text">0 / 0</span>
           </div>
           <div class="meter mp"><div id="player-mp-fill" class="meter-fill"></div></div>
@@ -28,15 +28,15 @@
       </div>
 
       <div class="phase-center">
-        <h1>Path of the Wandering Mage</h1>
-        <div id="phase-pill" class="phase-pill">Preparation</div>
-        <div id="heart-text" class="heart-text">Hearts: 0 / 3</div>
+        <h1>방랑 마도사의 길</h1>
+        <div id="phase-pill" class="phase-pill">준비</div>
+        <div id="heart-text" class="heart-text">마나 하트: 0 / 3</div>
       </div>
 
       <div class="bar-group">
         <div class="bar-wrap">
           <div class="bar-label-row">
-            <span>Boss HP</span>
+            <span>보스 HP</span>
             <span id="boss-hp-text">0 / 0</span>
           </div>
           <div class="meter boss"><div id="boss-hp-fill" class="meter-fill"></div></div>
@@ -46,36 +46,36 @@
 
     <section class="loadout-panel">
       <div>
-        <h2>Loadout Builder</h2>
-        <p>Equip up to 4 spells. Total Mana Heart cost must not exceed your max.</p>
+        <h2>로드아웃 구성</h2>
+        <p>주문은 최대 4개 장착할 수 있으며, 마나 하트 총합이 최대치를 넘을 수 없습니다.</p>
       </div>
       <div id="loadout-selects" class="loadout-selects"></div>
       <div class="loadout-actions">
-        <button id="start-btn" class="btn-primary">Start Battle</button>
-        <button id="reset-btn" class="btn-secondary">Reset Battle</button>
+        <button id="start-btn" class="btn-primary">전투 시작</button>
+        <button id="reset-btn" class="btn-secondary">전투 초기화</button>
       </div>
     </section>
 
     <section class="codex-panel">
-      <h3>Spell Compendium</h3>
+      <h3>주문 도감</h3>
       <div id="spell-compendium" class="compendium-grid"></div>
     </section>
 
     <main class="battle-panel">
       <section class="combat-log-panel">
-        <h3>Combat Log</h3>
+        <h3>전투 로그</h3>
         <ul id="combat-log" class="combat-log"></ul>
       </section>
 
       <section class="status-panel">
-        <h3>Status Effects</h3>
+        <h3>상태 효과</h3>
         <div class="status-columns">
           <div>
-            <h4>Player</h4>
+            <h4>플레이어</h4>
             <div id="player-statuses" class="status-list"></div>
           </div>
           <div>
-            <h4>Boss</h4>
+            <h4>보스</h4>
             <div id="boss-statuses" class="status-list"></div>
           </div>
         </div>
@@ -83,15 +83,15 @@
     </main>
 
     <footer class="spell-panel">
-      <h3>Spell Slots</h3>
+      <h3>주문 슬롯</h3>
       <div id="spell-slots" class="spell-slots"></div>
     </footer>
   </div>
 
   <div id="phase-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="phase-title">
     <div class="modal-card">
-      <h2 id="phase-title">Phase Shift</h2>
-      <p>A surge in the boss aura. Choose one boon.</p>
+      <h2 id="phase-title">페이즈 전환</h2>
+      <p>전투가 일시정지됩니다. 강화 1개를 선택하면 즉시 전투가 재개됩니다.</p>
       <div id="phase-choices" class="phase-choices"></div>
     </div>
   </div>

@@ -6,6 +6,7 @@
     mode: "prep",
     tick: 0,
     pendingPhase: null,
+    choiceTimeoutId: null,
     phaseChoices: [],
     phaseThresholdsHit: {
       phase2: false,
@@ -65,100 +66,100 @@
   const spells = {
     sparkBolt: {
       id: "sparkBolt",
-      name: "Spark Bolt",
+      name: "스파크 볼트",
       color: "blue",
       circle: 1,
       heartCost: 1,
       manaCost: 16,
       cooldown: 2,
       castTime: 0,
-      description: "Quick arcane bolt for steady damage.",
+      description: "빠르게 발사되는 기본 비전 탄환.",
       effect: ({ dealBossDamage, log }) => {
-        dealBossDamage(115, "Spark Bolt");
-        log("Spark Bolt strikes for 115 damage.");
+        dealBossDamage(115, "스파크 볼트");
+        log("스파크 볼트가 115 피해를 입혔습니다.");
       }
     },
     emberLance: {
       id: "emberLance",
-      name: "Ember Lance",
+      name: "엠버 랜스",
       color: "red",
       circle: 2,
       heartCost: 2,
       manaCost: 26,
       cooldown: 3,
       castTime: 0,
-      description: "A focused lance of fire.",
+      description: "집중된 화염 창으로 적을 관통합니다.",
       effect: ({ dealBossDamage, addBossStatus, log }) => {
-        dealBossDamage(150, "Ember Lance");
+        dealBossDamage(150, "엠버 랜스");
         addBossStatus("burnFlat", { dps: 36, remaining: 5 });
-        log("Ember Lance ignites burn for 5 seconds.");
+        log("엠버 랜스: 5초 동안 화상 효과를 부여합니다.");
       }
     },
     brambleWard: {
       id: "brambleWard",
-      name: "Bramble Ward",
+      name: "브램블 워드",
       color: "green",
       circle: 2,
       heartCost: 2,
       manaCost: 24,
       cooldown: 5,
       castTime: 0,
-      description: "Grow a defensive ward that reduces incoming damage.",
+      description: "가시 결계를 형성해 받는 피해를 줄입니다.",
       effect: ({ addPlayerStatus, log }) => {
         addPlayerStatus("ward", { remaining: 4, reduction: 0.25 });
-        log("Bramble Ward reduces incoming damage by 25% for 4s.");
+        log("브램블 워드: 4초 동안 받는 피해가 25% 감소합니다.");
       }
     },
     glacialPrism: {
       id: "glacialPrism",
-      name: "Glacial Prism",
+      name: "글레이셜 프리즘",
       color: "blue",
       circle: 3,
       heartCost: 3,
       manaCost: 40,
       cooldown: 5,
       castTime: 1,
-      description: "Heavy arcane ice burst.",
+      description: "강력한 냉기 폭발로 둔화를 유발합니다.",
       effect: ({ dealBossDamage, addBossStatus, log }) => {
-        dealBossDamage(295, "Glacial Prism");
+        dealBossDamage(295, "글레이셜 프리즘");
         addBossStatus("slow", { value: 2, remaining: 4 });
-        log("Glacial Prism lands and slows the boss.");
+        log("글레이셜 프리즘이 적중해 보스를 둔화시킵니다.");
       }
     },
     toxicRain: {
       id: "toxicRain",
-      name: "Toxic Rain",
+      name: "톡식 레인",
       color: "green",
       circle: 3,
       heartCost: 3,
       manaCost: 38,
       cooldown: 5,
       castTime: 0,
-      description: "Corrosive rain that poisons over time.",
+      description: "부식성 비를 내려 지속 독 피해를 부여합니다.",
       effect: ({ addBossStatus, log }) => {
         addBossStatus("poison", { stacks: 8, remaining: 8 });
-        log("Toxic Rain applies poison (8) for 8s.");
+        log("톡식 레인: 8초 동안 독(8)을 부여합니다.");
       }
     },
     infernalDrive: {
       id: "infernalDrive",
-      name: "Infernal Drive",
+      name: "인페르날 드라이브",
       color: "red",
       circle: 4,
       heartCost: 4,
       manaCost: 58,
       cooldown: 6,
       castTime: 1,
-      description: "Brutal blast that ramps pressure.",
+      description: "폭발과 함께 화염 압박을 지속시킵니다.",
       effect: ({ dealBossDamage, addBossStatus, log }) => {
-        dealBossDamage(390, "Infernal Drive");
+        dealBossDamage(390, "인페르날 드라이브");
         addBossStatus("burnFlat", { dps: 48, remaining: 6 });
-        log("Infernal Drive leaves lasting flames.");
+        log("인페르날 드라이브: 잔류 화염을 남깁니다.");
       }
     },
     aerisAzureSeal: {
       id: "aerisAzureSeal",
-      name: "Aeris's Azure Seal",
+      name: "아에리스의 청인",
       color: "blue",
       circle: 5,
       heartCost: 5,
@@ -167,30 +168,30 @@
       castTime: 5,
       oneUse: true,
       interruptible: true,
-      description: "If target HP < 30% instant kill, else 40% max HP damage.",
+      description: "적 HP가 30% 미만이면 즉사, 아니면 최대 HP의 40% 피해.",
       effect: ({ dealBossDamage, log }) => {
         const hpRatio = boss.hp / boss.maxHp;
         if (hpRatio < 0.3) {
           boss.hp = 0;
-          log("Aeris's Azure Seal executes the boss instantly.");
+          log("아에리스의 청인: 조건 충족으로 즉사 발동.");
         } else {
           const damage = Math.floor(boss.maxHp * 0.4);
-          dealBossDamage(damage, "Aeris's Azure Seal");
-          log("Aeris's Azure Seal deals 40% max HP damage.");
+          dealBossDamage(damage, "아에리스의 청인");
+          log("아에리스의 청인: 최대 HP의 40% 피해를 입혔습니다.");
         }
         player.flags.aerisUsed = true;
       }
     },
     cerysAbyssalGarden: {
       id: "cerysAbyssalGarden",
-      name: "Cerys Finn's Abyssal Garden",
+      name: "세리스 핀의 심연 정원",
       color: "green",
       circle: 5,
       heartCost: 5,
       manaCost: 130,
       cooldown: 14,
       castTime: 4,
-      description: "Field for 15s: poison 10, fire 5, slow 3 and 3% max HP/s. Ends with MP set to 0.",
+      description: "15초 장판: 독10/화염5/둔화3, 초당 최대 HP 3% 피해. 종료 시 MP 0.",
       effect: ({ addBossStatus, log }) => {
         addBossStatus("abyssalGarden", {
           remaining: 15,
@@ -198,22 +199,22 @@
           fire: 5,
           slow: 3
         });
-        log("Abyssal Garden blooms for 15s.");
+        log("심연의 정원이 15초간 전장을 뒤덮습니다.");
       }
     },
     flamesPurgatorium: {
       id: "flamesPurgatorium",
-      name: "Flames of Purgatorium",
+      name: "연옥의 불꽃",
       color: "red",
       circle: 5,
       heartCost: 5,
       manaCost: 130,
       cooldown: 12,
       castTime: 3,
-      description: "Escalating burn: each second elapsed x 1.5% max HP. Cannot be removed.",
+      description: "가중 화상: 경과 초 x 최대 HP 1.5%. 해제 불가.",
       effect: ({ addBossStatus, log }) => {
         addBossStatus("purgatorium", { elapsed: 0 });
-        log("Flames of Purgatorium takes hold. The burn will not fade.");
+        log("연옥의 불꽃 발동: 해제되지 않는 화상이 시작됩니다.");
       }
     }
   };
@@ -221,59 +222,59 @@
   const buffs = [
     {
       id: "heartRelic",
-      name: "Mana Relic",
-      description: "+2 max Mana Hearts (up to 15).",
+      name: "마나 유물",
+      description: "최대 마나 하트 +2 (최대 15).",
       apply: () => {
         player.maxHearts = Math.min(15, player.maxHearts + 2);
-        log("Mana Relic expands your Mana Heart capacity by 2.");
+        log("마나 유물: 최대 마나 하트가 2 증가했습니다.");
       }
     },
     {
       id: "vitalityDraft",
-      name: "Vitality Draft",
-      description: "Recover 25% max HP and gain +10% max HP.",
+      name: "생명력 비약",
+      description: "최대 HP의 25% 회복, 최대 HP +10%.",
       apply: () => {
         player.maxHp = Math.floor(player.maxHp * 1.1);
         player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.25));
-        log("Vitality surges through your core.");
+        log("생명력 비약: 체력 한계가 확장되었습니다.");
       }
     },
     {
       id: "etherWell",
-      name: "Ether Well",
-      description: "+8 MP regeneration each second.",
+      name: "에테르 우물",
+      description: "초당 MP 재생 +8.",
       apply: () => {
         player.manaRegen += 8;
-        log("Your Mana Heart draws deeper Ether each second.");
+        log("에테르 우물: MP 재생이 강화되었습니다.");
       }
     },
     {
       id: "quickTongue",
-      name: "Quick Tongue",
-      description: "All cooldowns reduced by 20%.",
+      name: "속성 영창",
+      description: "모든 재사용 대기시간 20% 감소.",
       apply: () => {
         Object.values(spells).forEach((spell) => {
           spell.cooldown = Math.max(1, Math.floor(spell.cooldown * 0.8));
         });
-        log("Casting rhythm accelerates.");
+        log("속성 영창: 주문 회전이 빨라졌습니다.");
       }
     },
     {
       id: "resonantInk",
-      name: "Resonant Ink",
-      description: "Spell damage increased by 15%.",
+      name: "공명 잉크",
+      description: "주문 피해량 15% 증가.",
       apply: () => {
         addPlayerStatus("spellAmp", { value: 0.15, remaining: 9999 });
-        log("Spellbooks resonate with amplified force.");
+        log("공명 잉크: 주문 위력이 증폭됩니다.");
       }
     },
     {
       id: "shellOfThorns",
-      name: "Shell of Thorns",
-      description: "Incoming damage reduced by 15%.",
+      name: "가시 껍질",
+      description: "받는 피해 15% 감소.",
       apply: () => {
         addPlayerStatus("ward", { reduction: 0.15, remaining: 9999 });
-        log("A constant thorn shell forms around you.");
+        log("가시 껍질: 상시 방어막이 형성되었습니다.");
       }
     }
   ];
@@ -333,7 +334,7 @@
           remaining: spell.castTime,
           interruptible: Boolean(spell.interruptible)
         };
-        log(`${spell.name} casting started (${spell.castTime}s).`);
+        log(`${spell.name} 시전 시작 (${spell.castTime}초).`);
         return;
       }
       this.resolveSpell(spell);
@@ -376,11 +377,11 @@
       const crit = Math.random() < 0.15;
       const dealt = crit ? Math.floor(baseDmg * 1.5) : baseDmg;
       if (crit) {
-        log(`Boss lands a critical strike for ${dealt}.`);
+        log(`보스의 치명타! ${dealt} 피해.`);
       } else {
-        log(`Boss attack hits for ${dealt}.`);
+        log(`보스 공격: ${dealt} 피해.`);
       }
-      dealPlayerDamage(dealt, "Boss Attack", true);
+      dealPlayerDamage(dealt, "보스 공격", true);
     },
     phaseDamage() {
       if (boss.phase === 1) {
@@ -405,12 +406,12 @@
         return;
       }
       if (!player.spellSlots.some(Boolean)) {
-        log("Equip at least one spell before battle.");
+        log("전투 시작 전 주문을 1개 이상 장착하세요.");
         return;
       }
       gameState.mode = "running";
-      dom.phasePill.textContent = "Phase 1";
-      log("Battle starts.");
+      dom.phasePill.textContent = "페이즈 1";
+      log("전투를 시작합니다.");
       this.timerId = setInterval(() => this.tick(), TICK_MS);
     },
     reset() {
@@ -422,6 +423,10 @@
       gameState.mode = "prep";
       gameState.tick = 0;
       gameState.pendingPhase = null;
+      if (gameState.choiceTimeoutId) {
+        clearTimeout(gameState.choiceTimeoutId);
+        gameState.choiceTimeoutId = null;
+      }
       gameState.phaseChoices = [];
       gameState.phaseThresholdsHit.phase2 = false;
       gameState.phaseThresholdsHit.phase3 = false;
@@ -442,7 +447,7 @@
       boss.statuses = {};
 
       dom.phaseModal.classList.add("hidden");
-      log("Battle state reset.");
+      log("전투 상태를 초기화했습니다.");
       renderLoadoutSelectors();
       renderSpellSlots();
       render();
@@ -491,20 +496,35 @@
       gameState.phaseChoices = pickRandomBuffs(3);
       renderPhaseChoices();
       dom.phaseModal.classList.remove("hidden");
-      dom.phasePill.textContent = `Phase ${nextPhase - 1} -> Choice`;
-      log(`Boss shifts toward Phase ${nextPhase}. Choose one boon.`);
+      dom.phasePill.textContent = `페이즈 ${nextPhase - 1} -> 선택`;
+      log(`보스가 페이즈 ${nextPhase}(으)로 전환합니다. 강화 1개를 선택하세요.`);
+      if (gameState.choiceTimeoutId) {
+        clearTimeout(gameState.choiceTimeoutId);
+      }
+      gameState.choiceTimeoutId = setTimeout(() => {
+        if (gameState.mode === "choice" && gameState.phaseChoices.length > 0) {
+          phaseStateMachine.applyChoice(gameState.phaseChoices[0].id, true);
+        }
+      }, 15000);
     },
-    applyChoice(buffId) {
+    applyChoice(buffId, isAuto = false) {
       const chosen = buffs.find((buff) => buff.id === buffId);
       if (!chosen || gameState.mode !== "choice") {
         return;
       }
       chosen.apply();
+      if (gameState.choiceTimeoutId) {
+        clearTimeout(gameState.choiceTimeoutId);
+        gameState.choiceTimeoutId = null;
+      }
+      if (isAuto) {
+        log("선택 시간이 초과되어 첫 번째 강화가 자동 적용되었습니다.");
+      }
       if (heartSystem.usedHearts(player.spellSlots) > player.maxHearts) {
-        log("Current loadout exceeds new heart limit, unequip some spells.");
+        log("현재 로드아웃이 하트 제한을 초과합니다. 주문을 해제하세요.");
       }
       boss.phase = gameState.pendingPhase;
-      dom.phasePill.textContent = `Phase ${boss.phase}`;
+      dom.phasePill.textContent = `페이즈 ${boss.phase}`;
       gameState.pendingPhase = null;
       gameState.mode = "running";
       dom.phaseModal.classList.add("hidden");
@@ -515,7 +535,7 @@
   function processStatuses() {
     if (boss.statuses.poison) {
       const poisonDamage = boss.statuses.poison.stacks * 9;
-      dealBossDamage(poisonDamage, "Poison");
+      dealBossDamage(poisonDamage, "중독");
       boss.statuses.poison.remaining -= 1;
       if (boss.statuses.poison.remaining <= 0) {
         delete boss.statuses.poison;
@@ -523,7 +543,7 @@
     }
 
     if (boss.statuses.burnFlat) {
-      dealBossDamage(boss.statuses.burnFlat.dps, "Burn");
+      dealBossDamage(boss.statuses.burnFlat.dps, "화상");
       boss.statuses.burnFlat.remaining -= 1;
       if (boss.statuses.burnFlat.remaining <= 0) {
         delete boss.statuses.burnFlat;
@@ -534,13 +554,13 @@
       boss.statuses.purgatorium.elapsed += 1;
       const mult = boss.statuses.purgatorium.elapsed * 0.015;
       const damage = Math.floor(boss.maxHp * mult);
-      dealBossDamage(damage, "Purgatorium");
+      dealBossDamage(damage, "연옥 화상");
     }
 
     if (boss.statuses.abyssalGarden) {
       const field = boss.statuses.abyssalGarden;
       const gardenDamage = Math.floor(boss.maxHp * 0.03);
-      dealBossDamage(gardenDamage, "Abyssal Garden");
+      dealBossDamage(gardenDamage, "심연의 정원");
       addBossStatus("poison", { stacks: field.poison, remaining: 2 });
       addBossStatus("burnFlat", { dps: field.fire * 10, remaining: 2 });
       addBossStatus("slow", { value: field.slow, remaining: 2 });
@@ -548,7 +568,7 @@
       if (field.remaining <= 0) {
         delete boss.statuses.abyssalGarden;
         player.mp = 0;
-        log("Abyssal Garden ends. Your MP falls to 0.");
+        log("심연의 정원 종료: 플레이어 MP가 0이 됩니다.");
       }
     }
 
@@ -592,11 +612,11 @@
     if (canInterruptCast && gameState.playerCast && gameState.playerCast.interruptible) {
       const interruptedName = spells[gameState.playerCast.spellId].name;
       gameState.playerCast = null;
-      log(`${interruptedName} was interrupted after taking damage.`);
+      log(`${interruptedName} 시전이 피격으로 중단되었습니다.`);
     }
 
     if (source) {
-      log(`${source} deals ${final} to you.`);
+      log(`${source}: 플레이어에게 ${final} 피해.`);
     }
   }
 
@@ -646,15 +666,15 @@
   function checkEndConditions() {
     if (boss.hp <= 0 && gameState.mode !== "victory") {
       gameState.mode = "victory";
-      dom.phasePill.textContent = "Victory";
-      log("The boss falls. Victory.");
+      dom.phasePill.textContent = "승리";
+      log("보스를 쓰러뜨렸습니다. 승리!");
       stopTimer();
       return;
     }
     if (player.hp <= 0 && gameState.mode !== "defeat") {
       gameState.mode = "defeat";
-      dom.phasePill.textContent = "Defeat";
-      log("You are defeated.");
+      dom.phasePill.textContent = "패배";
+      log("플레이어가 쓰러졌습니다.");
       stopTimer();
     }
   }
@@ -670,7 +690,7 @@
     const options = Object.values(spells)
       .sort((a, b) => a.circle - b.circle || a.name.localeCompare(b.name))
       .map((spell) => {
-        const label = `${spell.name} | ${spell.circle}C | Hearts ${spell.heartCost} | MP ${spell.manaCost}`;
+        const label = `${spell.name} | ${spell.circle}서클 | 하트 ${spell.heartCost} | 마나 ${spell.manaCost}`;
         return `<option value="${spell.id}">${label}</option>`;
       })
       .join("");
@@ -680,9 +700,9 @@
       const slot = document.createElement("div");
       slot.className = "select-card";
       slot.innerHTML = `
-        <label for="slot-select-${i}">Slot ${i + 1}</label>
+        <label for="slot-select-${i}">슬롯 ${i + 1}</label>
         <select id="slot-select-${i}">
-          <option value="">Empty</option>
+          <option value="">비어 있음</option>
           ${options}
         </select>
       `;
@@ -701,7 +721,7 @@
 
         if (!heartSystem.canEquip(i, selected)) {
           event.target.value = previous || "";
-          log("Equip blocked: Mana Heart limit exceeded.");
+          log("장착 실패: 마나 하트 한도를 초과했습니다.");
           render();
           return;
         }
@@ -722,7 +742,7 @@
       card.className = "spell-slot";
 
       if (!spellId) {
-        card.innerHTML = `<div class="spell-name">Slot ${i + 1}: Empty</div>`;
+        card.innerHTML = `<div class="spell-name">슬롯 ${i + 1}: 비어 있음</div>`;
         dom.spellSlots.appendChild(card);
         continue;
       }
@@ -731,14 +751,14 @@
       card.classList.add(spell.color);
       const cooldown = player.cooldowns[spell.id] || 0;
       const castingText = gameState.playerCast && gameState.playerCast.spellId === spell.id
-        ? `Casting (${gameState.playerCast.remaining}s)`
-        : `Ready`;
+        ? `시전 중 (${gameState.playerCast.remaining}초)`
+        : "준비 완료";
 
       card.innerHTML = `
         <div class="spell-name">${spell.name}</div>
         <div class="spell-meta">
-          <span>${spell.circle}-Circle | Hearts ${spell.heartCost}</span>
-          <span>Mana ${spell.manaCost} | CD ${spell.cooldown}s</span>
+          <span>${spell.circle}서클 | 하트 ${spell.heartCost}</span>
+          <span>마나 ${spell.manaCost} | 쿨다운 ${spell.cooldown}초</span>
           <span>${castingText}</span>
         </div>
         <div class="cooldown-overlay ${cooldown > 0 ? "" : "hidden"}">${cooldown}</div>
@@ -748,22 +768,27 @@
   }
 
   function spellSpecialNote(spell) {
-    if (spell.id === "aerisAzureSeal") {
-      return "5s cast, one-use per battle, interrupted if damaged while casting.";
-    }
-    if (spell.id === "cerysAbyssalGarden") {
-      return "4s cast, 15s field, then your MP becomes 0.";
-    }
-    if (spell.id === "flamesPurgatorium") {
-      return "3s cast, escalating burn that cannot be removed.";
-    }
-    if (spell.castTime > 0) {
-      return `Cast time: ${spell.castTime}s`;
-    }
-    return "Instant cast";
+      if (spell.id === "aerisAzureSeal") {
+      return "시전 5초, 전투당 1회, 시전 중 피격 시 중단";
+      }
+      if (spell.id === "cerysAbyssalGarden") {
+      return "시전 4초, 장판 15초 유지, 종료 시 MP 0";
+      }
+      if (spell.id === "flamesPurgatorium") {
+      return "시전 3초, 시간 경과형 가중 화상, 해제 불가";
+      }
+      if (spell.castTime > 0) {
+      return `시전 시간: ${spell.castTime}초`;
+      }
+    return "즉시 시전";
   }
 
   function renderCompendium() {
+    const colorNameMap = {
+      blue: "청",
+      red: "적",
+      green: "녹"
+    };
     const sorted = Object.values(spells).sort((a, b) => a.circle - b.circle || a.name.localeCompare(b.name));
     dom.spellCompendium.innerHTML = sorted
       .map((spell) => `
@@ -773,10 +798,10 @@
             <div>${spell.circle}C</div>
           </div>
           <div class="compendium-meta">
-            <span>Color: ${spell.color}</span>
-            <span>Hearts: ${spell.heartCost}</span>
-            <span>Mana: ${spell.manaCost}</span>
-            <span>Cooldown: ${spell.cooldown}s</span>
+            <span>속성: ${colorNameMap[spell.color] || spell.color}</span>
+            <span>하트: ${spell.heartCost}</span>
+            <span>마나: ${spell.manaCost}</span>
+            <span>쿨다운: ${spell.cooldown}초</span>
           </div>
           <div class="compendium-desc">${spell.description}</div>
           <div class="compendium-desc">${spellSpecialNote(spell)}</div>
@@ -804,15 +829,35 @@
   function formatStatuses(statusObj) {
     const keys = Object.keys(statusObj);
     if (keys.length === 0) {
-      return '<span class="status-pill">None</span>';
+      return '<span class="status-pill">없음</span>';
     }
+    const statusNameMap = {
+      ward: "보호막",
+      spellAmp: "주문 증폭",
+      poison: "중독",
+      burnFlat: "화상",
+      purgatorium: "연옥 화상",
+      abyssalGarden: "심연의 정원",
+      slow: "둔화"
+    };
+    const statusFieldNameMap = {
+      remaining: "남은시간",
+      reduction: "피해감소",
+      value: "값",
+      stacks: "중첩",
+      dps: "초당피해",
+      elapsed: "경과",
+      poison: "독",
+      fire: "화염",
+      slow: "둔화"
+    };
     return keys
       .map((key) => {
         const status = statusObj[key];
         const parts = Object.entries(status)
-          .map(([k, value]) => `${k}:${value}`)
+          .map(([k, value]) => `${statusFieldNameMap[k] || k}:${value}`)
           .join(" ");
-        return `<span class="status-pill">${key} ${parts}</span>`;
+        return `<span class="status-pill">${statusNameMap[key] || key} ${parts}</span>`;
       })
       .join("");
   }
@@ -831,11 +876,11 @@
     dom.bossHpText.textContent = `${Math.floor(boss.hp)} / ${boss.maxHp}`;
 
     const usedHearts = heartSystem.usedHearts(player.spellSlots);
-    dom.heartText.textContent = `Hearts: ${usedHearts} / ${player.maxHearts}`;
+    dom.heartText.textContent = `마나 하트: ${usedHearts} / ${player.maxHearts}`;
     dom.heartText.style.color = usedHearts > player.maxHearts ? "var(--danger)" : "var(--heart)";
 
     if (gameState.mode === "prep") {
-      dom.phasePill.textContent = "Preparation";
+      dom.phasePill.textContent = "준비";
     }
 
     renderSpellSlots();
@@ -868,7 +913,7 @@
     renderCompendium();
     bindEvents();
     render();
-    log("Prototype ready. Build your loadout and start battle.");
+    log("프로토타입 준비 완료. 로드아웃을 구성하고 전투를 시작하세요.");
   }
 
   init();
