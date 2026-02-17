@@ -38,6 +38,7 @@ body {
 
 .top-panel,
 .loadout-panel,
+.story-panel,
 .codex-panel,
 .battle-panel,
 .spell-panel {
@@ -172,7 +173,54 @@ body {
 
 .loadout-actions {
   display: flex;
+  align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
+}
+
+.loadout-actions label {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.loadout-actions select {
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(9, 25, 35, 0.85);
+  color: var(--text);
+  padding: 7px;
+}
+
+.story-panel {
+  padding: 12px;
+}
+
+.scene-body {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 90px;
+  color: #d7e8f6;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.scene-line {
+  margin: 0 0 6px;
+}
+
+.scene-choices {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.scene-btn {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
 }
 
 .codex-panel {

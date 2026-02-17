@@ -1,18 +1,33 @@
 (() => {
   const TICK_MS = 1000;
-  const MAX_LOG = 80;
+  const MAX_LOG = 100;
+
+  const MEMORY_STAGES = {
+    1: "잔향",
+    2: "파편",
+    3: "균열",
+    4: "왜곡",
+    5: "각성"
+  };
 
   const gameState = {
     mode: "prep",
     tick: 0,
     pendingPhase: null,
     choiceTimeoutId: null,
+    playerCast: null,
     phaseChoices: [],
     phaseThresholdsHit: {
       phase2: false,
       phase3: false
     },
-    playerCast: null,
+    story: {
+      stage: 1,
+      sceneId: 1,
+      path: null,
+      pendingEncounterId: null,
+      stageLocked: false
+    },
     firestoreBridge: {
       enabled: false,
       queue: []
@@ -35,11 +50,55 @@
   };
 
   const boss = {
-    hp: 5000,
-    maxHp: 5000,
+    id: null,
+    name: "적 없음",
+    hp: 0,
+    maxHp: 0,
     phase: 1,
+    phaseEnabled: false,
     statuses: {},
-    attackCooldown: 0
+    attackCooldown: 0,
+    statsByPhase: {
+      1: { damage: 0, attackRate: 2 },
+      2: { damage: 0, attackRate: 2 },
+      3: { damage: 0, attackRate: 1 }
+    }
+  };
+
+  const encounters = {
+    shadowKing: {
+      id: "shadowKing",
+      name: "스승의 그림자",
+      maxHp: 2400,
+      phaseEnabled: false,
+      statsByPhase: {
+        1: { damage: 90, attackRate: 2 },
+        2: { damage: 90, attackRate: 2 },
+        3: { damage: 90, attackRate: 2 }
+      }
+    },
+    corruptedVillage: {
+      id: "corruptedVillage",
+      name: "왜곡 마을의 오염수",
+      maxHp: 3400,
+      phaseEnabled: true,
+      statsByPhase: {
+        1: { damage: 95, attackRate: 2 },
+        2: { damage: 125, attackRate: 2 },
+        3: { damage: 155, attackRate: 1 }
+      }
+    },
+    endTowerMageKing: {
+      id: "endTowerMageKing",
+      name: "세상 끝의 마도왕",
+      maxHp: 5200,
+      phaseEnabled: true,
+      statsByPhase: {
+        1: { damage: 105, attackRate: 2 },
+        2: { damage: 140, attackRate: 2 },
+        3: { damage: 185, attackRate: 1 }
+      }
+    }
   };
 
   const dom = {
@@ -53,18 +112,22 @@
     phasePill: document.getElementById("phase-pill"),
     combatLog: document.getElementById("combat-log"),
     loadoutSelects: document.getElementById("loadout-selects"),
+    memoryStageSelect: document.getElementById("memory-stage-select"),
+    startBtn: document.getElementById("start-btn"),
+    resetBtn: document.getElementById("reset-btn"),
+    sceneTitle: document.getElementById("scene-title"),
+    sceneBody: document.getElementById("scene-body"),
+    sceneChoices: document.getElementById("scene-choices"),
     spellCompendium: document.getElementById("spell-compendium"),
     spellSlots: document.getElementById("spell-slots"),
     playerStatuses: document.getElementById("player-statuses"),
     bossStatuses: document.getElementById("boss-statuses"),
-    startBtn: document.getElementById("start-btn"),
-    resetBtn: document.getElementById("reset-btn"),
     phaseModal: document.getElementById("phase-modal"),
-    phaseChoices: document.getElementById("phase-choices"),
     phaseTitle: document.getElementById("phase-title"),
     phaseDesc: document.getElementById("phase-desc"),
     phaseGuide: document.getElementById("phase-guide"),
-    modalLoadout: document.getElementById("modal-loadout")
+    modalLoadout: document.getElementById("modal-loadout"),
+    phaseChoices: document.getElementById("phase-choices")
   };
 
   const spells = {
@@ -174,7 +237,7 @@
       interruptible: true,
       description: "적 HP가 30% 미만이면 즉사, 아니면 최대 HP의 40% 피해.",
       effect: ({ dealBossDamage, log }) => {
-        const hpRatio = boss.hp / boss.maxHp;
+        const hpRatio = boss.hp / Math.max(1, boss.maxHp);
         if (hpRatio < 0.3) {
           boss.hp = 0;
           log("아에리스의 청인: 조건 충족으로 즉사 발동.");
@@ -227,7 +290,7 @@
     {
       id: "heartRelic",
       name: "마나 유물",
-      description: "최대 마나 하트 +2 (최대 15).",
+      description: "최대 마나 하트 +2 (최대 15)",
       apply: () => {
         player.maxHearts = Math.min(15, player.maxHearts + 2);
         log("마나 유물: 최대 마나 하트가 2 증가했습니다.");
@@ -236,7 +299,7 @@
     {
       id: "vitalityDraft",
       name: "생명력 비약",
-      description: "최대 HP의 25% 회복, 최대 HP +10%.",
+      description: "최대 HP의 25% 회복, 최대 HP +10%",
       apply: () => {
         player.maxHp = Math.floor(player.maxHp * 1.1);
         player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.25));
@@ -246,7 +309,7 @@
     {
       id: "etherWell",
       name: "에테르 우물",
-      description: "초당 MP 재생 +8.",
+      description: "초당 MP 재생 +8",
       apply: () => {
         player.manaRegen += 8;
         log("에테르 우물: MP 재생이 강화되었습니다.");
@@ -255,7 +318,7 @@
     {
       id: "quickTongue",
       name: "속성 영창",
-      description: "모든 재사용 대기시간 20% 감소.",
+      description: "모든 쿨다운 20% 감소",
       apply: () => {
         Object.values(spells).forEach((spell) => {
           spell.cooldown = Math.max(1, Math.floor(spell.cooldown * 0.8));
@@ -266,7 +329,7 @@
     {
       id: "resonantInk",
       name: "공명 잉크",
-      description: "주문 피해량 15% 증가.",
+      description: "주문 피해 +15%",
       apply: () => {
         addPlayerStatus("spellAmp", { value: 0.15, remaining: 9999 });
         log("공명 잉크: 주문 위력이 증폭됩니다.");
@@ -275,13 +338,267 @@
     {
       id: "shellOfThorns",
       name: "가시 껍질",
-      description: "받는 피해 15% 감소.",
+      description: "받는 피해 15% 감소",
       apply: () => {
         addPlayerStatus("ward", { reduction: 0.15, remaining: 9999 });
         log("가시 껍질: 상시 방어막이 형성되었습니다.");
       }
     }
   ];
+
+  const sceneSystem = {
+    getLinePack(sceneId, stage) {
+      const s = String(stage);
+      const byScene = {
+        1: {
+          title: "SCENE 1 — 낯선 익숙함",
+          lines: {
+            1: ["정신을 차려보니 이 길 위에 서 있다.", "머리가 아프다. 이미 걸어본 길 같다."],
+            2: ["낯선 길인데 발걸음은 익숙하다.", "멀리 마탑이 보이고, 기억의 파편이 스친다."],
+            3: ["가슴이 거칠게 뛴다.", "이 시작점은 평범한 우연이 아니다."],
+            4: ["풍경 위로 붉게 갈라진 하늘이 겹쳐 보인다.", "루프의 잡음이 귀를 파고든다."],
+            5: ["여기가 루프의 시작점임을 안다.", "이번에도 실패하면 끝이다."]
+          }
+        },
+        2: {
+          title: "SCENE 2 — 불완전한 기억",
+          lines: {
+            1: ["부서진 마법 문양에서 불길한 진동이 새어나온다."],
+            2: ["붕괴하는 하늘, 불타는 탑이 스쳐 지나간다."],
+            3: ["누군가의 목소리: '실패작.'"],
+            4: ["그 말이 자신을 향한 것임을 직감한다."],
+            5: ["문양은 금단 실험의 잔해다. 기억이 연결되기 시작한다."]
+          }
+        },
+        3: {
+          title: "SCENE 3 — 스승의 그림자",
+          lines: {
+            1: ["마도왕: '떠돌이 마법사인가. 돌아가라.'"],
+            2: ["마도왕: '이곳은 위험하다. 지금이라면 늦지 않았다.'"],
+            3: ["이유 없는 분노가 치밀어 오른다.", "그를 향해 마력을 끌어올린다."],
+            4: ["마도왕: '네 눈빛... 낯설지 않군.'"],
+            5: ["그는 여전히 나를 알아보지 못한다."]
+          }
+        },
+        4: {
+          title: "SCENE 4 — 미래의 잔상",
+          lines: {
+            1: ["짧은 섬광만 스친다."],
+            2: ["붉게 갈라진 하늘과 괴물로 변한 마법사들."],
+            3: ["목소리: '또 하나의 실패작이군.'"],
+            4: ["그 말이 자신에게 꽂힌다."],
+            5: ["미래의 스승은 끝내 자신을 알아보지 못했다."]
+          }
+        },
+        5: {
+          title: "SCENE 5 — 왜곡된 마을",
+          lines: {
+            1: ["오염된 마을에서 시간이 느리게 흐른다.", "NPC: '그를 막으러 왔나?'"],
+            2: ["NPC: '여긴 시간이 썩어가고 있어.'"],
+            3: ["NPC: '아니면... 또 실패하러 왔나?'"],
+            4: ["마을 시계가 서로 다른 속도로 회전한다."],
+            5: ["NPC: '넌 이미 여기서 여러 번 울었어.'"]
+          }
+        },
+        6: {
+          title: "SCENE 6 — 붕괴된 미래의 기억",
+          lines: {
+            1: ["기억의 문이 아직 닫혀 있다."],
+            2: ["잿빛 마탑의 환영이 비친다."],
+            3: ["미래의 마도왕: '나는 더 이상 잃을 것이 없다.'"],
+            4: ["그를 쓰러뜨린 직후, 세계 붕괴가 시작됐다."],
+            5: ["승리가 멸망의 기점이었다는 사실이 되살아난다."]
+          }
+        },
+        7: {
+          title: "SCENE 7 — 회귀의 대가",
+          lines: {
+            1: ["인과가 어긋난 흔적만 남는다."],
+            2: ["'이대로 끝낼 수는 없다.' 시간을 되감는다."],
+            3: ["기억이 찢어지고 마력 균열이 생긴다."],
+            4: ["루프가 고정된다. 탈출구는 보이지 않는다."],
+            5: ["구원이 아닌 반복. 대가는 이미 치렀다."]
+          }
+        },
+        8: {
+          title: "SCENE 8 — 스승의 인간성",
+          lines: {
+            1: ["말끝을 흐리는 그의 눈빛이 흔들린다."],
+            2: ["마도왕: '나는 제자를 잃어본 적이 있다.'"],
+            3: ["마도왕: '두 번은 겪고 싶지 않다.'"],
+            4: ["설명할 수 없는 죄책감이 목을 죈다."],
+            5: ["모든 진실을 아는데도, 이 말은 가볍지 않다."]
+          }
+        },
+        9: {
+          title: "SCENE 9 — 완전한 각성",
+          lines: {
+            1: ["아직 닿을 수 없는 기억이다."],
+            2: ["아직 닿을 수 없는 기억이다."],
+            3: ["아직 닿을 수 없는 기억이다."],
+            4: ["아직 닿을 수 없는 기억이다."],
+            5: ["미래의 마도왕: '또 하나의 실패작이군.'", "그는 끝내 자신을 알아보지 못했다."]
+          }
+        },
+        10: {
+          title: "SCENE 10 — 세상 끝의 마탑",
+          lines: {
+            1: ["마도왕: '나는 세상을 멸망시키려는 것이 아니다.'"],
+            2: ["마도왕: '나는 그 아이들을 되돌리고 싶을 뿐이다.'"],
+            3: ["주인공: '나는 미래를 보았다.'"],
+            4: ["주인공: '당신의 마법은 결국 모든 것을 무너뜨린다.'"],
+            5: ["어떤 선택을 하든 완전한 구원은 없다."]
+          }
+        }
+      };
+
+      const pack = byScene[sceneId];
+      return {
+        title: pack.title,
+        lines: pack.lines[s] || pack.lines[1]
+      };
+    },
+    renderScene() {
+      const sceneId = gameState.story.sceneId;
+      const stage = gameState.story.stage;
+      const pack = this.getLinePack(sceneId, stage);
+      dom.sceneTitle.textContent = `${pack.title} (${stage}단계: ${MEMORY_STAGES[stage]})`;
+      dom.sceneBody.innerHTML = pack.lines.map((line) => `<p class="scene-line">${line}</p>`).join("");
+
+      const choices = this.getSceneChoices(sceneId, stage);
+      dom.sceneChoices.innerHTML = "";
+      choices.forEach((choice) => {
+        const btn = document.createElement("button");
+        btn.className = "scene-btn";
+        btn.textContent = choice.label;
+        btn.addEventListener("click", choice.action);
+        dom.sceneChoices.appendChild(btn);
+      });
+    },
+    getSceneChoices(sceneId, stage) {
+      if (sceneId === 1) {
+        return [
+          {
+            label: "전투 노드로 이동",
+            action: () => {
+              gameState.story.path = "battle";
+              this.gotoScene(3);
+            }
+          },
+          {
+            label: "이벤트 노드로 이동",
+            action: () => {
+              gameState.story.path = "event";
+              this.gotoScene(2);
+            }
+          }
+        ];
+      }
+
+      if (sceneId === 2) {
+        return [{ label: "다음", action: () => this.gotoScene(3) }];
+      }
+
+      if (sceneId === 3) {
+        return [{
+          label: "스승의 그림자 전투 준비",
+          action: () => {
+            queueEncounter("shadowKing");
+            log("인카운터 준비: 스승의 그림자");
+            render();
+          }
+        }];
+      }
+
+      if (sceneId === 4) {
+        return [{ label: "다음", action: () => this.gotoScene(5) }];
+      }
+
+      if (sceneId === 5) {
+        return [{
+          label: "오염수 전투 준비",
+          action: () => {
+            queueEncounter("corruptedVillage");
+            log("인카운터 준비: 왜곡 마을의 오염수");
+            render();
+          }
+        }];
+      }
+
+      if (sceneId === 6) {
+        return [{ label: "다음", action: () => this.gotoScene(7) }];
+      }
+
+      if (sceneId === 7) {
+        return [{ label: "다음", action: () => this.gotoScene(8) }];
+      }
+
+      if (sceneId === 8) {
+        return [{
+          label: "다음",
+          action: () => this.gotoScene(stage >= 5 ? 9 : 10)
+        }];
+      }
+
+      if (sceneId === 9) {
+        return [{ label: "최종 대면으로", action: () => this.gotoScene(10) }];
+      }
+
+      if (sceneId === 10) {
+        return [{
+          label: "마도왕 최종전 준비",
+          action: () => {
+            queueEncounter("endTowerMageKing");
+            log("인카운터 준비: 세상 끝의 마도왕");
+            render();
+          }
+        }];
+      }
+
+      if (sceneId === 11) {
+        return [{ label: "루프 재시작", action: () => combatSystem.resetCampaign() }];
+      }
+
+      return [{ label: "다음", action: () => this.gotoScene(sceneId + 1) }];
+    },
+    gotoScene(sceneId) {
+      gameState.story.sceneId = sceneId;
+      this.renderScene();
+      render();
+    },
+    onEncounterWin(encounterId) {
+      if (encounterId === "shadowKing") {
+        this.gotoScene(4);
+        return;
+      }
+      if (encounterId === "corruptedVillage") {
+        this.gotoScene(6);
+        return;
+      }
+      if (encounterId === "endTowerMageKing") {
+        gameState.story.sceneId = 11;
+        dom.sceneTitle.textContent = "결말 — 부서진 구원";
+        dom.sceneBody.innerHTML = [
+          "마도왕은 쓰러졌지만, 루프는 멈추지 않는다.",
+          "완전한 구원은 없다. 다음 반복이 시작될 뿐이다."
+        ].map((line) => `<p class=\"scene-line\">${line}</p>`).join("");
+        dom.sceneChoices.innerHTML = "";
+        const btn = document.createElement("button");
+        btn.className = "scene-btn";
+        btn.textContent = "루프 재시작";
+        btn.addEventListener("click", () => combatSystem.resetCampaign());
+        dom.sceneChoices.appendChild(btn);
+      }
+    },
+    showPhaseFlashback() {
+      if (gameState.story.stage < 2) {
+        return;
+      }
+      const lines = this.getLinePack(4, gameState.story.stage).lines;
+      dom.phaseGuide.innerHTML = lines.map((line) => `<p>${line}</p>`).join("");
+      dom.phaseGuide.classList.remove("hidden");
+    }
+  };
 
   const heartSystem = {
     usedHearts(slots) {
@@ -295,8 +612,7 @@
     canEquip(slotIndex, spellId) {
       const nextSlots = [...player.spellSlots];
       nextSlots[slotIndex] = spellId;
-      const used = this.usedHearts(nextSlots);
-      return used <= player.maxHearts;
+      return this.usedHearts(nextSlots) <= player.maxHearts;
     }
   };
 
@@ -308,16 +624,6 @@
       Object.keys(player.cooldowns).forEach((id) => {
         player.cooldowns[id] = Math.max(0, player.cooldowns[id] - 1);
       });
-    },
-    pickAutoCastSpell() {
-      const equipped = this.getEquipped().filter(Boolean);
-      for (const spell of equipped) {
-        if (!this.isAvailable(spell)) {
-          continue;
-        }
-        return spell;
-      }
-      return null;
     },
     isAvailable(spell) {
       if (player.mp < spell.manaCost) {
@@ -331,6 +637,15 @@
       }
       return true;
     },
+    pickAutoCastSpell() {
+      const equipped = this.getEquipped().filter(Boolean);
+      for (const spell of equipped) {
+        if (this.isAvailable(spell)) {
+          return spell;
+        }
+      }
+      return null;
+    },
     beginCastOrResolve(spell) {
       if (spell.castTime > 0) {
         gameState.playerCast = {
@@ -343,17 +658,6 @@
       }
       this.resolveSpell(spell);
     },
-    resolveSpell(spell) {
-      player.mp = Math.max(0, player.mp - spell.manaCost);
-      player.cooldowns[spell.id] = spell.cooldown;
-      spell.effect({
-        dealBossDamage,
-        dealPlayerDamage,
-        addPlayerStatus,
-        addBossStatus,
-        log
-      });
-    },
     tickCast() {
       if (!gameState.playerCast) {
         return;
@@ -365,130 +669,48 @@
       const spell = spells[gameState.playerCast.spellId];
       gameState.playerCast = null;
       this.resolveSpell(spell);
+    },
+    resolveSpell(spell) {
+      player.mp = Math.max(0, player.mp - spell.manaCost);
+      player.cooldowns[spell.id] = spell.cooldown;
+      spell.effect({
+        dealBossDamage,
+        addPlayerStatus,
+        addBossStatus,
+        log
+      });
     }
   };
 
   const bossAI = {
     performAction() {
-      const cooldownGate = this.phaseAttackRate();
+      if (boss.hp <= 0) {
+        return;
+      }
       boss.attackCooldown -= 1;
       if (boss.attackCooldown > 0) {
         return;
       }
-      boss.attackCooldown = cooldownGate;
-
-      const baseDmg = this.phaseDamage();
-      const crit = Math.random() < 0.15;
-      const dealt = crit ? Math.floor(baseDmg * 1.5) : baseDmg;
-      if (crit) {
-        log(`보스의 치명타! ${dealt} 피해.`);
-      } else {
-        log(`보스 공격: ${dealt} 피해.`);
-      }
-      dealPlayerDamage(dealt, "보스 공격", true);
-    },
-    phaseDamage() {
-      if (boss.phase === 1) {
-        return 90;
-      }
-      if (boss.phase === 2) {
-        return 125;
-      }
-      return 170;
-    },
-    phaseAttackRate() {
+      const stat = boss.statsByPhase[boss.phase] || boss.statsByPhase[1];
       const slow = boss.statuses.slow ? boss.statuses.slow.value : 0;
-      const base = boss.phase === 3 ? 1 : 2;
-      return Math.max(1, base + slow);
-    }
-  };
+      boss.attackCooldown = Math.max(1, stat.attackRate + slow);
 
-  const combatSystem = {
-    timerId: null,
-    start() {
-      if (gameState.mode !== "prep") {
-        return;
+      const crit = Math.random() < 0.15;
+      const dealt = crit ? Math.floor(stat.damage * 1.5) : stat.damage;
+      if (crit) {
+        log(`${boss.name}의 치명타! ${dealt} 피해.`);
+      } else {
+        log(`${boss.name} 공격: ${dealt} 피해.`);
       }
-      if (!player.spellSlots.some(Boolean)) {
-        log("전투 시작 전 주문을 1개 이상 장착하세요.");
-        return;
-      }
-      dom.phaseModal.classList.add("hidden");
-      dom.phaseGuide.classList.add("hidden");
-      dom.modalLoadout.classList.add("hidden");
-      gameState.mode = "running";
-      dom.phasePill.textContent = "페이즈 1";
-      log("전투를 시작합니다.");
-      this.timerId = setInterval(() => this.tick(), TICK_MS);
-    },
-    reset() {
-      if (this.timerId) {
-        clearInterval(this.timerId);
-      }
-      this.timerId = null;
-
-      gameState.mode = "prep";
-      gameState.tick = 0;
-      gameState.pendingPhase = null;
-      if (gameState.choiceTimeoutId) {
-        clearTimeout(gameState.choiceTimeoutId);
-        gameState.choiceTimeoutId = null;
-      }
-      gameState.phaseChoices = [];
-      gameState.phaseThresholdsHit.phase2 = false;
-      gameState.phaseThresholdsHit.phase3 = false;
-      gameState.playerCast = null;
-
-      player.hp = player.maxHp = 1000;
-      player.mp = player.maxMp = 240;
-      player.manaRegen = 14;
-      player.maxHearts = 3;
-      player.cooldowns = {};
-      player.statuses = {};
-      player.flags.aerisUsed = false;
-      player.spellSlots = [null, null, null, null];
-
-      boss.hp = boss.maxHp = 5000;
-      boss.phase = 1;
-      boss.attackCooldown = 0;
-      boss.statuses = {};
-
-      dom.phaseModal.classList.add("hidden");
-      dom.phaseGuide.classList.add("hidden");
-      dom.modalLoadout.classList.add("hidden");
-      log("전투 상태를 초기화했습니다.");
-      renderLoadoutSelectors();
-      renderSpellSlots();
-      render();
-    },
-    tick() {
-      if (gameState.mode !== "running") {
-        return;
-      }
-
-      gameState.tick += 1;
-      spellSystem.reduceCooldowns();
-      processStatuses();
-
-      spellSystem.tickCast();
-      if (!gameState.playerCast) {
-        const spell = spellSystem.pickAutoCastSpell();
-        if (spell) {
-          spellSystem.beginCastOrResolve(spell);
-        }
-      }
-
-      bossAI.performAction();
-      player.mp = Math.min(player.maxMp, player.mp + player.manaRegen);
-
-      phaseStateMachine.maybeTrigger();
-      checkEndConditions();
-      render();
+      dealPlayerDamage(dealt, boss.name, true);
     }
   };
 
   const phaseStateMachine = {
     maybeTrigger() {
+      if (!boss.phaseEnabled) {
+        return;
+      }
       if (boss.hp <= boss.maxHp * 0.7 && !gameState.phaseThresholdsHit.phase2) {
         gameState.phaseThresholdsHit.phase2 = true;
         this.pauseForChoice(2);
@@ -503,25 +725,26 @@
       gameState.mode = "choice";
       gameState.pendingPhase = nextPhase;
       gameState.phaseChoices = pickRandomBuffs(3);
+
       dom.phaseTitle.textContent = "페이즈 전환";
-      dom.phaseDesc.textContent = "강화 1개를 선택하고, 필요하면 주문 슬롯도 변경하세요.";
-      dom.phaseGuide.classList.add("hidden");
+      dom.phaseDesc.textContent = "강화 1개를 선택하고, 필요하면 주문 슬롯을 변경하세요.";
+      sceneSystem.showPhaseFlashback();
       dom.modalLoadout.classList.remove("hidden");
       renderModalLoadoutSelectors();
-      renderPhaseChoices(gameState.phaseChoices, (buffId) => phaseStateMachine.applyChoice(buffId));
+      renderPhaseChoices(gameState.phaseChoices, (buffId) => this.applyChoice(buffId));
       dom.phaseModal.classList.remove("hidden");
       dom.phasePill.textContent = `페이즈 ${nextPhase - 1} -> 선택`;
-      log(`보스가 페이즈 ${nextPhase}(으)로 전환합니다. 강화 1개를 선택하세요.`);
+
       if (gameState.choiceTimeoutId) {
         clearTimeout(gameState.choiceTimeoutId);
       }
       gameState.choiceTimeoutId = setTimeout(() => {
         if (gameState.mode === "choice" && gameState.phaseChoices.length > 0) {
-          phaseStateMachine.applyChoice(gameState.phaseChoices[0].id, true);
+          this.applyChoice(gameState.phaseChoices[0].id, true);
         }
       }, 15000);
     },
-    applyChoice(buffId, isAuto = false) {
+    applyChoice(buffId, auto = false) {
       const chosen = buffs.find((buff) => buff.id === buffId);
       if (!chosen || gameState.mode !== "choice") {
         return;
@@ -531,21 +754,163 @@
         clearTimeout(gameState.choiceTimeoutId);
         gameState.choiceTimeoutId = null;
       }
-      if (isAuto) {
-        log("선택 시간이 초과되어 첫 번째 강화가 자동 적용되었습니다.");
+      if (auto) {
+        log("시간 초과: 첫 번째 강화가 자동 적용되었습니다.");
       }
-      if (heartSystem.usedHearts(player.spellSlots) > player.maxHearts) {
-        log("현재 로드아웃이 하트 제한을 초과합니다. 주문을 해제하세요.");
-      }
+
       boss.phase = gameState.pendingPhase;
-      dom.phasePill.textContent = `페이즈 ${boss.phase}`;
       gameState.pendingPhase = null;
       gameState.mode = "running";
       dom.phaseModal.classList.add("hidden");
       dom.modalLoadout.classList.add("hidden");
+      dom.phaseGuide.classList.add("hidden");
+      dom.phasePill.textContent = `페이즈 ${boss.phase}`;
       render();
     }
   };
+
+  const combatSystem = {
+    timerId: null,
+    start() {
+      if (gameState.mode !== "prep") {
+        return;
+      }
+      if (!gameState.story.pendingEncounterId) {
+        log("현재 준비된 전투가 없습니다. 씬 선택지를 진행하세요.");
+        return;
+      }
+      if (!player.spellSlots.some(Boolean)) {
+        log("전투 시작 전 주문을 1개 이상 장착하세요.");
+        return;
+      }
+
+      if (!gameState.story.stageLocked) {
+        gameState.story.stage = Number(dom.memoryStageSelect.value || 1);
+        gameState.story.stageLocked = true;
+        dom.memoryStageSelect.disabled = true;
+        sceneSystem.renderScene();
+      }
+
+      this.spawnEncounter(gameState.story.pendingEncounterId);
+      gameState.mode = "running";
+      dom.phasePill.textContent = "페이즈 1";
+      log(`전투 시작: ${boss.name}`);
+
+      if (this.timerId) {
+        clearInterval(this.timerId);
+      }
+      this.timerId = setInterval(() => this.tick(), TICK_MS);
+      render();
+    },
+    spawnEncounter(encounterId) {
+      const data = encounters[encounterId];
+      boss.id = data.id;
+      boss.name = data.name;
+      boss.maxHp = data.maxHp;
+      boss.hp = data.maxHp;
+      boss.phase = 1;
+      boss.phaseEnabled = data.phaseEnabled;
+      boss.statuses = {};
+      boss.attackCooldown = 0;
+      boss.statsByPhase = structuredClone(data.statsByPhase);
+
+      gameState.phaseThresholdsHit.phase2 = false;
+      gameState.phaseThresholdsHit.phase3 = false;
+      gameState.playerCast = null;
+    },
+    tick() {
+      if (gameState.mode !== "running") {
+        return;
+      }
+
+      gameState.tick += 1;
+      spellSystem.reduceCooldowns();
+      processStatuses();
+      spellSystem.tickCast();
+
+      if (!gameState.playerCast) {
+        const spell = spellSystem.pickAutoCastSpell();
+        if (spell) {
+          spellSystem.beginCastOrResolve(spell);
+        }
+      }
+
+      bossAI.performAction();
+      player.mp = Math.min(player.maxMp, player.mp + player.manaRegen);
+      phaseStateMachine.maybeTrigger();
+      checkEndConditions();
+      render();
+    },
+    onVictory() {
+      const encounterId = gameState.story.pendingEncounterId;
+      gameState.story.pendingEncounterId = null;
+      gameState.mode = "prep";
+      stopTimer();
+      dom.phasePill.textContent = "준비";
+      log(`${boss.name} 격파.`);
+      sceneSystem.onEncounterWin(encounterId);
+      render();
+    },
+    onDefeat() {
+      gameState.mode = "prep";
+      stopTimer();
+      dom.phasePill.textContent = "패배";
+      log("패배. 같은 인카운터에 재도전할 수 있습니다.");
+      player.hp = player.maxHp;
+      player.mp = player.maxMp;
+      player.cooldowns = {};
+      player.statuses = {};
+      player.flags.aerisUsed = false;
+      render();
+    },
+    resetCampaign() {
+      stopTimer();
+      gameState.mode = "prep";
+      gameState.tick = 0;
+      gameState.pendingPhase = null;
+      gameState.phaseChoices = [];
+      gameState.story.stage = Number(dom.memoryStageSelect.value || 1);
+      gameState.story.sceneId = 1;
+      gameState.story.path = null;
+      gameState.story.pendingEncounterId = null;
+      gameState.story.stageLocked = false;
+      dom.memoryStageSelect.disabled = false;
+
+      player.hp = player.maxHp = 1000;
+      player.mp = player.maxMp = 240;
+      player.manaRegen = 14;
+      player.maxHearts = 3;
+      player.cooldowns = {};
+      player.statuses = {};
+      player.flags.aerisUsed = false;
+      player.spellSlots = [null, null, null, null];
+
+      boss.id = null;
+      boss.name = "적 없음";
+      boss.hp = 0;
+      boss.maxHp = 0;
+      boss.phase = 1;
+      boss.phaseEnabled = false;
+      boss.statuses = {};
+      boss.attackCooldown = 0;
+
+      dom.phaseModal.classList.add("hidden");
+      dom.modalLoadout.classList.add("hidden");
+      dom.phaseGuide.classList.add("hidden");
+
+      renderLoadoutSelectors();
+      sceneSystem.renderScene();
+      renderSpellSlots();
+      render();
+      log("캠페인을 초기화했습니다.");
+    }
+  };
+
+  function queueEncounter(encounterId) {
+    gameState.story.pendingEncounterId = encounterId;
+    gameState.mode = "prep";
+    render();
+  }
 
   function processStatuses() {
     if (boss.statuses.poison) {
@@ -574,8 +939,8 @@
 
     if (boss.statuses.abyssalGarden) {
       const field = boss.statuses.abyssalGarden;
-      const gardenDamage = Math.floor(boss.maxHp * 0.03);
-      dealBossDamage(gardenDamage, "심연의 정원");
+      const damage = Math.floor(boss.maxHp * 0.03);
+      dealBossDamage(damage, "심연의 정원");
       addBossStatus("poison", { stacks: field.poison, remaining: 2 });
       addBossStatus("burnFlat", { dps: field.fire * 10, remaining: 2 });
       addBossStatus("slow", { value: field.slow, remaining: 2 });
@@ -607,13 +972,16 @@
   }
 
   function dealBossDamage(baseAmount, source) {
+    if (boss.hp <= 0) {
+      return;
+    }
     let amount = baseAmount;
     if (player.statuses.spellAmp) {
       amount = Math.floor(amount * (1 + player.statuses.spellAmp.value));
     }
     boss.hp = Math.max(0, boss.hp - amount);
-    if (source && source !== "Poison" && source !== "Burn") {
-      log(`${source} deals ${amount} damage.`);
+    if (source && !["중독", "화상"].includes(source)) {
+      log(`${source}: ${amount} 피해.`);
     }
   }
 
@@ -637,11 +1005,7 @@
 
   function addPlayerStatus(id, payload) {
     const existing = player.statuses[id];
-    if (!existing) {
-      player.statuses[id] = { ...payload };
-      return;
-    }
-    player.statuses[id] = mergeStatus(existing, payload);
+    player.statuses[id] = existing ? mergeStatus(existing, payload) : { ...payload };
   }
 
   function addBossStatus(id, payload) {
@@ -649,23 +1013,19 @@
       return;
     }
     const existing = boss.statuses[id];
-    if (!existing) {
-      boss.statuses[id] = { ...payload };
-      return;
-    }
-    boss.statuses[id] = mergeStatus(existing, payload);
+    boss.statuses[id] = existing ? mergeStatus(existing, payload) : { ...payload };
   }
 
   function mergeStatus(existing, incoming) {
-    const merged = { ...existing };
+    const out = { ...existing };
     Object.keys(incoming).forEach((key) => {
       if (typeof incoming[key] === "number" && typeof existing[key] === "number") {
-        merged[key] = Math.max(existing[key], incoming[key]);
+        out[key] = Math.max(existing[key], incoming[key]);
       } else {
-        merged[key] = incoming[key];
+        out[key] = incoming[key];
       }
     });
-    return merged;
+    return out;
   }
 
   function pickRandomBuffs(count) {
@@ -679,18 +1039,12 @@
   }
 
   function checkEndConditions() {
-    if (boss.hp <= 0 && gameState.mode !== "victory") {
-      gameState.mode = "victory";
-      dom.phasePill.textContent = "승리";
-      log("보스를 쓰러뜨렸습니다. 승리!");
-      stopTimer();
+    if (boss.hp <= 0 && gameState.mode === "running") {
+      combatSystem.onVictory();
       return;
     }
-    if (player.hp <= 0 && gameState.mode !== "defeat") {
-      gameState.mode = "defeat";
-      dom.phasePill.textContent = "패배";
-      log("플레이어가 쓰러졌습니다.");
-      stopTimer();
+    if (player.hp <= 0 && gameState.mode === "running") {
+      combatSystem.onDefeat();
     }
   }
 
@@ -704,17 +1058,13 @@
   function spellOptionsHTML() {
     return Object.values(spells)
       .sort((a, b) => a.circle - b.circle || a.name.localeCompare(b.name))
-      .map((spell) => {
-        const label = `${spell.name} | ${spell.circle}서클 | 하트 ${spell.heartCost} | 마나 ${spell.manaCost}`;
-        return `<option value="${spell.id}">${label}</option>`;
-      })
+      .map((spell) => `<option value="${spell.id}">${spell.name} | ${spell.circle}서클 | 하트 ${spell.heartCost} | 마나 ${spell.manaCost}</option>`)
       .join("");
   }
 
   function applySlotChange(slotIndex, selected, previous, selectEl) {
     if (!selected) {
       player.spellSlots[slotIndex] = null;
-      renderSpellSlots();
       render();
       return true;
     }
@@ -724,38 +1074,35 @@
         selectEl.value = previous || "";
       }
       log("장착 실패: 마나 하트 한도를 초과했습니다.");
-      render();
       return false;
     }
 
     player.spellSlots[slotIndex] = selected;
-    renderSpellSlots();
     render();
     return true;
   }
 
   function renderLoadoutSelectors() {
     const options = spellOptionsHTML();
-
     dom.loadoutSelects.innerHTML = "";
     for (let i = 0; i < 4; i += 1) {
-      const slot = document.createElement("div");
-      slot.className = "select-card";
-      slot.innerHTML = `
+      const card = document.createElement("div");
+      card.className = "select-card";
+      card.innerHTML = `
         <label for="slot-select-${i}">슬롯 ${i + 1}</label>
         <select id="slot-select-${i}">
           <option value="">비어 있음</option>
           ${options}
         </select>
       `;
-      const select = slot.querySelector("select");
+      const select = card.querySelector("select");
       select.value = player.spellSlots[i] || "";
       select.addEventListener("change", (event) => {
         const selected = event.target.value || null;
         const previous = player.spellSlots[i];
         applySlotChange(i, selected, previous, event.target);
       });
-      dom.loadoutSelects.appendChild(slot);
+      dom.loadoutSelects.appendChild(card);
     }
   }
 
@@ -763,16 +1110,16 @@
     const options = spellOptionsHTML();
     dom.modalLoadout.innerHTML = "";
     for (let i = 0; i < 4; i += 1) {
-      const slot = document.createElement("div");
-      slot.className = "modal-slot";
-      slot.innerHTML = `
-        <label for="modal-slot-select-${i}">전환 로드아웃 슬롯 ${i + 1}</label>
+      const card = document.createElement("div");
+      card.className = "modal-slot";
+      card.innerHTML = `
+        <label for="modal-slot-select-${i}">전환 슬롯 ${i + 1}</label>
         <select id="modal-slot-select-${i}">
           <option value="">비어 있음</option>
           ${options}
         </select>
       `;
-      const select = slot.querySelector("select");
+      const select = card.querySelector("select");
       select.value = player.spellSlots[i] || "";
       select.addEventListener("change", (event) => {
         const selected = event.target.value || null;
@@ -782,7 +1129,7 @@
           renderLoadoutSelectors();
         }
       });
-      dom.modalLoadout.appendChild(slot);
+      dom.modalLoadout.appendChild(card);
     }
   }
 
@@ -792,7 +1139,6 @@
       const spellId = player.spellSlots[i];
       const card = document.createElement("div");
       card.className = "spell-slot";
-
       if (!spellId) {
         card.innerHTML = `<div class="spell-name">슬롯 ${i + 1}: 비어 있음</div>`;
         dom.spellSlots.appendChild(card);
@@ -820,29 +1166,25 @@
   }
 
   function spellSpecialNote(spell) {
-      if (spell.id === "aerisAzureSeal") {
+    if (spell.id === "aerisAzureSeal") {
       return "시전 5초, 전투당 1회, 시전 중 피격 시 중단";
-      }
-      if (spell.id === "cerysAbyssalGarden") {
+    }
+    if (spell.id === "cerysAbyssalGarden") {
       return "시전 4초, 장판 15초 유지, 종료 시 MP 0";
-      }
-      if (spell.id === "flamesPurgatorium") {
+    }
+    if (spell.id === "flamesPurgatorium") {
       return "시전 3초, 시간 경과형 가중 화상, 해제 불가";
-      }
-      if (spell.castTime > 0) {
+    }
+    if (spell.castTime > 0) {
       return `시전 시간: ${spell.castTime}초`;
-      }
+    }
     return "즉시 시전";
   }
 
   function renderCompendium() {
-    const colorNameMap = {
-      blue: "청",
-      red: "적",
-      green: "녹"
-    };
-    const sorted = Object.values(spells).sort((a, b) => a.circle - b.circle || a.name.localeCompare(b.name));
-    dom.spellCompendium.innerHTML = sorted
+    const colorNameMap = { blue: "청", red: "적", green: "녹" };
+    const list = Object.values(spells).sort((a, b) => a.circle - b.circle || a.name.localeCompare(b.name));
+    dom.spellCompendium.innerHTML = list
       .map((spell) => `
         <article class="compendium-card ${spell.color}">
           <div class="compendium-head">
@@ -873,16 +1215,7 @@
     });
   }
 
-  function renderStatuses() {
-    dom.playerStatuses.innerHTML = formatStatuses(player.statuses);
-    dom.bossStatuses.innerHTML = formatStatuses(boss.statuses);
-  }
-
   function formatStatuses(statusObj) {
-    const keys = Object.keys(statusObj);
-    if (keys.length === 0) {
-      return '<span class="status-pill">없음</span>';
-    }
     const statusNameMap = {
       ward: "보호막",
       spellAmp: "주문 증폭",
@@ -892,7 +1225,7 @@
       abyssalGarden: "심연의 정원",
       slow: "둔화"
     };
-    const statusFieldNameMap = {
+    const fieldNameMap = {
       remaining: "남은시간",
       reduction: "피해감소",
       value: "값",
@@ -903,21 +1236,45 @@
       fire: "화염",
       slow: "둔화"
     };
+
+    const keys = Object.keys(statusObj);
+    if (keys.length === 0) {
+      return '<span class="status-pill">없음</span>';
+    }
     return keys
       .map((key) => {
         const status = statusObj[key];
-        const parts = Object.entries(status)
-          .map(([k, value]) => `${statusFieldNameMap[k] || k}:${value}`)
-          .join(" ");
+        const parts = Object.entries(status).map(([k, v]) => `${fieldNameMap[k] || k}:${v}`).join(" ");
         return `<span class="status-pill">${statusNameMap[key] || key} ${parts}</span>`;
       })
       .join("");
   }
 
+  function renderStatuses() {
+    dom.playerStatuses.innerHTML = formatStatuses(player.statuses);
+    dom.bossStatuses.innerHTML = formatStatuses(boss.statuses);
+  }
+
+  function updateStartButton() {
+    if (gameState.mode === "running") {
+      dom.startBtn.textContent = "전투 진행 중";
+      dom.startBtn.disabled = true;
+      return;
+    }
+    const pending = gameState.story.pendingEncounterId;
+    if (!pending) {
+      dom.startBtn.textContent = "전투 시작";
+      dom.startBtn.disabled = true;
+      return;
+    }
+    dom.startBtn.textContent = `전투 시작: ${encounters[pending].name}`;
+    dom.startBtn.disabled = false;
+  }
+
   function render() {
-    const playerHpPct = (player.hp / player.maxHp) * 100;
-    const playerMpPct = (player.mp / player.maxMp) * 100;
-    const bossHpPct = (boss.hp / boss.maxHp) * 100;
+    const playerHpPct = player.maxHp ? (player.hp / player.maxHp) * 100 : 0;
+    const playerMpPct = player.maxMp ? (player.mp / player.maxMp) * 100 : 0;
+    const bossHpPct = boss.maxHp ? (boss.hp / boss.maxHp) * 100 : 0;
 
     dom.playerHpFill.style.width = `${Math.max(0, playerHpPct)}%`;
     dom.playerMpFill.style.width = `${Math.max(0, playerMpPct)}%`;
@@ -931,15 +1288,16 @@
     dom.heartText.textContent = `마나 하트: ${usedHearts} / ${player.maxHearts}`;
     dom.heartText.style.color = usedHearts > player.maxHearts ? "var(--danger)" : "var(--heart)";
 
-    if (gameState.mode === "prep") {
+    if (gameState.mode === "prep" && !gameState.story.pendingEncounterId) {
       dom.phasePill.textContent = "준비";
     }
 
-    const mainEditable = gameState.mode === "prep";
-    dom.loadoutSelects.querySelectorAll("select").forEach((select) => {
-      select.disabled = !mainEditable;
+    const selectable = gameState.mode === "prep";
+    dom.loadoutSelects.querySelectorAll("select").forEach((el) => {
+      el.disabled = !selectable;
     });
 
+    updateStartButton();
     renderSpellSlots();
     renderStatuses();
   }
@@ -948,7 +1306,6 @@
     const item = document.createElement("li");
     item.textContent = `[t${gameState.tick}] ${message}`;
     dom.combatLog.prepend(item);
-
     while (dom.combatLog.children.length > MAX_LOG) {
       dom.combatLog.removeChild(dom.combatLog.lastChild);
     }
@@ -962,15 +1319,24 @@
 
   function bindEvents() {
     dom.startBtn.addEventListener("click", () => combatSystem.start());
-    dom.resetBtn.addEventListener("click", () => combatSystem.reset());
+    dom.resetBtn.addEventListener("click", () => combatSystem.resetCampaign());
+    dom.memoryStageSelect.addEventListener("change", () => {
+      if (gameState.story.stageLocked) {
+        return;
+      }
+      gameState.story.stage = Number(dom.memoryStageSelect.value || 1);
+      sceneSystem.renderScene();
+      render();
+    });
   }
 
   function init() {
     renderLoadoutSelectors();
     renderCompendium();
     bindEvents();
+    sceneSystem.renderScene();
     render();
-    log("프로토타입 준비 완료. 로드아웃을 구성하고 전투를 시작하세요.");
+    log("프로토타입 준비 완료. 씬을 진행해 전투를 준비하세요.");
   }
 
   init();
