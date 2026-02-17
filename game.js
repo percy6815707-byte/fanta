@@ -413,7 +413,13 @@
         log("전투 시작 전 주문을 1개 이상 장착하세요.");
         return;
       }
-      phaseStateMachine.showBattleBriefing();
+      dom.phaseModal.classList.add("hidden");
+      dom.phaseGuide.classList.add("hidden");
+      dom.modalLoadout.classList.add("hidden");
+      gameState.mode = "running";
+      dom.phasePill.textContent = "페이즈 1";
+      log("전투를 시작합니다.");
+      this.timerId = setInterval(() => this.tick(), TICK_MS);
     },
     reset() {
       if (this.timerId) {
@@ -482,37 +488,6 @@
   };
 
   const phaseStateMachine = {
-    showBattleBriefing() {
-      gameState.mode = "briefing";
-      dom.phaseTitle.textContent = "전투 브리핑";
-      dom.phaseDesc.textContent = "보스 패턴을 확인하고 시작할 준비를 마치세요.";
-      dom.phaseGuide.innerHTML = `
-        <p>페이즈 1 (100%~71%): 기본 공격 주기 2초</p>
-        <p>페이즈 2 (70%~41%): 공격력이 상승합니다.</p>
-        <p>페이즈 3 (40%~0%): 공격이 매우 빨라지고 강해집니다.</p>
-        <p>페이즈 전환 시마다 강화 1개를 고르고, 주문 슬롯을 다시 조정할 수 있습니다.</p>
-      `;
-      dom.phaseGuide.classList.remove("hidden");
-      dom.modalLoadout.classList.remove("hidden");
-      renderModalLoadoutSelectors();
-      renderPhaseChoices([{
-        id: "beginBattle",
-        name: "전투 개시",
-        description: "현재 로드아웃으로 전투를 시작합니다."
-      }], (choiceId) => {
-        if (choiceId !== "beginBattle") {
-          return;
-        }
-        dom.phaseModal.classList.add("hidden");
-        dom.phaseGuide.classList.add("hidden");
-        dom.modalLoadout.classList.add("hidden");
-        gameState.mode = "running";
-        dom.phasePill.textContent = "페이즈 1";
-        log("전투를 시작합니다.");
-        combatSystem.timerId = setInterval(() => combatSystem.tick(), TICK_MS);
-      });
-      dom.phaseModal.classList.remove("hidden");
-    },
     maybeTrigger() {
       if (boss.hp <= boss.maxHp * 0.7 && !gameState.phaseThresholdsHit.phase2) {
         gameState.phaseThresholdsHit.phase2 = true;
