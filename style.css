@@ -1,1 +1,196 @@
-/* Add styles here */
+:root {
+  --bg-0: #08151f;
+  --bg-1: #12273a;
+  --ink: #eef6ff;
+  --muted: #a6bdd1;
+  --gold: #f9c85d;
+  --gold-strong: #f2a93f;
+  --card: rgba(8, 20, 34, 0.84);
+  --line: rgba(182, 211, 236, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", "Noto Sans KR", sans-serif;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(49, 111, 152, 0.34) 0%, transparent 36%),
+    radial-gradient(circle at 80% 12%, rgba(249, 200, 93, 0.18) 0%, transparent 28%),
+    linear-gradient(160deg, var(--bg-0) 0%, var(--bg-1) 100%);
+  min-height: 100vh;
+}
+
+.app {
+  width: min(760px, 92vw);
+  margin: 0 auto;
+  padding: 56px 0 72px;
+}
+
+.hero {
+  text-align: center;
+  animation: fade-up 0.6s ease;
+}
+
+.eyebrow {
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(28px, 5vw, 44px);
+}
+
+.hero-desc {
+  max-width: 640px;
+  margin: 16px auto 0;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.card {
+  margin-top: 30px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28);
+  animation: fade-up 0.45s ease;
+}
+
+.quiz-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#progress-text {
+  margin: 0;
+  color: var(--muted);
+  min-width: 54px;
+}
+
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-strong));
+  transition: width 0.25s ease;
+}
+
+#question-text {
+  margin: 18px 0 18px;
+  line-height: 1.4;
+  font-size: clamp(20px, 3.5vw, 28px);
+}
+
+.answer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.2s ease;
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-primary {
+  margin-top: 20px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-strong));
+  color: #271500;
+  font-weight: 700;
+}
+
+.answer-btn {
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.answer-btn:hover {
+  filter: brightness(1.12);
+}
+
+.result-flavor {
+  margin: 8px 0 14px;
+  color: var(--gold);
+  font-size: 18px;
+}
+
+.result-desc {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.trait-list {
+  margin: 18px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.trait {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 13px;
+}
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.hidden {
+  display: none;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .app {
+    padding-top: 34px;
+  }
+
+  .card {
+    padding: 18px;
+  }
+
+  .btn {
+    font-size: 15px;
+  }
+}
