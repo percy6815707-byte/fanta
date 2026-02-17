@@ -412,6 +412,49 @@ button {
   margin-bottom: 6px;
 }
 
+.phase-guide {
+  border: 1px dashed rgba(145, 185, 208, 0.35);
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.phase-guide p {
+  margin: 0 0 6px;
+}
+
+.modal-loadout {
+  margin-bottom: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.modal-slot {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.modal-slot label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal-slot select {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(9, 25, 35, 0.85);
+  color: var(--text);
+  padding: 7px;
+}
+
 @media (max-width: 920px) {
   .top-panel {
     grid-template-columns: 1fr;
@@ -424,7 +467,8 @@ button {
   .phase-choices,
   .spell-slots,
   .loadout-selects,
-  .compendium-grid {
+  .compendium-grid,
+  .modal-loadout {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -434,6 +478,7 @@ button {
   .spell-slots,
   .loadout-selects,
   .compendium-grid,
+  .modal-loadout,
   .status-columns {
     grid-template-columns: 1fr;
   }

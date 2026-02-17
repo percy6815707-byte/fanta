@@ -60,7 +60,11 @@
     startBtn: document.getElementById("start-btn"),
     resetBtn: document.getElementById("reset-btn"),
     phaseModal: document.getElementById("phase-modal"),
-    phaseChoices: document.getElementById("phase-choices")
+    phaseChoices: document.getElementById("phase-choices"),
+    phaseTitle: document.getElementById("phase-title"),
+    phaseDesc: document.getElementById("phase-desc"),
+    phaseGuide: document.getElementById("phase-guide"),
+    modalLoadout: document.getElementById("modal-loadout")
   };
 
   const spells = {
@@ -409,10 +413,7 @@
         log("전투 시작 전 주문을 1개 이상 장착하세요.");
         return;
       }
-      gameState.mode = "running";
-      dom.phasePill.textContent = "페이즈 1";
-      log("전투를 시작합니다.");
-      this.timerId = setInterval(() => this.tick(), TICK_MS);
+      phaseStateMachine.showBattleBriefing();
     },
     reset() {
       if (this.timerId) {
@@ -447,6 +448,8 @@
       boss.statuses = {};
 
       dom.phaseModal.classList.add("hidden");
+      dom.phaseGuide.classList.add("hidden");
+      dom.modalLoadout.classList.add("hidden");
       log("전투 상태를 초기화했습니다.");
       renderLoadoutSelectors();
       renderSpellSlots();
@@ -479,6 +482,37 @@
   };
 
   const phaseStateMachine = {
+    showBattleBriefing() {
+      gameState.mode = "briefing";
+      dom.phaseTitle.textContent = "전투 브리핑";
+      dom.phaseDesc.textContent = "보스 패턴을 확인하고 시작할 준비를 마치세요.";
+      dom.phaseGuide.innerHTML = `
+        <p>페이즈 1 (100%~71%): 기본 공격 주기 2초</p>
+        <p>페이즈 2 (70%~41%): 공격력이 상승합니다.</p>
+        <p>페이즈 3 (40%~0%): 공격이 매우 빨라지고 강해집니다.</p>
+        <p>페이즈 전환 시마다 강화 1개를 고르고, 주문 슬롯을 다시 조정할 수 있습니다.</p>
+      `;
+      dom.phaseGuide.classList.remove("hidden");
+      dom.modalLoadout.classList.remove("hidden");
+      renderModalLoadoutSelectors();
+      renderPhaseChoices([{
+        id: "beginBattle",
+        name: "전투 개시",
+        description: "현재 로드아웃으로 전투를 시작합니다."
+      }], (choiceId) => {
+        if (choiceId !== "beginBattle") {
+          return;
+        }
+        dom.phaseModal.classList.add("hidden");
+        dom.phaseGuide.classList.add("hidden");
+        dom.modalLoadout.classList.add("hidden");
+        gameState.mode = "running";
+        dom.phasePill.textContent = "페이즈 1";
+        log("전투를 시작합니다.");
+        combatSystem.timerId = setInterval(() => combatSystem.tick(), TICK_MS);
+      });
+      dom.phaseModal.classList.remove("hidden");
+    },
     maybeTrigger() {
       if (boss.hp <= boss.maxHp * 0.7 && !gameState.phaseThresholdsHit.phase2) {
         gameState.phaseThresholdsHit.phase2 = true;
@@ -494,7 +528,12 @@
       gameState.mode = "choice";
       gameState.pendingPhase = nextPhase;
       gameState.phaseChoices = pickRandomBuffs(3);
-      renderPhaseChoices();
+      dom.phaseTitle.textContent = "페이즈 전환";
+      dom.phaseDesc.textContent = "강화 1개를 선택하고, 필요하면 주문 슬롯도 변경하세요.";
+      dom.phaseGuide.classList.add("hidden");
+      dom.modalLoadout.classList.remove("hidden");
+      renderModalLoadoutSelectors();
+      renderPhaseChoices(gameState.phaseChoices, (buffId) => phaseStateMachine.applyChoice(buffId));
       dom.phaseModal.classList.remove("hidden");
       dom.phasePill.textContent = `페이즈 ${nextPhase - 1} -> 선택`;
       log(`보스가 페이즈 ${nextPhase}(으)로 전환합니다. 강화 1개를 선택하세요.`);
@@ -528,6 +567,7 @@
       gameState.pendingPhase = null;
       gameState.mode = "running";
       dom.phaseModal.classList.add("hidden");
+      dom.modalLoadout.classList.add("hidden");
       render();
     }
   };
@@ -686,14 +726,41 @@
     }
   }
 
-  function renderLoadoutSelectors() {
-    const options = Object.values(spells)
+  function spellOptionsHTML() {
+    return Object.values(spells)
       .sort((a, b) => a.circle - b.circle || a.name.localeCompare(b.name))
       .map((spell) => {
         const label = `${spell.name} | ${spell.circle}서클 | 하트 ${spell.heartCost} | 마나 ${spell.manaCost}`;
         return `<option value="${spell.id}">${label}</option>`;
       })
       .join("");
+  }
+
+  function applySlotChange(slotIndex, selected, previous, selectEl) {
+    if (!selected) {
+      player.spellSlots[slotIndex] = null;
+      renderSpellSlots();
+      render();
+      return true;
+    }
+
+    if (!heartSystem.canEquip(slotIndex, selected)) {
+      if (selectEl) {
+        selectEl.value = previous || "";
+      }
+      log("장착 실패: 마나 하트 한도를 초과했습니다.");
+      render();
+      return false;
+    }
+
+    player.spellSlots[slotIndex] = selected;
+    renderSpellSlots();
+    render();
+    return true;
+  }
+
+  function renderLoadoutSelectors() {
+    const options = spellOptionsHTML();
 
     dom.loadoutSelects.innerHTML = "";
     for (let i = 0; i < 4; i += 1) {
@@ -711,26 +778,36 @@
       select.addEventListener("change", (event) => {
         const selected = event.target.value || null;
         const previous = player.spellSlots[i];
-
-        if (!selected) {
-          player.spellSlots[i] = null;
-          renderSpellSlots();
-          render();
-          return;
-        }
-
-        if (!heartSystem.canEquip(i, selected)) {
-          event.target.value = previous || "";
-          log("장착 실패: 마나 하트 한도를 초과했습니다.");
-          render();
-          return;
-        }
-
-        player.spellSlots[i] = selected;
-        renderSpellSlots();
-        render();
+        applySlotChange(i, selected, previous, event.target);
       });
       dom.loadoutSelects.appendChild(slot);
+    }
+  }
+
+  function renderModalLoadoutSelectors() {
+    const options = spellOptionsHTML();
+    dom.modalLoadout.innerHTML = "";
+    for (let i = 0; i < 4; i += 1) {
+      const slot = document.createElement("div");
+      slot.className = "modal-slot";
+      slot.innerHTML = `
+        <label for="modal-slot-select-${i}">전환 로드아웃 슬롯 ${i + 1}</label>
+        <select id="modal-slot-select-${i}">
+          <option value="">비어 있음</option>
+          ${options}
+        </select>
+      `;
+      const select = slot.querySelector("select");
+      select.value = player.spellSlots[i] || "";
+      select.addEventListener("change", (event) => {
+        const selected = event.target.value || null;
+        const previous = player.spellSlots[i];
+        const changed = applySlotChange(i, selected, previous, event.target);
+        if (changed) {
+          renderLoadoutSelectors();
+        }
+      });
+      dom.modalLoadout.appendChild(slot);
     }
   }
 
@@ -810,13 +887,13 @@
       .join("");
   }
 
-  function renderPhaseChoices() {
+  function renderPhaseChoices(choices, onSelect) {
     dom.phaseChoices.innerHTML = "";
-    gameState.phaseChoices.forEach((choice) => {
+    choices.forEach((choice) => {
       const button = document.createElement("button");
       button.className = "choice-btn";
       button.innerHTML = `<strong>${choice.name}</strong><span>${choice.description}</span>`;
-      button.addEventListener("click", () => phaseStateMachine.applyChoice(choice.id));
+      button.addEventListener("click", () => onSelect(choice.id));
       dom.phaseChoices.appendChild(button);
     });
   }
@@ -882,6 +959,11 @@
     if (gameState.mode === "prep") {
       dom.phasePill.textContent = "준비";
     }
+
+    const mainEditable = gameState.mode === "prep";
+    dom.loadoutSelects.querySelectorAll("select").forEach((select) => {
+      select.disabled = !mainEditable;
+    });
 
     renderSpellSlots();
     renderStatuses();
