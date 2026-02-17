@@ -1,44 +1,101 @@
-<!doctype html>
-<html lang="ko">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>판타지 직업 심리테스트</title>
-  <link href="/style.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Path of the Wandering Mage</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="app">
-    <header class="hero">
-      <p class="eyebrow">FANTASY ROLE TEST</p>
-      <h1>나에게 맞는 판타지 직업은?</h1>
-      <p class="hero-desc">
-        모험에서 당신의 선택은 어떤 방향을 향하나요? 질문에 답하고
-        당신의 기질에 맞는 판타지 직업을 찾아보세요.
-      </p>
-      <button id="start-btn" class="btn btn-primary">테스트 시작</button>
-    </header>
+  <div class="app-shell">
+    <header class="top-panel">
+      <div class="bar-group">
+        <div class="bar-wrap">
+          <div class="bar-label-row">
+            <span>Player HP</span>
+            <span id="player-hp-text">0 / 0</span>
+          </div>
+          <div class="meter hp"><div id="player-hp-fill" class="meter-fill"></div></div>
+        </div>
 
-    <section id="quiz" class="card hidden" aria-live="polite">
-      <div class="quiz-head">
-        <p id="progress-text">1 / 8</p>
-        <div class="progress-track" aria-hidden="true">
-          <div id="progress-bar" class="progress-bar"></div>
+        <div class="bar-wrap">
+          <div class="bar-label-row">
+            <span>Player MP</span>
+            <span id="player-mp-text">0 / 0</span>
+          </div>
+          <div class="meter mp"><div id="player-mp-fill" class="meter-fill"></div></div>
         </div>
       </div>
-      <h2 id="question-text"></h2>
-      <div id="answer-list" class="answer-list"></div>
+
+      <div class="phase-center">
+        <h1>Path of the Wandering Mage</h1>
+        <div id="phase-pill" class="phase-pill">Preparation</div>
+        <div id="heart-text" class="heart-text">Hearts: 0 / 3</div>
+      </div>
+
+      <div class="bar-group">
+        <div class="bar-wrap">
+          <div class="bar-label-row">
+            <span>Boss HP</span>
+            <span id="boss-hp-text">0 / 0</span>
+          </div>
+          <div class="meter boss"><div id="boss-hp-fill" class="meter-fill"></div></div>
+        </div>
+      </div>
+    </header>
+
+    <section class="loadout-panel">
+      <div>
+        <h2>Loadout Builder</h2>
+        <p>Equip up to 4 spells. Total Mana Heart cost must not exceed your max.</p>
+      </div>
+      <div id="loadout-selects" class="loadout-selects"></div>
+      <div class="loadout-actions">
+        <button id="start-btn" class="btn-primary">Start Battle</button>
+        <button id="reset-btn" class="btn-secondary">Reset Battle</button>
+      </div>
     </section>
 
-    <section id="result" class="card hidden" aria-live="polite">
-      <p class="eyebrow">RESULT</p>
-      <h2 id="job-name"></h2>
-      <p id="job-flavor" class="result-flavor"></p>
-      <p id="job-desc" class="result-desc"></p>
-      <div id="trait-list" class="trait-list"></div>
-      <button id="retry-btn" class="btn btn-secondary">다시 테스트하기</button>
+    <section class="codex-panel">
+      <h3>Spell Compendium</h3>
+      <div id="spell-compendium" class="compendium-grid"></div>
     </section>
-  </main>
 
-  <script defer src="/main.js"></script>
+    <main class="battle-panel">
+      <section class="combat-log-panel">
+        <h3>Combat Log</h3>
+        <ul id="combat-log" class="combat-log"></ul>
+      </section>
+
+      <section class="status-panel">
+        <h3>Status Effects</h3>
+        <div class="status-columns">
+          <div>
+            <h4>Player</h4>
+            <div id="player-statuses" class="status-list"></div>
+          </div>
+          <div>
+            <h4>Boss</h4>
+            <div id="boss-statuses" class="status-list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="spell-panel">
+      <h3>Spell Slots</h3>
+      <div id="spell-slots" class="spell-slots"></div>
+    </footer>
+  </div>
+
+  <div id="phase-modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="phase-title">
+    <div class="modal-card">
+      <h2 id="phase-title">Phase Shift</h2>
+      <p>A surge in the boss aura. Choose one boon.</p>
+      <div id="phase-choices" class="phase-choices"></div>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
 </body>
 </html>
