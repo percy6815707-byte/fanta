@@ -34,7 +34,8 @@
 
         <section class="enemy-portrait-area" aria-label="적 초상화">
           <div id="enemy-portrait-frame" class="enemy-portrait-frame">
-            <div class="portrait-placeholder">ENEMY</div>
+            <img id="enemy-portrait-img" class="enemy-portrait-img" src="assets/알렌.png" alt="적색의 알렌 초상화">
+            <div id="enemy-float-layer" class="enemy-float-layer"></div>
           </div>
           <div id="enemy-status-bar" class="enemy-status-bar"></div>
         </section>
@@ -76,6 +77,13 @@
       <p id="rearrange-error" class="rearrange-error"></p>
       <div id="rearrange-slots" class="rearrange-slots"></div>
       <button id="ready-btn" class="btn-primary">준비 완료</button>
+    </div>
+  </section>
+
+  <section id="phase-overlay" class="phase-overlay hidden" aria-live="polite">
+    <div class="phase-overlay-card">
+      <h2 id="phase-overlay-title">페이즈 전환</h2>
+      <p id="phase-overlay-quote"></p>
     </div>
   </section>
 

@@ -129,6 +129,39 @@ body {
   color: rgba(237, 247, 255, 0.8);
 }
 
+.enemy-portrait-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.enemy-float-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.dot-float {
+  position: absolute;
+  left: 50%;
+  top: 24%;
+  transform: translate(-50%, 0);
+  color: #ff7a7a;
+  font-size: 20px;
+  font-weight: 700;
+  text-shadow: 0 0 8px rgba(255, 60, 60, 0.7);
+  animation: dot-float 560ms ease forwards;
+}
+
+@keyframes dot-float {
+  0% { opacity: 0; transform: translate(-50%, 8px) rotate(0deg); }
+  20% { opacity: 1; }
+  60% { transform: translate(calc(-50% + 4px), -8px) rotate(-3deg); }
+  100% { opacity: 0; transform: translate(calc(-50% - 6px), -20px) rotate(2deg); }
+}
+
 .enemy-status-bar {
   margin-top: 8px;
   min-height: 34px;
@@ -396,6 +429,51 @@ button {
   background: rgba(9, 25, 35, 0.9);
   color: var(--text);
   padding: 8px;
+}
+
+.phase-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  background: rgba(2, 6, 12, 0.84);
+}
+
+.phase-overlay.hidden { display: none; }
+
+.phase-overlay-card {
+  text-align: center;
+  width: min(520px, 90vw);
+  border: 1px solid rgba(255, 186, 132, 0.35);
+  border-radius: 14px;
+  padding: 18px;
+  background: rgba(20, 8, 7, 0.74);
+  animation: phase-card-in 500ms ease;
+}
+
+.phase-overlay-card h2 {
+  margin: 0;
+  color: #ffd7a7;
+  font-size: clamp(22px, 5vw, 34px);
+}
+
+.phase-overlay-card p {
+  margin: 10px 0 0;
+  color: #ffd2b8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.enemy-portrait-frame.phase-silhouette .enemy-portrait-img {
+  filter: contrast(1.3) brightness(0.25) saturate(0.4);
+  transform: scale(1.08);
+  transition: transform 450ms ease, filter 450ms ease;
+}
+
+@keyframes phase-card-in {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .enemy-portrait-frame.hit-blue { animation: hit-blue 260ms ease; }
