@@ -1,5 +1,6 @@
 (() => {
   const dom = {
+    appShell: document.querySelector(".app-shell"),
     playerHpFill: document.getElementById("player-hp-fill"),
     playerMpFill: document.getElementById("player-mp-fill"),
     bossHpFill: document.getElementById("boss-hp-fill"),
@@ -19,9 +20,11 @@
     resetBtn: document.getElementById("reset-btn"),
     speedBtn: document.getElementById("speed-btn"),
     enemyPortraitFrame: document.getElementById("enemy-portrait-frame"),
+    enemyPortraitImg: document.getElementById("enemy-portrait-img"),
     enemyStatusBar: document.getElementById("enemy-status-bar"),
-    enemyStatusDetail: document.getElementById("enemy-status-detail"),
     enemyFloatLayer: document.getElementById("enemy-float-layer"),
+    summonStructure: document.getElementById("summon-structure"),
+    summonStructureBody: document.getElementById("summon-structure-body"),
     rearrangePanel: document.getElementById("rearrange-panel"),
     rearrangeTimerText: document.getElementById("rearrange-timer-text"),
     rearrangeHeartText: document.getElementById("rearrange-heart-text"),
@@ -32,7 +35,22 @@
     readyBtn: document.getElementById("ready-btn"),
     phaseOverlay: document.getElementById("phase-overlay"),
     phaseOverlayTitle: document.getElementById("phase-overlay-title"),
-    phaseOverlayQuote: document.getElementById("phase-overlay-quote")
+    phaseOverlayQuote: document.getElementById("phase-overlay-quote"),
+    storyScreen: document.getElementById("story-screen"),
+    storyArtFrame: document.querySelector(".story-art-frame"),
+    storyArtImg: document.getElementById("story-art-img"),
+    storySceneTitle: document.getElementById("story-scene-title"),
+    storySceneBody: document.getElementById("story-scene-body"),
+    storyLog: document.getElementById("story-log"),
+    storyChoices: document.getElementById("story-choices"),
+    storyDock: document.getElementById("story-dock"),
+    storyInfoBtn: document.getElementById("story-info-btn"),
+    storyMenuBtn: document.getElementById("story-menu-btn"),
+    storyInfoPanel: document.getElementById("story-info-panel"),
+    storyHeroInfo: document.getElementById("story-hero-info"),
+    storyInfoClose: document.getElementById("story-info-close"),
+    storyMenuPanel: document.getElementById("story-menu-panel"),
+    storyMenuClose: document.getElementById("story-menu-close")
   };
 
   const spellLibrary = {
@@ -214,8 +232,8 @@
       cooldown: 2.4,
       heartCost: 1,
       damage: [4, 8],
-      heal: [14, 16],
-      description: "즉시 15 회복"
+      heal: [22, 30],
+      description: "즉시 체력 대량 회복"
     },
     venomVine: {
       id: "venomVine",
@@ -240,9 +258,9 @@
       cooldown: 6,
       heartCost: 3,
       damage: [8, 12],
-      heal: [28, 36],
+      heal: [44, 58],
       poisonRes: { duration: 6, reduction: 0.4 },
-      description: "회복 + 중독 저항 상승"
+      description: "강한 회복 + 중독 저항 상승"
     },
     dryadOfGreatForest: {
       id: "dryadOfGreatForest",
@@ -254,8 +272,8 @@
       cooldown: 9,
       heartCost: 4,
       damage: [14, 20],
-      summonDryad: { duration: 9, mpDrain: 8, dps: 8, healPerTick: 8, poisonStacks: 1, stunChance: 0.2 },
-      description: "소환 유지형, 공격/독/회복 동시 제공"
+      summonDryad: { duration: 12, mpDrain: 14, spellSlots: ["venomVine", "lifeSprout"] },
+      description: "고소모 유지형, 드라이어드가 독침 덩굴/생명의 싹 시전"
     },
     cerisFinGarden: {
       id: "cerisFinGarden",
@@ -280,38 +298,119 @@
 
   const spellList = Object.values(spellLibrary);
 
-  const phaseDefs = [
-    {
-      id: 1,
-      name: "적색 진명",
-      title: "페이즈 1: 적색 진명",
-      quote: "불꽃은 거짓말을 하지 않는다. 네가 약할 뿐이다.",
-      maxHp: 640,
-      enemyMaxMp: 180,
-      enemyManaRegen: 14,
-      enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+  const enemyProfiles = {
+    allen: {
+      id: "allen",
+      name: "적색의 알렌",
+      portrait: "assets/적/enemy_allen_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "적색 진명",
+          title: "페이즈 1: 적색 진명",
+          quote: "불꽃은 거짓말을 하지 않는다. 네가 약할 뿐이다.",
+          maxHp: 640,
+          enemyMaxMp: 180,
+          enemyManaRegen: 14,
+          enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+        },
+        {
+          id: 2,
+          name: "홍염의 폭주",
+          title: "페이즈 2: 홍염의 폭주",
+          quote: "이제 시험은 끝이다. 네가 버티는지 보겠다.",
+          maxHp: 760,
+          enemyMaxMp: 220,
+          enemyManaRegen: 16,
+          enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
+        },
+        {
+          id: 3,
+          name: "푸르가토리움의 잔재",
+          title: "페이즈 3: 푸르가토리움의 잔재",
+          quote: "태워라… 전부 태워라… 남는 것은 재 뿐이다…",
+          maxHp: 920,
+          enemyMaxMp: 260,
+          enemyManaRegen: 18,
+          enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+        }
+      ]
     },
-    {
-      id: 2,
-      name: "홍염의 폭주",
-      title: "페이즈 2: 홍염의 폭주",
-      quote: "이제 시험은 끝이다. 네가 버티는지 보겠다.",
-      maxHp: 760,
-      enemyMaxMp: 220,
-      enemyManaRegen: 16,
-      enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
+    dalahans: {
+      id: "dalahans",
+      name: "청색의 달라한스",
+      portrait: "assets/적/enemy_dalahans_v3.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "청맥의 봉쇄",
+          title: "페이즈 1: 청맥의 봉쇄",
+          quote: "네 호흡을 얼려주지. 한 걸음도 더 못 간다.",
+          maxHp: 620,
+          enemyMaxMp: 200,
+          enemyManaRegen: 15,
+          enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+        },
+        {
+          id: 2,
+          name: "빙결 연산",
+          title: "페이즈 2: 빙결 연산",
+          quote: "수식은 완성됐다. 너의 선택지는 없다.",
+          maxHp: 740,
+          enemyMaxMp: 235,
+          enemyManaRegen: 17,
+          enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
+        },
+        {
+          id: 3,
+          name: "절대영도 재귀",
+          title: "페이즈 3: 절대영도 재귀",
+          quote: "무한히 반복되는 냉각 속에서 사라져라.",
+          maxHp: 900,
+          enemyMaxMp: 275,
+          enemyManaRegen: 19,
+          enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+        }
+      ]
     },
-    {
-      id: 3,
-      name: "푸르가토리움의 잔재",
-      title: "페이즈 3: 푸르가토리움의 잔재",
-      quote: "태워라… 전부 태워라… 남는 것은 재 뿐이다…",
-      maxHp: 920,
-      enemyMaxMp: 260,
-      enemyManaRegen: 18,
-      enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+    serion: {
+      id: "serion",
+      name: "녹색의 세리온",
+      portrait: "assets/적/enemy_serion_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "심록의 맹아",
+          title: "페이즈 1: 심록의 맹아",
+          quote: "싹은 약해 보여도 뿌리는 단단하지.",
+          maxHp: 680,
+          enemyMaxMp: 175,
+          enemyManaRegen: 13,
+          enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+        },
+        {
+          id: 2,
+          name: "덩굴의 포위",
+          title: "페이즈 2: 덩굴의 포위",
+          quote: "도망칠 길은 없다. 숲은 이미 널 감쌌다.",
+          maxHp: 810,
+          enemyMaxMp: 215,
+          enemyManaRegen: 16,
+          enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
+        },
+        {
+          id: 3,
+          name: "거목의 심판",
+          title: "페이즈 3: 거목의 심판",
+          quote: "모든 생장은 끝내 회수된다.",
+          maxHp: 960,
+          enemyMaxMp: 250,
+          enemyManaRegen: 18,
+          enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+        }
+      ]
     }
-  ];
+  };
 
   const enemySpellLibrary = {
     flareBurst: { id: "flareBurst", name: "연속 화염탄", heartCost: 1, manaCost: 14, cooldown: 1.2, damage: [8, 13], hits: 2, shieldBreakMul: 2, addPlayerStatus: { id: "burn", stacks: 1, duration: 4, dps: 2 } },
@@ -328,8 +427,134 @@
     selfImmolation: { id: "selfImmolation", name: "자소 연소", heartCost: 5, manaCost: 72, cooldown: 7.2, damage: [36, 48], hits: 1, selfBurnPct: 0.05, addEnemyStatus: { id: "overheat", stacks: 2, duration: 2, critPct: 15 } }
   };
 
+  const LOADOUT_STORAGE_KEY = "fanta_spell_loadout_v1";
+  const FORMULA_BOOK_STORAGE_KEY = "fanta_formula_book_v2";
+  const DEFAULT_PLAYER_SPELL_SLOTS = ["frostShard", "fireball", "venomVine", "skyOfEmbers"];
+  const DEFAULT_PLAYER_FORMULAS = [
+    { id: "formula_1", name: "술식 1", spellIds: ["frostShard", "fireball", "venomVine", "skyOfEmbers"] },
+    { id: "formula_2", name: "술식 2", spellIds: ["freezingVeil", "blastBrand", "natureGrace", "magmaEruption"] },
+    { id: "formula_3", name: "술식 3", spellIds: ["manaSpring", "frostShackle", "lifeSprout", "dryadOfGreatForest"] }
+  ];
+  const PLAYER_MAX_HEARTS = 12;
+
+  function totalHeartCost(slots) {
+    return slots.reduce((sum, id) => {
+      const spell = spellLibrary[id];
+      return sum + (spell ? spell.heartCost : 0);
+    }, 0);
+  }
+
+  function sanitizeSpellSlots(candidate, maxHearts = PLAYER_MAX_HEARTS) {
+    if (!Array.isArray(candidate) || candidate.length !== 4) return null;
+    const normalized = candidate.map((id) => (spellLibrary[id] ? id : null));
+    if (normalized.some((id) => !id)) return null;
+    if (totalHeartCost(normalized) > maxHearts) return null;
+    return normalized;
+  }
+
+  function calcFormulaCircle(spellIds) {
+    return totalHeartCost(spellIds);
+  }
+
+  function sanitizeFormula(formula, maxHearts = PLAYER_MAX_HEARTS) {
+    if (!formula || typeof formula !== "object") return null;
+    const spellIds = sanitizeSpellSlots(formula.spellIds, maxHearts);
+    if (!spellIds) return null;
+    return {
+      id: typeof formula.id === "string" && formula.id.trim() ? formula.id : `formula_${Math.random().toString(36).slice(2, 8)}`,
+      name: typeof formula.name === "string" && formula.name.trim() ? formula.name.trim() : "이름 없는 술식",
+      spellIds,
+      totalCircle: calcFormulaCircle(spellIds)
+    };
+  }
+
+  function makeDefaultFormulaBook(baseSlots = DEFAULT_PLAYER_SPELL_SLOTS) {
+    const first = sanitizeSpellSlots(baseSlots) || [...DEFAULT_PLAYER_SPELL_SLOTS];
+    const defaults = DEFAULT_PLAYER_FORMULAS.map((formula, index) => {
+      const source = index === 0 ? { ...formula, spellIds: first } : formula;
+      return sanitizeFormula(source) || sanitizeFormula(DEFAULT_PLAYER_FORMULAS[index]);
+    }).filter(Boolean);
+    return {
+      schemaVersion: 2,
+      maxFormulaSlots: 3,
+      activeFormulaIndex: 0,
+      formulas: defaults
+    };
+  }
+
+  function sanitizeFormulaBook(candidate, maxHearts = PLAYER_MAX_HEARTS) {
+    if (!candidate || typeof candidate !== "object") return null;
+    if (!Array.isArray(candidate.formulas) || candidate.formulas.length !== 3) return null;
+    const formulas = candidate.formulas
+      .map((formula) => sanitizeFormula(formula, maxHearts))
+      .filter(Boolean);
+    if (formulas.length !== 3) return null;
+    const index = Number.isInteger(candidate.activeFormulaIndex) ? candidate.activeFormulaIndex : 0;
+    const activeFormulaIndex = Math.min(2, Math.max(0, index));
+    return {
+      schemaVersion: 2,
+      maxFormulaSlots: 3,
+      activeFormulaIndex,
+      formulas
+    };
+  }
+
+  function loadStoredSpellSlots() {
+    try {
+      const raw = localStorage.getItem(LOADOUT_STORAGE_KEY);
+      if (!raw) return null;
+      return sanitizeSpellSlots(JSON.parse(raw));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function saveSpellSlots(slots) {
+    try {
+      const valid = sanitizeSpellSlots(slots);
+      if (valid) {
+        localStorage.setItem(LOADOUT_STORAGE_KEY, JSON.stringify(valid));
+      }
+    } catch (error) {
+      // Ignore storage errors silently.
+    }
+  }
+
+  function loadStoredFormulaBook(legacySlots = DEFAULT_PLAYER_SPELL_SLOTS) {
+    try {
+      const raw = localStorage.getItem(FORMULA_BOOK_STORAGE_KEY);
+      if (raw) {
+        const parsed = sanitizeFormulaBook(JSON.parse(raw));
+        if (parsed) return parsed;
+      }
+    } catch (error) {
+      // Ignore invalid formula-book payload.
+    }
+
+    const migrated = makeDefaultFormulaBook(legacySlots);
+    try {
+      localStorage.setItem(FORMULA_BOOK_STORAGE_KEY, JSON.stringify(migrated));
+    } catch (error) {
+      // Ignore storage errors silently.
+    }
+    return migrated;
+  }
+
+  function saveFormulaBook(book) {
+    try {
+      const valid = sanitizeFormulaBook(book);
+      if (!valid) return false;
+      localStorage.setItem(FORMULA_BOOK_STORAGE_KEY, JSON.stringify(valid));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   const state = {
     mode: "prep",
+    worldMode: "story",
+    enemyProfileId: "allen",
     cooldowns: Object.fromEntries(spellList.map((spell) => [spell.id, 0])),
     castGap: 0,
     phaseIndex: 0,
@@ -350,8 +575,152 @@
       phase3BurnTick: 0,
       phase3Ramp: 0,
       meltdownRemaining: 0
+    },
+    story: {
+      sceneIndex: 0,
+      memoryFragments: 0,
+      battleBias: 0,
+      enemyIntel: 0,
+      relics: [],
+      awaitingBattle: false,
+      pendingBattle: null
     }
   };
+
+  const relicPool = [
+    "숲지기의 징표",
+    "붉은 홍옥",
+    "서리 수정핵",
+    "유영하는 기억석",
+    "잔광의 인장"
+  ];
+
+  const act1Scenes = [
+    {
+      id: "s1",
+      title: "① 낯선 길 위에서",
+      body: "정신을 차려보니 이 길 위에 서 있다.",
+      image: "assets/씬/scene_open_frontier_road.png",
+      tone: "neutral",
+      choices: [
+        { label: "기억을 더듬는다", effect: "memory_plus" },
+        { label: "주변의 마력을 감지한다", effect: "gain_random_circle1" },
+        { label: "아무 생각 없이 전진한다", effect: "battle_bias_up" }
+      ]
+    },
+    {
+      id: "s2",
+      title: "② 버려진 마을",
+      body: "불탄 흔적과 마력 잔재가 골목을 채운다.",
+      image: "assets/씬/scene_village_stone_lane.png",
+      tone: "amber",
+      choices: [
+        { label: "집을 수색한다", effect: "battle_farmer" },
+        { label: "광장을 조사한다", effect: "relic_pick" },
+        { label: "그냥 떠난다", effect: "heal_small" }
+      ]
+    },
+    {
+      id: "s3",
+      title: "③ 숲의 속삭임",
+      body: "녹빛 안개가 계약의 문장을 속삭인다.",
+      image: "assets/씬/scene_valley_bridge_path.png",
+      tone: "green",
+      choices: [
+        { label: "계약한다", effect: "gain_green_spell" },
+        { label: "힘으로 제압한다", effect: "battle_dryad_reward" },
+        { label: "무시한다", effect: "mana_recover" }
+      ]
+    },
+    {
+      id: "s4",
+      title: "④ 붉은 하늘",
+      body: "폭발음이 멀리서 울리고 붉은 잔광이 번진다.",
+      image: "assets/씬/scene_crimson_sky_tower.png",
+      tone: "red",
+      choices: [
+        { label: "근원으로 간다", effect: "battle_red_mage" },
+        { label: "멀리서 관찰한다", effect: "enemy_intel" },
+        { label: "다른 길을 택한다", effect: "relic_pick" }
+      ]
+    },
+    {
+      id: "s5",
+      title: "⑤ 폐허의 금서",
+      body: "마탑 서고의 잔해 속에서 금서가 맥동한다.",
+      image: "assets/씬/scene_ruined_gate_trail.png",
+      tone: "amber",
+      choices: [
+        { label: "읽는다", effect: "gain_circle3_with_hp_cost" },
+        { label: "봉인한다", effect: "max_heart_up" },
+        { label: "찢어버린다", effect: "status_res_up" }
+      ]
+    },
+    {
+      id: "s6",
+      title: "⑥ 청색의 달라한스",
+      body: "푸른 마법사 달라한스가 길목에서 술식을 펼친다.",
+      image: "assets/씬/scene_valley_bridge_path.png",
+      tone: "blue",
+      choices: [
+        { label: "전투", effect: "battle_dalahans_blue" },
+        { label: "대화 시도", effect: "intel_and_weaken" },
+        { label: "술식 교환 제안", effect: "random_spell_trade" }
+      ]
+    },
+    {
+      id: "s7",
+      title: "⑦ 오염 지역",
+      body: "마력이 뒤틀린 땅이 호흡처럼 요동친다.",
+      image: "assets/씬/scene_crimson_sky_tower.png",
+      tone: "red",
+      choices: [
+        { label: "깊이 들어간다", effect: "battle_hard_relic" },
+        { label: "가장자리 탐색", effect: "mid_reward" },
+        { label: "돌아간다", effect: "heal_small" }
+      ]
+    },
+    {
+      id: "s8",
+      title: "⑧ 사라진 제자의 흔적",
+      body: "익숙한 마력 파동이 끊긴 시간의 끝에서 스민다.",
+      image: "assets/씬/scene_ruined_gate_trail.png",
+      tone: "blue",
+      choices: [
+        { label: "추적한다", effect: "battle_trace_memory" },
+        { label: "기억을 되살린다", effect: "memory_plus" },
+        { label: "모른 척한다", effect: "no_change" }
+      ]
+    },
+    {
+      id: "s9",
+      title: "⑨ 세상 끝의 마탑",
+      body: "공간이 비틀리고 마탑의 그림자가 갈라진다.",
+      image: "assets/씬/scene_crimson_sky_tower.png",
+      tone: "red",
+      choices: [
+        { label: "정면 돌파", effect: "battle_boss_now" },
+        { label: "술식 정비 후 진입", effect: "heart_up_boss_up" },
+        { label: "다른 루트 탐색", effect: "battle_miniboss_relic" }
+      ]
+    },
+    {
+      id: "s10",
+      title: "⑩ 마도왕과의 대면",
+      body: "“나는 그들을 되살리고 싶었을 뿐이다.”",
+      image: "assets/씬/scene_crimson_sky_tower.png",
+      tone: "red",
+      choices: [
+        { label: "공격한다", effect: "battle_final_now" },
+        { label: "설득한다", effect: "battle_weaken_phase1" },
+        { label: "시간을 멈춘다", effect: "battle_with_shield_100" }
+      ]
+    }
+  ];
+
+  const initialLegacySlots = loadStoredSpellSlots() || [...DEFAULT_PLAYER_SPELL_SLOTS];
+  const initialFormulaBook = loadStoredFormulaBook(initialLegacySlots);
+  const initialActiveFormula = initialFormulaBook.formulas[initialFormulaBook.activeFormulaIndex] || initialFormulaBook.formulas[0];
 
   const player = {
     hp: 700,
@@ -359,20 +728,23 @@
     mp: 420,
     maxMp: 420,
     manaRegen: 24,
-    maxHearts: 12,
+    maxHearts: PLAYER_MAX_HEARTS,
     shield: 0,
-    spellSlots: ["frostShard", "fireball", "venomVine", "skyOfEmbers"],
+    formulaBook: initialFormulaBook,
+    activeFormulaIndex: initialFormulaBook.activeFormulaIndex,
+    activeFormulaId: initialActiveFormula.id,
+    spellSlots: [...initialActiveFormula.spellIds],
     statuses: {}
   };
 
   const enemy = {
-    hp: phaseDefs[0].maxHp,
-    maxHp: phaseDefs[0].maxHp,
-    mp: phaseDefs[0].enemyMaxMp,
-    maxMp: phaseDefs[0].enemyMaxMp,
-    manaRegen: phaseDefs[0].enemyManaRegen,
+    hp: currentEnemyProfile().phaseDefs[0].maxHp,
+    maxHp: currentEnemyProfile().phaseDefs[0].maxHp,
+    mp: currentEnemyProfile().phaseDefs[0].enemyMaxMp,
+    maxMp: currentEnemyProfile().phaseDefs[0].enemyMaxMp,
+    manaRegen: currentEnemyProfile().phaseDefs[0].enemyManaRegen,
     maxHearts: 10,
-    spellSlots: [...phaseDefs[0].enemyLoadout],
+    spellSlots: [...currentEnemyProfile().phaseDefs[0].enemyLoadout],
     cooldowns: Object.fromEntries(Object.keys(enemySpellLibrary).map((id) => [id, 0])),
     statuses: {}
   };
@@ -380,12 +752,371 @@
   const ui = {};
   const systems = {};
 
+  function getActiveFormula() {
+    return player.formulaBook.formulas[player.activeFormulaIndex] || player.formulaBook.formulas[0];
+  }
+
+  function syncPlayerSlotsFromActiveFormula() {
+    const active = getActiveFormula();
+    player.activeFormulaId = active.id;
+    player.spellSlots = [...active.spellIds];
+  }
+
+  function syncActiveFormulaFromPlayerSlots() {
+    const active = getActiveFormula();
+    active.spellIds = [...player.spellSlots];
+    active.totalCircle = calcFormulaCircle(active.spellIds);
+    player.formulaBook.activeFormulaIndex = player.activeFormulaIndex;
+    player.activeFormulaId = active.id;
+  }
+
+  function persistPlayerFormulaState() {
+    syncActiveFormulaFromPlayerSlots();
+    saveFormulaBook(player.formulaBook);
+    // Keep v1 key updated for backward compatibility with spellbook page.
+    saveSpellSlots(player.spellSlots);
+  }
+
+  function setWorldMode(mode) {
+    state.worldMode = mode;
+    document.body.classList.toggle("story-mode", mode === "story");
+    document.body.classList.toggle("battle-mode", mode === "battle");
+  }
+
+  function pushStoryLog(text) {
+    if (!dom.storyLog) return;
+    const li = document.createElement("li");
+    li.textContent = text;
+    dom.storyLog.prepend(li);
+  }
+
+  function randomSpellBy(filterFn) {
+    const pool = spellList.filter(filterFn);
+    if (pool.length === 0) return null;
+    return pool[randomInt(0, pool.length - 1)];
+  }
+
+  function randomRelicName() {
+    return relicPool[randomInt(0, relicPool.length - 1)];
+  }
+
+  function renderStoryHeroInfo() {
+    if (!dom.storyHeroInfo) return;
+    const lines = [
+      `HP: ${Math.floor(player.hp)} / ${player.maxHp}`,
+      `MP: ${Math.floor(player.mp)} / ${player.maxMp}`,
+      `마나하트: ${player.maxHearts}`,
+      `기억의 파편: ${state.story.memoryFragments}`,
+      `적 술식 정보: ${state.story.enemyIntel}`,
+      `획득 유물: ${state.story.relics.length > 0 ? state.story.relics.join(", ") : "없음"}`
+    ];
+    dom.storyHeroInfo.innerHTML = lines.map((line) => `<p>${line}</p>`).join("");
+  }
+
+  function renderStoryChoices(choices, onPick) {
+    dom.storyChoices.innerHTML = "";
+    choices.forEach((choice, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "story-choice-btn";
+      button.textContent = `${index + 1}. ${choice.label}`;
+      button.addEventListener("click", () => onPick(choice));
+      dom.storyChoices.appendChild(button);
+    });
+  }
+
+  function sceneContinueButton() {
+    renderStoryChoices([{ label: "다음 장면으로" }], () => {
+      state.story.sceneIndex += 1;
+      renderStoryScene();
+    });
+  }
+
+  function startStoryBattle(config) {
+    state.story.awaitingBattle = true;
+    state.story.pendingBattle = config;
+    setEnemyProfile(config.enemyProfileId || "allen");
+    setWorldMode("battle");
+    resetBattle();
+
+    if (config.phase1EnemyHpMul) {
+      enemy.maxHp = Math.max(1, Math.floor(enemy.maxHp * config.phase1EnemyHpMul));
+      enemy.hp = enemy.maxHp;
+    }
+    if (config.playerShield) {
+      player.shield += config.playerShield;
+    }
+    if (config.playerHpDelta) {
+      player.hp = Math.min(player.maxHp, Math.max(1, player.hp + config.playerHpDelta));
+    }
+    if (config.playerMpDelta) {
+      player.mp = Math.min(player.maxMp, Math.max(0, player.mp + config.playerMpDelta));
+    }
+
+    pushStoryLog(`전투 발생: ${config.enemyName}`);
+    ui.combatLog.push(`스토리 전투: ${config.enemyName}`, true);
+    startBattle();
+  }
+
+  function offerRelicSelection(onDone) {
+    const options = [randomRelicName(), randomRelicName(), randomRelicName()];
+    renderStoryChoices(options.map((name) => ({ label: `${name} 획득` })), (choice) => {
+      const relicName = choice.label.replace(" 획득", "");
+      state.story.relics.push(relicName);
+      pushStoryLog(`유물 획득: ${relicName}`);
+      onDone();
+    });
+  }
+
+  function applySceneEffect(effectId) {
+    if (effectId === "memory_plus") {
+      state.story.memoryFragments += 1;
+      pushStoryLog("기억의 파편 +1");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "gain_random_circle1") {
+      const spell = randomSpellBy((item) => item.circle === 1);
+      pushStoryLog(`랜덤 1서클 주문 연구: ${spell ? spell.name : "없음"}`);
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_bias_up") {
+      state.story.battleBias += 1;
+      pushStoryLog("전투 노드 확률 증가");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_farmer") {
+      startStoryBattle({ enemyName: "되살아난 농부" });
+      return;
+    }
+    if (effectId === "relic_pick") {
+      offerRelicSelection(sceneContinueButton);
+      return;
+    }
+    if (effectId === "heal_small") {
+      const heal = Math.floor(player.maxHp * 0.12);
+      player.hp = Math.min(player.maxHp, player.hp + heal);
+      pushStoryLog(`휴식으로 HP ${heal} 회복`);
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "gain_green_spell") {
+      const spell = randomSpellBy((item) => item.color === "green");
+      pushStoryLog(`녹색 주문 연구: ${spell ? spell.name : "없음"}`);
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_dryad_reward") {
+      startStoryBattle({
+        enemyName: "드라이어드",
+        enemyProfileId: "serion",
+        onWin: () => {
+          state.story.relics.push("심층 녹림의 인장");
+          pushStoryLog("고급 보상 획득: 심층 녹림의 인장");
+        }
+      });
+      return;
+    }
+    if (effectId === "mana_recover") {
+      const gain = Math.floor(player.maxMp * 0.2);
+      player.mp = Math.min(player.maxMp, player.mp + gain);
+      pushStoryLog(`아무 일 없음. MP ${gain} 회복`);
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_red_mage") {
+      startStoryBattle({ enemyName: "적색 술식 사용자", phase1EnemyHpMul: 1.08 });
+      return;
+    }
+    if (effectId === "enemy_intel") {
+      state.story.enemyIntel += 1;
+      pushStoryLog("적 술식 정보 획득: 다음 전투 대응 +");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "gain_circle3_with_hp_cost") {
+      const spell = randomSpellBy((item) => item.circle === 3);
+      const loss = Math.floor(player.maxHp * 0.14);
+      player.hp = Math.max(1, player.hp - loss);
+      pushStoryLog(`3서클 주문 연구: ${spell ? spell.name : "없음"} / HP ${loss} 감소`);
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "max_heart_up") {
+      player.maxHearts = Math.min(15, player.maxHearts + 1);
+      pushStoryLog(`마나하트 +1 (현재 ${player.maxHearts})`);
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "status_res_up") {
+      pushStoryLog("상태이상 저항 상승");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_dalahans_blue") {
+      startStoryBattle({
+        enemyName: "청색의 달라한스",
+        enemyProfileId: "dalahans",
+        onWin: () => {
+          const spell = randomSpellBy((item) => item.color === "blue");
+          pushStoryLog(`청색 주문 해금: ${spell ? spell.name : "없음"}`);
+        }
+      });
+      return;
+    }
+    if (effectId === "intel_and_weaken") {
+      state.story.enemyIntel += 1;
+      pushStoryLog("정보 획득 + 적 약화 단서 확보");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "random_spell_trade") {
+      const give = randomSpellBy(() => true);
+      const take = randomSpellBy(() => true);
+      pushStoryLog(`술식 교환: ${give ? give.name : "-"} -> ${take ? take.name : "-"}`);
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_hard_relic") {
+      startStoryBattle({
+        enemyName: "오염핵 수호체",
+        enemyProfileId: "serion",
+        phase1EnemyHpMul: 1.15,
+        onWin: () => {
+          const relic = randomRelicName();
+          state.story.relics.push(relic);
+          pushStoryLog(`고급 유물 획득: ${relic}`);
+        }
+      });
+      return;
+    }
+    if (effectId === "mid_reward") {
+      player.mp = Math.min(player.maxMp, player.mp + 60);
+      pushStoryLog("중급 보상 획득: MP +60");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_trace_memory") {
+      startStoryBattle({
+        enemyName: "사라진 제자의 잔영",
+        enemyProfileId: "serion",
+        onWin: () => {
+          if (Math.random() < 0.5) {
+            state.story.memoryFragments += 1;
+            pushStoryLog("기억 단계 상승 성공");
+          } else {
+            pushStoryLog("기억 단계 상승 실패");
+          }
+        }
+      });
+      return;
+    }
+    if (effectId === "no_change") {
+      pushStoryLog("아무 변화 없음");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_boss_now") {
+      startStoryBattle({ enemyName: "세상 끝의 수문장" });
+      return;
+    }
+    if (effectId === "heart_up_boss_up") {
+      player.maxHearts = Math.min(15, player.maxHearts + 1);
+      pushStoryLog("마나하트 +1, 다음 보스가 강화됩니다.");
+      startStoryBattle({ enemyName: "강화된 세상 끝의 수문장", phase1EnemyHpMul: 1.2 });
+      return;
+    }
+    if (effectId === "battle_miniboss_relic") {
+      startStoryBattle({
+        enemyName: "미니보스 - 심연의 파수꾼",
+        onWin: () => {
+          const relic = randomRelicName();
+          state.story.relics.push(relic);
+          pushStoryLog(`유물 획득: ${relic}`);
+        }
+      });
+      return;
+    }
+    if (effectId === "battle_final_now") {
+      startStoryBattle({ enemyName: "마도왕 알렌" });
+      return;
+    }
+    if (effectId === "battle_weaken_phase1") {
+      startStoryBattle({ enemyName: "마도왕 알렌", phase1EnemyHpMul: 0.78 });
+      return;
+    }
+    if (effectId === "battle_with_shield_100") {
+      startStoryBattle({ enemyName: "마도왕 알렌", playerShield: 100 });
+      return;
+    }
+    sceneContinueButton();
+  }
+
+  function renderStoryScene() {
+    renderStoryHeroInfo();
+    const scene = act1Scenes[state.story.sceneIndex];
+    if (!scene) {
+      dom.storySceneTitle.textContent = "ACT 1 종료";
+      dom.storySceneBody.textContent = "첫 루프의 기록이 완료되었습니다. 다음 ACT를 준비 중입니다.";
+      dom.storyChoices.innerHTML = "";
+      dom.storyArtImg.removeAttribute("src");
+      dom.storyArtImg.classList.add("story-art-empty");
+      dom.storyArtFrame.classList.add("empty", "tone-neutral");
+      dom.storyArtFrame.classList.remove("tone-blue", "tone-green", "tone-amber", "tone-red");
+      pushStoryLog("ACT 1 완료");
+      return;
+    }
+    dom.storySceneTitle.textContent = `🜂 ACT 1 - ${scene.title}`;
+    dom.storySceneBody.textContent = `📖 ${scene.body}`;
+    const toneClass = `tone-${scene.tone || "neutral"}`;
+    dom.storyArtFrame.classList.remove("tone-neutral", "tone-blue", "tone-green", "tone-amber", "tone-red");
+    dom.storyArtFrame.classList.add(toneClass);
+    if (scene.image) {
+      dom.storyArtImg.src = scene.image;
+      dom.storyArtImg.classList.remove("story-art-empty");
+      dom.storyArtFrame.classList.remove("empty");
+    } else {
+      dom.storyArtImg.removeAttribute("src");
+      dom.storyArtImg.classList.add("story-art-empty");
+      dom.storyArtFrame.classList.add("empty");
+    }
+    renderStoryChoices(scene.choices, (choice) => {
+      pushStoryLog(`${scene.title} 선택: ${choice.label}`);
+      applySceneEffect(choice.effect);
+      renderStoryHeroInfo();
+    });
+  }
+
+  function resolveStoryBattle(result) {
+    if (!state.story.awaitingBattle || !state.story.pendingBattle) return;
+    const pending = state.story.pendingBattle;
+    state.story.awaitingBattle = false;
+    state.story.pendingBattle = null;
+
+    if (result === "victory") {
+      pushStoryLog(`전투 승리: ${pending.enemyName}`);
+      if (typeof pending.onWin === "function") pending.onWin();
+    } else {
+      pushStoryLog(`전투 패배: ${pending.enemyName}`);
+      if (typeof pending.onLose === "function") pending.onLose();
+      player.hp = Math.floor(player.maxHp * 0.65);
+      player.mp = Math.floor(player.maxMp * 0.45);
+    }
+
+    setWorldMode("story");
+    resetBattle();
+    sceneContinueButton();
+    renderStoryHeroInfo();
+  }
+
   function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
   function currentPhase() {
-    return phaseDefs[state.phaseIndex];
+    return currentEnemyProfile().phaseDefs[state.phaseIndex];
   }
 
   function usedHearts(slots = player.spellSlots) {
@@ -414,6 +1145,10 @@
   function spellLabel(spell) {
     const colorKo = spell.color === "blue" ? "청" : spell.color === "red" ? "적" : "녹";
     return `${spell.name} | ${colorKo} | ${spell.circle}서클 | ${spell.archetype} | MP ${spell.manaCost} | 하트 ${spell.heartCost}`;
+  }
+
+  function spellIconPath(spell) {
+    return `assets/spells/${spell.id}.svg`;
   }
 
   function statusLine(status) {
@@ -490,7 +1225,12 @@
     if (spell.summonDryad) {
       lines.push(`드라이어드 소환 ${spell.summonDryad.duration}초`);
       lines.push(`유지 코스트: MP ${spell.summonDryad.mpDrain}/초`);
-      lines.push(`소환체: 매초 ${spell.summonDryad.dps} 피해, ${spell.summonDryad.healPerTick} 회복`);
+      if (Array.isArray(spell.summonDryad.spellSlots) && spell.summonDryad.spellSlots.length > 0) {
+        const names = spell.summonDryad.spellSlots
+          .map((id) => spellLibrary[id]?.name || id)
+          .join(", ");
+        lines.push(`소환체 장착 마법: ${names}`);
+      }
     }
     if (spell.applyEnemyStatus) {
       lines.push(`부여: ${statusLine(spell.applyEnemyStatus)}`);
@@ -532,6 +1272,7 @@
           ui.combatLog.push("마나 하트 한도를 초과했습니다.", true);
           return;
         }
+        persistPlayerFormulaState();
         updateUI();
         ui.spellBar.render();
       });
@@ -568,11 +1309,13 @@
   // ui/combatLog
   ui.combatLog = (() => {
     const MAX_LINES = 6;
+    const enemyLineMatchers = [/^알렌[:의]/, /^알렌이\b/, /^적\b/];
 
     return {
       push(message, important = false) {
         const item = document.createElement("li");
         item.textContent = message;
+        item.classList.add(enemyLineMatchers.some((pattern) => pattern.test(message)) ? "enemy" : "ally");
         if (important) {
           item.classList.add("important");
         }
@@ -646,24 +1389,31 @@
   // ui/enemyStatusBar
   ui.enemyStatusBar = (() => {
     let openStatusId = null;
+    const nodesById = new Map();
     const info = {
-      burn: { icon: "🔥", name: "화상" },
-      poison: { icon: "☠", name: "중독" },
-      bleed: { icon: "🩸", name: "출혈" },
-      slow: { icon: "🕒", name: "둔화" },
-      stun: { icon: "⚡", name: "마비" },
-      shield: { icon: "🛡", name: "보호막" },
-      weak: { icon: "💥", name: "약점" },
-      mark: { icon: "👁", name: "표식" },
-      overheat: { icon: "⚠", name: "과열" },
-      inferno: { icon: "🔥", name: "연옥 화상" }
+      burn: { icon: "🔥", name: "화상", effect: "지속 피해" },
+      poison: { icon: "☠", name: "중독", effect: "지속 피해" },
+      bleed: { icon: "🩸", name: "출혈", effect: "지속 피해" },
+      slow: { icon: "🕒", name: "둔화", effect: "행동 속도 감소" },
+      stun: { icon: "⚡", name: "마비", effect: "일시 행동 불능" },
+      shield: { icon: "🛡", name: "보호막", effect: "피해 흡수" },
+      weak: { icon: "💥", name: "약점", effect: "받는 피해 증가" },
+      mark: { icon: "👁", name: "표식", effect: "보호막 추가 파괴" },
+      overheat: { icon: "⚠", name: "과열", effect: "치명타율 증가" },
+      inferno: { icon: "🔥", name: "연옥 화상", effect: "매초 피해가 증가하는 화상" }
     };
 
     function tooltipFor(id, status) {
       const base = info[id] || { name: id };
       const lines = [`${base.name} x${status.stacks || 1}`];
+      if (base.effect) {
+        lines.push(`효과: ${base.effect}`);
+      }
       if (typeof status.dps === "number") {
         lines.push(`매초 ${status.dps * (status.stacks || 1)} 피해`);
+      }
+      if (typeof status.growPerTick === "number" && status.growPerTick > 0) {
+        lines.push(`피해 증가: 매초 +${status.growPerTick}`);
       }
       if (typeof status.slowPct === "number") {
         lines.push(`감속 ${status.slowPct}%`);
@@ -683,7 +1433,6 @@
 
     function closeAll() {
       openStatusId = null;
-      dom.enemyStatusDetail.textContent = "상태이상을 탭하면 상세가 표시됩니다.";
     }
 
     document.addEventListener("click", (event) => {
@@ -695,38 +1444,89 @@
     return {
       render(statuses) {
         const entries = Object.entries(statuses).filter(([, value]) => value && value.remaining > 0);
-        dom.enemyStatusBar.innerHTML = "";
+        const liveIds = new Set(entries.map(([id]) => id));
+
+        nodesById.forEach((node, id) => {
+          if (!liveIds.has(id)) {
+            node.remove();
+            nodesById.delete(id);
+            if (openStatusId === id) {
+              openStatusId = null;
+            }
+          }
+        });
+
         if (entries.length === 0) {
-          dom.enemyStatusDetail.textContent = "현재 상태이상 없음.";
+          return;
         }
 
         entries.forEach(([id, value]) => {
           const meta = info[id] || { icon: "?", name: id };
           const detailText = tooltipFor(id, value);
-          const node = document.createElement("button");
-          node.type = "button";
-          node.className = "status-icon";
-          if (openStatusId === id) {
-            node.classList.add("open");
-            dom.enemyStatusDetail.innerHTML = detailText.replace(/\n/g, "<br>");
+          let node = nodesById.get(id);
+          if (!node) {
+            node = document.createElement("button");
+            node.type = "button";
+            node.className = "status-icon";
+            node.innerHTML = `
+              <span class="status-glyph"></span>
+              <span class="status-stack"></span>
+              <span class="status-tooltip"></span>
+            `;
+            node.addEventListener("click", (event) => {
+              event.stopPropagation();
+              const next = openStatusId === id ? null : id;
+              openStatusId = next;
+            });
+            nodesById.set(id, node);
           }
-          node.innerHTML = `
-            <span>${meta.icon}</span>
-            <span class="status-stack">${value.stacks || 1}</span>
-            <span class="status-tooltip">${detailText.replace(/\n/g, "<br>")}</span>
-          `;
-          node.addEventListener("click", (event) => {
-            event.stopPropagation();
-            const next = openStatusId === id ? null : id;
-            openStatusId = next;
-            if (next) {
-              dom.enemyStatusDetail.innerHTML = detailText.replace(/\n/g, "<br>");
-            } else {
-              dom.enemyStatusDetail.textContent = "상태이상을 탭하면 상세가 표시됩니다.";
-            }
-          });
-          dom.enemyStatusBar.appendChild(node);
+
+          node.querySelector(".status-glyph").textContent = meta.icon;
+          node.querySelector(".status-stack").textContent = String(value.stacks || 1);
+          node.querySelector(".status-tooltip").innerHTML = detailText.replace(/\n/g, "<br>");
+          node.classList.toggle("open", openStatusId === id);
+
+          if (!node.isConnected) {
+            dom.enemyStatusBar.appendChild(node);
+          }
         });
+      }
+    };
+  })();
+
+  // ui/spellBar
+  ui.summonStructure = (() => {
+    let opened = false;
+
+    return {
+      render(statuses) {
+        const dryad = statuses.dryad;
+        if (!dryad || dryad.remaining <= 0) {
+          dom.summonStructure.classList.remove("active");
+          dom.summonStructureBody.innerHTML = "";
+          opened = false;
+          return;
+        }
+
+        dom.summonStructure.classList.add("active");
+
+        if (!dom.summonStructureBody.firstElementChild) {
+          dom.summonStructureBody.innerHTML = `
+            <button type="button" class="summon-pill">소환수: 드라이어드</button>
+            <div class="summon-mini"></div>
+          `;
+          const pill = dom.summonStructureBody.querySelector(".summon-pill");
+          pill.addEventListener("click", () => {
+            opened = !opened;
+          });
+        }
+
+        const pill = dom.summonStructureBody.querySelector(".summon-pill");
+        const mini = dom.summonStructureBody.querySelector(".summon-mini");
+        pill.textContent = "소환수: 드라이어드";
+        pill.classList.toggle("open", opened);
+        mini.textContent = `현재 드라이어드가 소환되어 있습니다. (${toFixed1(dryad.remaining)}초)`;
+        mini.classList.toggle("open", opened);
       }
     };
   })();
@@ -766,6 +1566,9 @@
             const card = document.createElement("article");
             card.dataset.slotIndex = String(index);
             card.innerHTML = `
+              <div class="spell-art">
+                <img class="spell-art-img" alt="">
+              </div>
               <div class="spell-name"></div>
               <div class="spell-meta">
                 <span class="meta-inline">
@@ -801,6 +1604,9 @@
           card.className = `spell-slot ${spell.color} ${stateClass(spell)}`;
           if (flashing.has(index)) card.classList.add("casting");
 
+          const art = card.querySelector(".spell-art-img");
+          art.src = spellIconPath(spell);
+          art.alt = `${spell.name} 아이콘`;
           card.querySelector(".spell-name").textContent = spell.name;
           card.querySelector(".color-dot").textContent = colorLabel(spell.color);
           card.querySelector(".archetype-tag").textContent = spell.archetype;
@@ -822,6 +1628,47 @@
 
   // systems/statusSystem
   systems.statusSystem = (() => {
+    function castDryadSpell(status, spellId) {
+      const spell = spellLibrary[spellId];
+      if (!spell) return;
+
+      let damage = randomInt(spell.damage[0], spell.damage[1]);
+      const vulnPct = enemy.statuses.weak ? enemy.statuses.weak.vulnPct || 0 : 0;
+      if (vulnPct > 0) {
+        damage = Math.floor(damage * (1 + vulnPct / 100));
+      }
+      damage = Math.floor(damage * (1 + state.playerDamageBonus));
+
+      enemy.hp = Math.max(0, enemy.hp - damage);
+      if (damage > 0) {
+        ui.damageFloat.show(damage);
+      }
+
+      let line = `드라이어드의 ${spell.name}! ${damage} 피해.`;
+
+      if (spell.heal) {
+        const heal = randomInt(spell.heal[0], spell.heal[1]);
+        player.hp = Math.min(player.maxHp, player.hp + heal);
+        line += ` ${heal} 회복.`;
+      }
+
+      if (spell.applyEnemyStatus?.id === "poison") {
+        const addStacks = spell.applyEnemyStatus.stacks || 1;
+        const currentPoisonStacks = enemy.statuses.poison ? (enemy.statuses.poison.stacks || 0) : 0;
+        systems.statusSystem.applyEnemy({
+          id: "poison",
+          stacks: currentPoisonStacks + addStacks,
+          duration: spell.applyEnemyStatus.duration || 3,
+          dps: spell.applyEnemyStatus.dps || 3
+        });
+        line += ` 중독 +${addStacks}.`;
+      } else if (spell.applyEnemyStatus) {
+        systems.statusSystem.applyEnemy(spell.applyEnemyStatus);
+      }
+
+      ui.combatLog.push(line);
+    }
+
     function normalizeStatus(payload) {
       const next = { ...payload };
       if (typeof next.remaining !== "number" && typeof next.duration === "number") {
@@ -852,6 +1699,8 @@
         healPerTick: nextIncoming.healPerTick ?? current.healPerTick,
         poisonStacks: nextIncoming.poisonStacks ?? current.poisonStacks,
         stunChance: nextIncoming.stunChance ?? current.stunChance,
+        spellSlots: nextIncoming.spellSlots ?? current.spellSlots,
+        dryadCastIndex: nextIncoming.dryadCastIndex ?? current.dryadCastIndex,
         bonus: nextIncoming.bonus ?? current.bonus,
         tick: current.tick || 0
       };
@@ -905,20 +1754,21 @@
           if (id === "dryad") {
             while (status.tick >= 1) {
               status.tick -= 1;
+              if (player.mp < (status.mpDrain || 0)) {
+                delete player.statuses.dryad;
+                ui.combatLog.push("드라이어드가 마나 고갈로 소멸했다.");
+                break;
+              }
               player.mp = Math.max(0, player.mp - (status.mpDrain || 0));
-              const dryadDmg = status.dps || 0;
-              enemy.hp = Math.max(0, enemy.hp - dryadDmg);
-              if (dryadDmg > 0) {
-                ui.damageFloat.show(dryadDmg);
-              }
-              if (status.poisonStacks) {
-                this.applyEnemy({ id: "poison", stacks: status.poisonStacks, duration: 2, dps: 3 });
-              }
-              if (status.stunChance && Math.random() < status.stunChance) {
-                this.applyEnemy({ id: "stun", stacks: 1, duration: 0.8 });
-              }
-              if (status.healPerTick) {
-                player.hp = Math.min(player.maxHp, player.hp + status.healPerTick);
+              const slots = Array.isArray(status.spellSlots) && status.spellSlots.length > 0
+                ? status.spellSlots
+                : ["venomVine", "lifeSprout"];
+              const castIndex = status.dryadCastIndex || 0;
+              const nextSpell = slots[castIndex % slots.length];
+              castDryadSpell(status, nextSpell);
+              status.dryadCastIndex = castIndex + 1;
+              if (status.remaining > 0) {
+                ui.combatLog.push(`드라이어드 유지: MP ${status.mpDrain || 0} 소모.`);
               }
             }
           }
@@ -966,6 +1816,14 @@
       }
     }
 
+    function syncEnemyPortrait() {
+      const profile = currentEnemyProfile();
+      if (dom.enemyPortraitImg && profile.portrait) {
+        dom.enemyPortraitImg.src = profile.portrait;
+        dom.enemyPortraitImg.alt = `${profile.name} 초상화`;
+      }
+    }
+
     function renderRearrange() {
       dom.rearrangeSlots.innerHTML = "";
 
@@ -994,6 +1852,7 @@
             dom.rearrangeError.textContent = "마나 하트 한도를 초과했습니다.";
           } else {
             dom.rearrangeError.textContent = "";
+            persistPlayerFormulaState();
           }
           dom.rearrangeHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
           renderPhaseBuffChoices();
@@ -1078,6 +1937,7 @@
       resetPhase() {
         state.phaseIndex = 0;
         const phase = currentPhase();
+        syncEnemyPortrait();
         enemy.maxHp = phase.maxHp;
         enemy.hp = phase.maxHp;
         enemy.maxMp = phase.enemyMaxMp;
@@ -1095,7 +1955,7 @@
           return false;
         }
 
-        if (state.phaseIndex < phaseDefs.length - 1) {
+        if (state.phaseIndex < currentEnemyProfile().phaseDefs.length - 1) {
           state.phaseIndex += 1;
           const phase = currentPhase();
 
@@ -1133,7 +1993,7 @@
             dom.readyBtn.disabled = true;
             renderRearrange();
             renderPhaseBuffChoices();
-            ui.combatLog.push("마법서 재배치 시간(10초).", true);
+            ui.combatLog.push("술식 재배치 시간(10초).", true);
           }, 1300);
           return true;
         }
@@ -1141,6 +2001,7 @@
         state.mode = "victory";
         systems.combatLoop.setPaused(true);
         ui.combatLog.push("알렌이 붕괴했다. 전투 승리.", true);
+        resolveStoryBattle("victory");
         return true;
       },
       updateRearrange(dt) {
@@ -1163,7 +2024,7 @@
         dom.rearrangePanel.classList.add("hidden");
         state.mode = "running";
         systems.combatLoop.setPaused(false);
-        ui.combatLog.push("마법서 재배치 종료. 전투 재개.", true);
+        ui.combatLog.push("술식 재배치 종료. 전투 재개.", true);
       },
       clearPendingTimeout: clearTimeoutIfAny
     };
@@ -1265,7 +2126,13 @@
     }
 
     if (spell.summonDryad) {
-      systems.statusSystem.applyPlayer({ id: "dryad", duration: spell.summonDryad.duration, stacks: 1, ...spell.summonDryad });
+      systems.statusSystem.applyPlayer({
+        id: "dryad",
+        duration: spell.summonDryad.duration,
+        stacks: 1,
+        dryadCastIndex: 0,
+        ...spell.summonDryad
+      });
     }
 
     if (spell.chanceStun && Math.random() < spell.chanceStun) {
@@ -1390,7 +2257,7 @@
 
     if (state.ai.burstTimer <= 0) {
       state.ai.burstTimer += 4.6 + Math.random() * 1.2;
-      const cast = castEnemySpell("allenTrueName", { logName: "4서클 마법 '적색 진명'", important: true });
+      const cast = castEnemySpell("allenTrueName", { logName: `4서클 마법 '${currentPhase().name}'`, important: true });
       if (!cast.ok) {
         castEnemySpell("brandBreaker");
       }
@@ -1516,6 +2383,7 @@
       state.mode = "defeat";
       systems.combatLoop.setPaused(true);
       ui.combatLog.push("전투 패배.", true);
+      resolveStoryBattle("defeat");
     }
   }
 
@@ -1544,6 +2412,7 @@
       updateUI();
       ui.spellBar.render();
       ui.enemyStatusBar.render(enemy.statuses);
+      ui.summonStructure.render(player.statuses);
       rafId = requestAnimationFrame(frame);
     }
 
@@ -1585,6 +2454,7 @@
     if (state.mode === "victory") dom.phasePill.textContent = "승리";
     if (state.mode === "defeat") dom.phasePill.textContent = "패배";
     if (state.mode === "prep") dom.phasePill.textContent = "준비";
+    if (state.worldMode === "story") dom.phasePill.textContent = "스토리";
   }
 
   function resetBattle() {
@@ -1605,7 +2475,11 @@
     player.mp = player.maxMp;
     player.shield = 0;
     player.statuses = {};
-    player.spellSlots = ["frostShard", "fireball", "venomVine", "skyOfEmbers"];
+    const legacySlots = loadStoredSpellSlots() || [...DEFAULT_PLAYER_SPELL_SLOTS];
+    player.formulaBook = loadStoredFormulaBook(legacySlots);
+    player.activeFormulaIndex = player.formulaBook.activeFormulaIndex;
+    syncPlayerSlotsFromActiveFormula();
+    persistPlayerFormulaState();
     renderPrepLoadout();
 
     systems.phaseSystem.resetPhase();
@@ -1621,6 +2495,7 @@
     updateUI();
     ui.spellBar.render();
     ui.enemyStatusBar.render(enemy.statuses);
+    ui.summonStructure.render(player.statuses);
   }
 
   function startBattle() {
@@ -1630,6 +2505,7 @@
     if (state.mode === "victory" || state.mode === "defeat") {
       resetBattle();
     }
+    setWorldMode("battle");
     state.mode = "running";
     systems.combatLoop.setPaused(false);
   }
@@ -1647,17 +2523,62 @@
     document.addEventListener("click", () => {
       dom.spellSlots.querySelectorAll(".spell-slot").forEach((el) => el.classList.remove("open"));
     });
+
+    if (dom.storyInfoBtn) {
+      dom.storyInfoBtn.addEventListener("click", () => {
+        renderStoryHeroInfo();
+        dom.storyInfoPanel.classList.remove("hidden");
+      });
+    }
+    if (dom.storyInfoClose) {
+      dom.storyInfoClose.addEventListener("click", () => {
+        dom.storyInfoPanel.classList.add("hidden");
+      });
+    }
+    if (dom.storyMenuBtn) {
+      dom.storyMenuBtn.addEventListener("click", () => {
+        dom.storyMenuPanel.classList.remove("hidden");
+      });
+    }
+    if (dom.storyMenuClose) {
+      dom.storyMenuClose.addEventListener("click", () => {
+        dom.storyMenuPanel.classList.add("hidden");
+      });
+    }
   }
 
   function init() {
-    bindEvents();
-    systems.combatLoop.start();
-    resetBattle();
-    renderPrepLoadout();
-    updateUI();
-    ui.spellBar.render();
-    ui.enemyStatusBar.render(enemy.statuses);
+    try {
+      bindEvents();
+      systems.combatLoop.start();
+      setWorldMode("story");
+      renderPrepLoadout();
+      renderStoryScene();
+      updateUI();
+      ui.spellBar.render();
+      ui.enemyStatusBar.render(enemy.statuses);
+      ui.summonStructure.render(player.statuses);
+    } catch (error) {
+      console.error(error);
+      if (dom.storySceneBody) {
+        dom.storySceneBody.textContent = `초기화 오류: ${error && error.message ? error.message : "알 수 없는 오류"}`;
+      }
+      if (dom.storyChoices) {
+        dom.storyChoices.innerHTML = "";
+      }
+    }
   }
 
   init();
 })();
+  function currentEnemyProfile() {
+    return enemyProfiles[state.enemyProfileId] || enemyProfiles.allen;
+  }
+
+  function setEnemyProfile(profileId) {
+    if (enemyProfiles[profileId]) {
+      state.enemyProfileId = profileId;
+    } else {
+      state.enemyProfileId = "allen";
+    }
+  }

@@ -1,0 +1,167 @@
+:root {
+  --bg-0: #07131f;
+  --bg-1: #10273b;
+  --panel: rgba(6, 18, 30, 0.9);
+  --line: rgba(145, 185, 208, 0.24);
+  --text: #edf7ff;
+  --muted: #b9cad6;
+  --heart: #f1c26f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--text);
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background: linear-gradient(160deg, var(--bg-0), var(--bg-1));
+}
+
+.book-shell {
+  width: min(760px, 94vw);
+  margin: 0 auto;
+  padding: 16px 0 28px;
+  display: grid;
+  gap: 12px;
+}
+
+.book-head,
+.book-panel,
+.hint-panel {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  padding: 12px;
+}
+
+.book-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.book-head h1 {
+  margin: 0;
+  font-size: clamp(22px, 4.8vw, 30px);
+}
+
+.back-link {
+  text-decoration: none;
+  color: #ffd7a2;
+  border: 1px solid rgba(255, 215, 162, 0.35);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.heart-info {
+  margin: 0 0 10px;
+  color: var(--heart);
+  font-weight: 700;
+}
+
+.formula-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.formula-tab {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: rgba(13, 34, 48, 0.95);
+  color: var(--text);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.formula-tab.active {
+  border-color: rgba(241, 194, 111, 0.8);
+  background: rgba(75, 53, 20, 0.72);
+  color: #ffe6ba;
+}
+
+.formula-head {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.formula-head label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.formula-name {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(9, 25, 35, 0.95);
+  color: var(--text);
+  padding: 8px;
+}
+
+.slot-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.slot-item {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  display: grid;
+  gap: 6px;
+}
+
+.slot-item label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.slot-item select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(9, 25, 35, 0.95);
+  color: var(--text);
+  padding: 8px;
+}
+
+.save-btn {
+  margin-top: 10px;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-weight: 700;
+  color: #2f1800;
+  background: linear-gradient(90deg, #f1c26f, #d89a48);
+}
+
+.save-msg {
+  min-height: 18px;
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: #b8dfff;
+}
+
+.hint-panel h2 {
+  margin: 0 0 8px;
+  font-size: 16px;
+}
+
+.hint-panel p {
+  margin: 4px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 680px) {
+  .slot-form { grid-template-columns: 1fr; }
+  .book-head { align-items: flex-start; flex-direction: column; }
+}

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>술식 관리</title>
+  <link rel="stylesheet" href="spellbook.css">
+</head>
+<body>
+  <main class="book-shell">
+    <header class="book-head">
+      <h1>술식 관리</h1>
+      <a href="index.html" class="back-link">전투 화면으로</a>
+    </header>
+
+    <section class="book-panel">
+      <p id="heart-info" class="heart-info">마나 하트: 0 / 12</p>
+      <div id="formula-tabs" class="formula-tabs"></div>
+      <div class="formula-head">
+        <label for="formula-name">술식 이름</label>
+        <input id="formula-name" class="formula-name" type="text" maxlength="24" placeholder="술식 이름 입력">
+      </div>
+      <div id="slot-form" class="slot-form"></div>
+      <p id="save-msg" class="save-msg"></p>
+      <button id="save-btn" type="button" class="save-btn">저장</button>
+    </section>
+
+    <section class="hint-panel">
+      <h2>설명</h2>
+      <p>술식은 최대 3개까지 저장할 수 있고, 각 술식은 4개 주문으로 구성됩니다.</p>
+      <p>현재 선택한 탭이 활성 술식으로 저장되며 전투 시작 시 자동 전개됩니다.</p>
+    </section>
+  </main>
+
+  <script src="spellbook.js"></script>
+</body>
+</html>

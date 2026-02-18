@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 2,
+  "spellLibrary": [
+    {
+      "id": "frostShackle",
+      "name": "Frost Shackle",
+      "circle": 3,
+      "color": "blue",
+      "archetype": "control",
+      "manaCost": 31,
+      "cooldown": 5.6,
+      "tags": ["stun", "single"]
+    }
+  ],
+  "playerFormulaBook": {
+    "maxFormulaSlots": 3,
+    "activeFormulaIndex": 0,
+    "formulas": [
+      {
+        "id": "f1",
+        "name": "Blue Lock",
+        "spellIds": ["frostShard", "frostShackle", "manaSpring", "fireball"]
+      },
+      {
+        "id": "f2",
+        "name": "Crimson Fall",
+        "spellIds": ["fireball", "blastBrand", "magmaEruption", "skyOfEmbers"]
+      },
+      {
+        "id": "f3",
+        "name": "Green Tide",
+        "spellIds": ["lifeSprout", "venomVine", "natureGrace", "dryadOfGreatForest"]
+      }
+    ]
+  },
+  "manaHeart": {
+    "current": 3,
+    "max": 15
+  },
+  "enemyFormulasByPhase": [
+    {
+      "phaseId": 1,
+      "id": "allen_phase_1",
+      "name": "Scarlet True Name",
+      "spellIds": ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+    },
+    {
+      "phaseId": 2,
+      "id": "allen_phase_2",
+      "name": "Sky of Embers",
+      "spellIds": ["flameStrike", "allensMark", "infernoCharge", "skyFallingFlame"]
+    },
+    {
+      "phaseId": 3,
+      "id": "allen_phase_3",
+      "name": "Purgatorium Echo",
+      "spellIds": ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+    }
+  ]
+}
