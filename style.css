@@ -36,6 +36,7 @@ body {
 
 .top-panel,
 .control-panel,
+.loadout-panel,
 .battle-panel,
 .spell-panel {
   border: 1px solid var(--line);
@@ -230,6 +231,50 @@ body {
   gap: 8px;
 }
 
+.loadout-panel {
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.loadout-head h3 {
+  margin: 0;
+}
+
+.loadout-head p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--heart);
+}
+
+.loadout-slots {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.loadout-slot {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.loadout-slot label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.loadout-slot select {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(9, 25, 35, 0.9);
+  color: var(--text);
+  padding: 8px;
+}
+
 button {
   border: 0;
   border-radius: 10px;
@@ -311,6 +356,28 @@ button {
   overflow: hidden;
   background: rgba(255, 255, 255, 0.04);
   transition: filter 120ms linear;
+}
+
+.spell-tooltip {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid var(--line);
+  background: rgba(7, 16, 24, 0.96);
+  border-radius: 8px;
+  padding: 7px;
+  font-size: 11px;
+  line-height: 1.35;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 4;
+}
+
+.spell-slot:hover .spell-tooltip,
+.spell-slot.open .spell-tooltip {
+  opacity: 1;
 }
 
 .spell-slot.blue { box-shadow: inset 0 0 0 1px rgba(80, 152, 255, 0.35); }
@@ -536,6 +603,7 @@ button {
 }
 
 @media (max-width: 680px) {
+  .loadout-slots { grid-template-columns: 1fr 1fr; }
   .spell-slots { grid-template-columns: 1fr 1fr; }
   .rearrange-slots { grid-template-columns: 1fr; }
 }

@@ -8,6 +8,8 @@
     bossHpText: document.getElementById("boss-hp-text"),
     heartText: document.getElementById("heart-text"),
     phasePill: document.getElementById("phase-pill"),
+    loadoutHeartText: document.getElementById("loadout-heart-text"),
+    loadoutSlots: document.getElementById("loadout-slots"),
     combatLog: document.getElementById("combat-log"),
     spellSlots: document.getElementById("spell-slots"),
     startBtn: document.getElementById("start-btn"),
@@ -27,72 +29,216 @@
   };
 
   const spellLibrary = {
-    magicMissile: {
-      id: "magicMissile",
-      name: "매직 미사일",
+    frostShard: {
+      id: "frostShard",
+      name: "서리 파편",
       color: "blue",
-      archetype: "극딜",
-      manaCost: 18,
-      cooldown: 2.4,
-      heartCost: 2,
-      damage: [14, 21]
-    },
-    glacialSpike: {
-      id: "glacialSpike",
-      name: "글레이셜 스파이크",
-      color: "blue",
+      circle: 1,
       archetype: "제어",
-      manaCost: 26,
-      cooldown: 4.8,
-      heartCost: 3,
-      damage: [20, 30],
-      applyEnemyStatus: { id: "slow", stacks: 1, duration: 4, slowPct: 18 }
+      manaCost: 12,
+      cooldown: 1.9,
+      heartCost: 1,
+      damage: [9, 12],
+      applyEnemyStatus: { id: "slow", stacks: 1, duration: 3, slowPct: 10 },
+      description: "10 내외 피해 + 둔화 1"
     },
-    emberLance: {
-      id: "emberLance",
-      name: "엠버 랜스",
+    freezingVeil: {
+      id: "freezingVeil",
+      name: "결빙의 장막",
+      color: "blue",
+      circle: 2,
+      archetype: "생존",
+      manaCost: 22,
+      cooldown: 4.2,
+      heartCost: 2,
+      damage: [6, 10],
+      shield: 40,
+      reactiveSlow: { duration: 3.5, slowPct: 10 },
+      description: "보호막 40 + 피격 시 둔화 부여"
+    },
+    frostShackle: {
+      id: "frostShackle",
+      name: "빙결의 족쇄",
+      color: "blue",
+      circle: 3,
+      archetype: "제어",
+      manaCost: 31,
+      cooldown: 5.6,
+      heartCost: 3,
+      damage: [24, 34],
+      chanceStun: 0.3,
+      stunBonusDamage: [22, 30],
+      description: "중간 피해 + 30% 마비, 성공 시 추가 피해"
+    },
+    abyssalFrost: {
+      id: "abyssalFrost",
+      name: "극빙의 심연",
+      color: "blue",
+      circle: 4,
+      archetype: "제어/폭딜",
+      manaCost: 46,
+      cooldown: 8.2,
+      heartCost: 4,
+      damage: [58, 76],
+      castTime: 2,
+      applyEnemyStatus: { id: "stun", stacks: 1, duration: 1.2 },
+      description: "2초 시전, 동결 후 큰 피해"
+    },
+    aerisAzureSeal: {
+      id: "aerisAzureSeal",
+      name: "「아에리스의 청색 봉인」",
+      color: "blue",
+      circle: 5,
+      archetype: "궁극 제어",
+      manaCost: 72,
+      cooldown: 15,
+      heartCost: 5,
+      damage: [130, 170],
+      channelTime: 2.8,
+      executionChance: 0.14,
+      highCircle: true,
+      description: "긴 채널링, 성공 시 대량 피해 + 3턴 봉인"
+    },
+    fireball: {
+      id: "fireball",
+      name: "화염구",
       color: "red",
-      archetype: "지속딜",
+      circle: 1,
+      archetype: "극딜",
+      manaCost: 13,
+      cooldown: 2.1,
+      heartCost: 1,
+      damage: [14, 18],
+      applyEnemyStatus: { id: "burn", stacks: 1, duration: 4, dps: 2 },
+      description: "15 내외 피해 + 화상 1"
+    },
+    blastBrand: {
+      id: "blastBrand",
+      name: "폭열 낙인",
+      color: "red",
+      circle: 2,
+      archetype: "폭딜/디버프",
       manaCost: 24,
-      cooldown: 3.4,
+      cooldown: 4.4,
       heartCost: 2,
-      damage: [18, 25],
-      applyEnemyStatus: { id: "burn", stacks: 2, duration: 6, dps: 4 }
+      damage: [18, 24],
+      applyEnemyStatus: { id: "weak", stacks: 1, duration: 6, vulnPct: 30 },
+      description: "표식 부여, 이후 적색 피해 증가"
     },
-    toxicRain: {
-      id: "toxicRain",
-      name: "톡식 레인",
-      color: "green",
+    magmaEruption: {
+      id: "magmaEruption",
+      name: "용암 분출",
+      color: "red",
+      circle: 3,
       archetype: "지속딜",
-      manaCost: 28,
-      cooldown: 5.2,
-      heartCost: 3,
-      damage: [16, 24],
-      applyEnemyStatus: { id: "poison", stacks: 3, duration: 8, dps: 3 }
-    },
-    aegisVeil: {
-      id: "aegisVeil",
-      name: "아이기스 베일",
-      color: "green",
-      archetype: "제어",
-      manaCost: 30,
+      manaCost: 34,
       cooldown: 6,
       heartCost: 3,
-      damage: [8, 14],
-      shield: 72,
-      dampen: { duration: 4, reduction: 0.16 }
+      damage: [13, 19],
+      hits: 3,
+      burnBonusPerStack: 4,
+      description: "3회 공격 + 화상 스택 연동 추가 피해"
     },
-    crimsonTrueName: {
-      id: "crimsonTrueName",
-      name: "적색 진명",
+    skyOfEmbers: {
+      id: "skyOfEmbers",
+      name: "불꽃이 내리는 하늘",
       color: "red",
+      circle: 4,
       archetype: "극딜",
-      manaCost: 48,
-      cooldown: 8,
+      manaCost: 49,
+      cooldown: 8.5,
       heartCost: 4,
-      damage: [72, 90],
-      applyEnemyStatus: { id: "burn", stacks: 3, duration: 6, dps: 4 },
-      highCircle: true
+      damage: [16, 22],
+      hits: 5,
+      shieldBreakMul: 2,
+      applyEnemyStatus: { id: "burn", stacks: 3, duration: 6, dps: 3 },
+      description: "5연타 + 보호막 2배 피해 + 화상 3"
+    },
+    purgatoriumFlame: {
+      id: "purgatoriumFlame",
+      name: "「푸르가토리움의 화염」",
+      color: "red",
+      circle: 5,
+      archetype: "지속 폭딜",
+      manaCost: 70,
+      cooldown: 15.5,
+      heartCost: 5,
+      damage: [42, 58],
+      applyEnemyStatus: { id: "inferno", stacks: 1, duration: 10, dps: 6, growPerTick: 2 },
+      highCircle: true,
+      description: "강화 화상 부여, 매초 피해 증가"
+    },
+    lifeSprout: {
+      id: "lifeSprout",
+      name: "생명의 싹",
+      color: "green",
+      circle: 1,
+      archetype: "생존",
+      manaCost: 10,
+      cooldown: 2.4,
+      heartCost: 1,
+      damage: [4, 8],
+      heal: [14, 16],
+      description: "즉시 15 회복"
+    },
+    venomVine: {
+      id: "venomVine",
+      name: "독침 덩굴",
+      color: "green",
+      circle: 2,
+      archetype: "지속딜",
+      manaCost: 22,
+      cooldown: 4.2,
+      heartCost: 2,
+      damage: [10, 14],
+      applyEnemyStatus: { id: "poison", stacks: 3, duration: 3, dps: 4 },
+      description: "중독 3, 3초 지속"
+    },
+    natureGrace: {
+      id: "natureGrace",
+      name: "자연의 가호",
+      color: "green",
+      circle: 3,
+      archetype: "생존",
+      manaCost: 32,
+      cooldown: 6,
+      heartCost: 3,
+      damage: [8, 12],
+      heal: [28, 36],
+      poisonRes: { duration: 6, reduction: 0.4 },
+      description: "회복 + 중독 저항 상승"
+    },
+    dryadOfGreatForest: {
+      id: "dryadOfGreatForest",
+      name: "대삼림의 드라이어드",
+      color: "green",
+      circle: 4,
+      archetype: "지속딜",
+      manaCost: 46,
+      cooldown: 9,
+      heartCost: 4,
+      damage: [14, 20],
+      summonDryad: { duration: 9, mpDrain: 8, dps: 8, healPerTick: 8, poisonStacks: 1, stunChance: 0.2 },
+      description: "소환 유지형, 공격/독/회복 동시 제공"
+    },
+    cerisFinGarden: {
+      id: "cerisFinGarden",
+      name: "「세리스 핀의 마계정원」",
+      color: "green",
+      circle: 5,
+      archetype: "광역 지속",
+      manaCost: 72,
+      cooldown: 16,
+      heartCost: 5,
+      damage: [28, 40],
+      applyEnemyStatuses: [
+        { id: "burn", stacks: 1, duration: 5, dps: 3 },
+        { id: "poison", stacks: 1, duration: 5, dps: 3 },
+        { id: "slow", stacks: 1, duration: 5, slowPct: 12 },
+        { id: "weak", stacks: 1, duration: 5, vulnPct: 12 }
+      ],
+      highCircle: true,
+      description: "전장 오염, 상태이상 일괄 부여"
     }
   };
 
@@ -151,7 +297,7 @@
     manaRegen: 18,
     maxHearts: 10,
     shield: 0,
-    spellSlots: ["magicMissile", "emberLance", "toxicRain", "crimsonTrueName"],
+    spellSlots: ["frostShard", "fireball", "venomVine", "skyOfEmbers"],
     statuses: {}
   };
 
@@ -181,6 +327,49 @@
 
   function toFixed1(value) {
     return Number(value).toFixed(1);
+  }
+
+  function spellSort(a, b) {
+    const colorOrder = { blue: 1, red: 2, green: 3 };
+    return (colorOrder[a.color] - colorOrder[b.color]) || (a.circle - b.circle) || a.name.localeCompare(b.name);
+  }
+
+  function spellLabel(spell) {
+    const colorKo = spell.color === "blue" ? "청" : spell.color === "red" ? "적" : "녹";
+    return `${spell.name} | ${colorKo} | ${spell.circle}서클 | ${spell.archetype} | MP ${spell.manaCost} | 하트 ${spell.heartCost}`;
+  }
+
+  function renderPrepLoadout() {
+    dom.loadoutSlots.innerHTML = "";
+    const sorted = [...spellList].sort(spellSort);
+    const options = sorted.map((spell) => `<option value="${spell.id}">${spellLabel(spell)}</option>`).join("");
+
+    for (let i = 0; i < 4; i += 1) {
+      const card = document.createElement("div");
+      card.className = "loadout-slot";
+      card.innerHTML = `
+        <label for="loadout-slot-${i}">전투 슬롯 ${i + 1}</label>
+        <select id="loadout-slot-${i}">${options}</select>
+      `;
+      const select = card.querySelector("select");
+      select.value = player.spellSlots[i];
+      select.disabled = state.mode !== "prep";
+      select.addEventListener("change", (event) => {
+        const before = [...player.spellSlots];
+        player.spellSlots[i] = event.target.value;
+        if (usedHearts(player.spellSlots) > player.maxHearts) {
+          player.spellSlots = before;
+          event.target.value = before[i];
+          ui.combatLog.push("마나 하트 한도를 초과했습니다.", true);
+          return;
+        }
+        updateUI();
+        ui.spellBar.render();
+      });
+      dom.loadoutSlots.appendChild(card);
+    }
+
+    dom.loadoutHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
   }
 
   function consumeShield(amount, shieldBreakMul) {
@@ -295,7 +484,8 @@
       shield: { icon: "🛡", name: "보호막" },
       weak: { icon: "💥", name: "약점" },
       mark: { icon: "👁", name: "표식" },
-      overheat: { icon: "⚠", name: "과열" }
+      overheat: { icon: "⚠", name: "과열" },
+      inferno: { icon: "🔥", name: "연옥 화상" }
     };
 
     function tooltipFor(id, status) {
@@ -404,13 +594,25 @@
                 <span class="color-dot">${colorLabel(spell.color)}</span>
                 <span class="archetype-tag">${spell.archetype}</span>
               </span>
+              <span>${spell.circle}서클 | 하트 ${spell.heartCost}</span>
               <span>MP ${spell.manaCost} ${cdText(cd)}</span>
               ${player.mp < spell.manaCost && cd <= 0 ? '<span class="spell-warning">MP 부족</span>' : ""}
+            </div>
+            <div class="spell-tooltip">
+              <strong>${spell.name}</strong><br>
+              ${spell.description}
             </div>
             <div class="cooldown-overlay">
               <div class="cooldown-fill" style="--cd-progress:${cdProgress}"></div>
             </div>
           `;
+
+          card.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const opened = card.classList.contains("open");
+            dom.spellSlots.querySelectorAll(".spell-slot").forEach((el) => el.classList.remove("open"));
+            if (!opened) card.classList.add("open");
+          });
 
           dom.spellSlots.appendChild(card);
         });
@@ -433,6 +635,11 @@
         vulnPct: incoming.vulnPct ?? current.vulnPct,
         critPct: incoming.critPct ?? current.critPct,
         shieldBreakPct: incoming.shieldBreakPct ?? current.shieldBreakPct,
+        growPerTick: incoming.growPerTick ?? current.growPerTick,
+        mpDrain: incoming.mpDrain ?? current.mpDrain,
+        healPerTick: incoming.healPerTick ?? current.healPerTick,
+        poisonStacks: incoming.poisonStacks ?? current.poisonStacks,
+        stunChance: incoming.stunChance ?? current.stunChance,
         tick: current.tick || 0
       };
     }
@@ -455,6 +662,9 @@
               const dmg = status.dps * (status.stacks || 1);
               enemy.hp = Math.max(0, enemy.hp - dmg);
               ui.damageFloat.show(dmg);
+              if (status.growPerTick) {
+                status.dps += status.growPerTick;
+              }
             }
           }
 
@@ -471,7 +681,32 @@
           if (status.dps) {
             while (status.tick >= 1) {
               status.tick -= 1;
-              dealPlayerDamage(status.dps * (status.stacks || 1));
+              let dot = status.dps * (status.stacks || 1);
+              if ((id === "burn" || id === "poison") && player.statuses.poisonRes) {
+                dot = Math.floor(dot * (1 - (player.statuses.poisonRes.reduction || 0)));
+              }
+              dealPlayerDamage(dot);
+            }
+          }
+
+          if (id === "dryad") {
+            while (status.tick >= 1) {
+              status.tick -= 1;
+              player.mp = Math.max(0, player.mp - (status.mpDrain || 0));
+              const dryadDmg = status.dps || 0;
+              enemy.hp = Math.max(0, enemy.hp - dryadDmg);
+              if (dryadDmg > 0) {
+                ui.damageFloat.show(dryadDmg);
+              }
+              if (status.poisonStacks) {
+                this.applyEnemy({ id: "poison", stacks: status.poisonStacks, duration: 2, dps: 3 });
+              }
+              if (status.stunChance && Math.random() < status.stunChance) {
+                this.applyEnemy({ id: "stun", stacks: 1, duration: 0.8 });
+              }
+              if (status.healPerTick) {
+                player.hp = Math.min(player.maxHp, player.hp + status.healPerTick);
+              }
             }
           }
 
@@ -527,8 +762,9 @@
         block.innerHTML = `
           <label for="rearrange-slot-${i}">슬롯 ${i + 1}</label>
           <select id="rearrange-slot-${i}">
-            ${spellList
-              .map((spell) => `<option value="${spell.id}">${spell.name} | 하트 ${spell.heartCost} | MP ${spell.manaCost}</option>`)
+            ${[...spellList]
+              .sort(spellSort)
+              .map((spell) => `<option value="${spell.id}">${spellLabel(spell)}</option>`)
               .join("")}
           </select>
         `;
@@ -630,10 +866,32 @@
     ui.spellBar.flash(slotIndex);
     ui.enemyPortraitEffects.trigger(spell.color);
 
-    let damage = randomInt(spell.damage[0], spell.damage[1]);
+    const hits = spell.hits || 1;
+    let damage = 0;
+    for (let i = 0; i < hits; i += 1) {
+      damage += randomInt(spell.damage[0], spell.damage[1]);
+    }
+
+    const burnStacks = enemy.statuses.burn ? enemy.statuses.burn.stacks || 0 : 0;
+    if (spell.burnBonusPerStack) {
+      damage += burnStacks * spell.burnBonusPerStack;
+    }
+
     const vulnPct = systems.statusSystem.enemyVulnerability();
     if (vulnPct > 0) {
       damage = Math.floor(damage * (1 + vulnPct / 100));
+    }
+
+    if (spell.id === "aerisAzureSeal") {
+      let successChance = spell.executionChance || 0.1;
+      if (enemy.statuses.slow) successChance += 0.16;
+      if (enemy.statuses.stun) successChance += 0.16;
+      if (Math.random() < successChance) {
+        damage = Math.floor(enemy.maxHp * 0.65);
+        systems.statusSystem.applyEnemy({ id: "stun", stacks: 1, duration: 3 });
+      } else {
+        damage = Math.floor(enemy.maxHp * 0.34);
+      }
     }
 
     enemy.hp = Math.max(0, enemy.hp - damage);
@@ -649,10 +907,40 @@
       systems.statusSystem.applyPlayer({ id: "dampen", duration: spell.dampen.duration, reduction: spell.dampen.reduction, stacks: 1 });
     }
 
+    if (spell.heal) {
+      const heal = randomInt(spell.heal[0], spell.heal[1]);
+      player.hp = Math.min(player.maxHp, player.hp + heal);
+      line += ` ${heal} 회복.`;
+    }
+
+    if (spell.poisonRes) {
+      systems.statusSystem.applyPlayer({ id: "poisonRes", duration: spell.poisonRes.duration, reduction: spell.poisonRes.reduction, stacks: 1 });
+    }
+
+    if (spell.reactiveSlow) {
+      systems.statusSystem.applyPlayer({ id: "reactiveSlow", duration: spell.reactiveSlow.duration, slowPct: spell.reactiveSlow.slowPct, stacks: 1 });
+    }
+
+    if (spell.summonDryad) {
+      systems.statusSystem.applyPlayer({ id: "dryad", duration: spell.summonDryad.duration, stacks: 1, ...spell.summonDryad });
+    }
+
+    if (spell.chanceStun && Math.random() < spell.chanceStun) {
+      systems.statusSystem.applyEnemy({ id: "stun", stacks: 1, duration: 1.2 });
+      if (spell.stunBonusDamage) {
+        const bonus = randomInt(spell.stunBonusDamage[0], spell.stunBonusDamage[1]);
+        enemy.hp = Math.max(0, enemy.hp - bonus);
+        line += ` ${bonus} 추가 피해.`;
+      }
+    }
+
     ui.combatLog.push(line, Boolean(spell.highCircle));
 
     if (spell.applyEnemyStatus) {
       systems.statusSystem.applyEnemy(spell.applyEnemyStatus);
+    }
+    if (spell.applyEnemyStatuses) {
+      spell.applyEnemyStatuses.forEach((status) => systems.statusSystem.applyEnemy(status));
     }
   }
 
@@ -667,8 +955,23 @@
       if (player.mp < spell.manaCost) continue;
 
       castPlayerSpell(i, spell);
-      state.castGap = 0.25;
+      let castDelay = Math.max(0.25, spell.castTime || 0, spell.channelTime || 0);
+      if (spell.id === "aerisAzureSeal" && (enemy.statuses.slow || enemy.statuses.stun)) {
+        castDelay *= 0.7;
+      }
+      state.castGap = castDelay;
       return;
+    }
+  }
+
+  function applyReactiveSlow() {
+    if (player.statuses.reactiveSlow) {
+      systems.statusSystem.applyEnemy({
+        id: "slow",
+        stacks: 1,
+        duration: player.statuses.reactiveSlow.duration || 2,
+        slowPct: player.statuses.reactiveSlow.slowPct || 10
+      });
     }
   }
 
@@ -682,6 +985,7 @@
       let total = 0;
       for (let i = 0; i < hitCount; i += 1) {
         total += dealPlayerDamage(randomInt(8, 13), { shieldBreakMul: 2 });
+        applyReactiveSlow();
       }
       systems.statusSystem.applyPlayer({ id: "burn", stacks: 1, duration: 4, dps: 2 });
       systems.statusSystem.applyEnemy({ id: "mark", stacks: 1, duration: 2.8, shieldBreakPct: 50 });
@@ -691,6 +995,7 @@
     if (state.ai.burstTimer <= 0) {
       state.ai.burstTimer += 4.6 + Math.random() * 1.2;
       const dealt = dealPlayerDamage(randomInt(30, 44), { shieldBreakMul: 2 });
+      applyReactiveSlow();
       ui.combatLog.push(`알렌: 4서클 마법 '적색 진명'! ${dealt} 피해.`, true);
     }
   }
@@ -710,6 +1015,7 @@
         if (crit) damage = Math.floor(damage * 1.45);
 
         const dealt = dealPlayerDamage(damage);
+        applyReactiveSlow();
         systems.statusSystem.applyPlayer({ id: "burn", stacks: randomInt(5, 8), duration: 8, dps: 3 });
 
         if (crit) {
@@ -729,6 +1035,7 @@
     if (state.ai.basicTimer <= 0) {
       state.ai.basicTimer += 2.9;
       const dealt = dealPlayerDamage(randomInt(20, 30));
+      applyReactiveSlow();
       ui.combatLog.push(`알렌의 화염 강타! ${dealt} 피해.`);
     }
 
@@ -759,11 +1066,13 @@
       state.ai.frenzyTimer += Math.max(1.3, 2.4 - state.ai.phase3Ramp * 0.08);
       const base = randomInt(40, 56) + state.ai.phase3Ramp * 3;
       const dealt = dealPlayerDamage(base);
+      applyReactiveSlow();
       ui.combatLog.push(`알렌의 폭주 화염! ${dealt} 피해.`, true);
     }
 
     if (state.ai.meltdownRemaining <= 0) {
       const dealt = dealPlayerDamage(randomInt(96, 132));
+      applyReactiveSlow();
       ui.combatLog.push(`알렌: 푸르가토리움 붕괴! ${dealt} 피해.`, true);
       if (player.hp > 0) {
         state.mode = "victory";
@@ -774,6 +1083,9 @@
   }
 
   function runEnemyAI(dt) {
+    if (enemy.statuses.stun) {
+      return;
+    }
     const slowRate = systems.statusSystem.enemySlowRate();
     const scaledDt = dt * Math.max(0.15, 1 - slowRate);
 
@@ -860,6 +1172,10 @@
     dom.bossHpText.textContent = `${Math.floor(enemy.hp)} / ${enemy.maxHp}`;
 
     dom.heartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts} | 보호막 ${Math.floor(player.shield)}`;
+    dom.loadoutHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
+    dom.loadoutSlots.querySelectorAll("select").forEach((select) => {
+      select.disabled = state.mode !== "prep";
+    });
 
     if (state.mode === "running") dom.phasePill.textContent = `페이즈 ${state.phaseIndex + 1}`;
     if (state.mode === "rearrange") dom.phasePill.textContent = "재배치";
@@ -884,7 +1200,8 @@
     player.mp = player.maxMp;
     player.shield = 0;
     player.statuses = {};
-    player.spellSlots = ["magicMissile", "emberLance", "toxicRain", "crimsonTrueName"];
+    player.spellSlots = ["frostShard", "fireball", "venomVine", "skyOfEmbers"];
+    renderPrepLoadout();
 
     systems.phaseSystem.resetPhase();
 
@@ -915,12 +1232,16 @@
     dom.readyBtn.addEventListener("click", () => {
       systems.phaseSystem.exitRearrange();
     });
+    document.addEventListener("click", () => {
+      dom.spellSlots.querySelectorAll(".spell-slot").forEach((el) => el.classList.remove("open"));
+    });
   }
 
   function init() {
     bindEvents();
     systems.combatLoop.start();
     resetBattle();
+    renderPrepLoadout();
     updateUI();
     ui.spellBar.render();
     ui.enemyStatusBar.render(enemy.statuses);
