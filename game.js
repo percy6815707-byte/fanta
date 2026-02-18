@@ -339,6 +339,86 @@
     return `${spell.name} | ${colorKo} | ${spell.circle}서클 | ${spell.archetype} | MP ${spell.manaCost} | 하트 ${spell.heartCost}`;
   }
 
+  function statusLine(status) {
+    const nameMap = {
+      burn: "화상",
+      poison: "중독",
+      slow: "둔화",
+      weak: "약점",
+      stun: "봉인/행동불가",
+      inferno: "연옥 화상"
+    };
+    const chunks = [`${nameMap[status.id] || status.id}`];
+    if (status.stacks) chunks.push(`${status.stacks}스택`);
+    if (status.duration) chunks.push(`${status.duration}초`);
+    if (status.dps) chunks.push(`매초 ${status.dps} 피해`);
+    if (status.slowPct) chunks.push(`감속 ${status.slowPct}%`);
+    if (status.vulnPct) chunks.push(`받피 +${status.vulnPct}%`);
+    if (status.growPerTick) chunks.push(`피해/초 +${status.growPerTick} 증가`);
+    return chunks.join(" / ");
+  }
+
+  function spellDetailLines(spell) {
+    const lines = [];
+    const hitCount = spell.hits || 1;
+    const minTotal = spell.damage[0] * hitCount;
+    const maxTotal = spell.damage[1] * hitCount;
+    lines.push(`직접 피해: ${minTotal}~${maxTotal}${hitCount > 1 ? ` (${hitCount}타)` : ""}`);
+
+    if (spell.burnBonusPerStack) {
+      lines.push(`추가 피해: 화상 1스택당 +${spell.burnBonusPerStack}`);
+    }
+    if (spell.shield) {
+      lines.push(`보호막: ${spell.shield}`);
+    }
+    if (spell.dampen) {
+      lines.push(`피해 감쇠: ${Math.floor(spell.dampen.reduction * 100)}% (${spell.dampen.duration}초)`);
+    }
+    if (spell.heal) {
+      lines.push(`회복: ${spell.heal[0]}~${spell.heal[1]}`);
+    }
+    if (spell.castTime) {
+      lines.push(`시전 시간: ${spell.castTime}초`);
+    }
+    if (spell.channelTime) {
+      lines.push(`채널링: ${spell.channelTime}초`);
+    }
+    if (spell.shieldBreakMul) {
+      lines.push(`보호막 대상 피해: ${spell.shieldBreakMul}배`);
+    }
+    if (spell.chanceStun) {
+      lines.push(`마비 확률: ${Math.floor(spell.chanceStun * 100)}%`);
+      if (spell.stunBonusDamage) {
+        lines.push(`마비 성공 추가 피해: ${spell.stunBonusDamage[0]}~${spell.stunBonusDamage[1]}`);
+      }
+    }
+    if (spell.poisonRes) {
+      lines.push(`중독/화상 저항: ${Math.floor(spell.poisonRes.reduction * 100)}% (${spell.poisonRes.duration}초)`);
+    }
+    if (spell.reactiveSlow) {
+      lines.push(`피격 반응: 둔화 ${spell.reactiveSlow.slowPct}% (${spell.reactiveSlow.duration}초)`);
+    }
+    if (spell.summonDryad) {
+      lines.push(`드라이어드 소환 ${spell.summonDryad.duration}초`);
+      lines.push(`유지 코스트: MP ${spell.summonDryad.mpDrain}/초`);
+      lines.push(`소환체: 매초 ${spell.summonDryad.dps} 피해, ${spell.summonDryad.healPerTick} 회복`);
+    }
+    if (spell.applyEnemyStatus) {
+      lines.push(`부여: ${statusLine(spell.applyEnemyStatus)}`);
+    }
+    if (spell.applyEnemyStatuses) {
+      spell.applyEnemyStatuses.forEach((status) => {
+        lines.push(`부여: ${statusLine(status)}`);
+      });
+    }
+    if (spell.id === "aerisAzureSeal") {
+      lines.push(`봉인 판정: ${Math.floor((spell.executionChance || 0) * 100)}% (둔화/마비 시 보정)`);
+      lines.push("성공: 적 최대 HP 65% 피해 + 봉인(행동불가) 3초");
+      lines.push("실패: 적 최대 HP 34% 피해");
+    }
+    return lines;
+  }
+
   function renderPrepLoadout() {
     dom.loadoutSlots.innerHTML = "";
     const sorted = [...spellList].sort(spellSort);
@@ -574,47 +654,63 @@
         setTimeout(() => flashing.delete(index), 200);
       },
       render() {
-        dom.spellSlots.innerHTML = "";
+        if (dom.spellSlots.children.length !== player.spellSlots.length) {
+          dom.spellSlots.innerHTML = "";
+          player.spellSlots.forEach((spellId, index) => {
+            const spell = spellLibrary[spellId];
+            if (!spell) return;
+            const card = document.createElement("article");
+            card.dataset.slotIndex = String(index);
+            card.innerHTML = `
+              <div class="spell-name"></div>
+              <div class="spell-meta">
+                <span class="meta-inline">
+                  <span class="color-dot"></span>
+                  <span class="archetype-tag"></span>
+                </span>
+                <span class="spell-tier"></span>
+                <span class="spell-cost"></span>
+                <span class="spell-warning"></span>
+              </div>
+              <div class="spell-tooltip"></div>
+              <div class="cooldown-overlay">
+                <div class="cooldown-fill"></div>
+              </div>
+            `;
+            card.addEventListener("click", (event) => {
+              event.stopPropagation();
+              const opened = card.classList.contains("open");
+              dom.spellSlots.querySelectorAll(".spell-slot").forEach((el) => el.classList.remove("open"));
+              if (!opened) card.classList.add("open");
+            });
+            dom.spellSlots.appendChild(card);
+          });
+        }
 
         player.spellSlots.forEach((spellId, index) => {
           const spell = spellLibrary[spellId];
-          if (!spell) return;
+          const card = dom.spellSlots.children[index];
+          if (!spell || !card) return;
 
           const cd = state.cooldowns[spell.id] || 0;
           const cdProgress = Math.min(1, cd / spell.cooldown);
-          const card = document.createElement("article");
-
           card.className = `spell-slot ${spell.color} ${stateClass(spell)}`;
           if (flashing.has(index)) card.classList.add("casting");
 
-          card.innerHTML = `
-            <div class="spell-name">${spell.name}</div>
-            <div class="spell-meta">
-              <span class="meta-inline">
-                <span class="color-dot">${colorLabel(spell.color)}</span>
-                <span class="archetype-tag">${spell.archetype}</span>
-              </span>
-              <span>${spell.circle}서클 | 하트 ${spell.heartCost}</span>
-              <span>MP ${spell.manaCost} ${cdText(cd)}</span>
-              ${player.mp < spell.manaCost && cd <= 0 ? '<span class="spell-warning">MP 부족</span>' : ""}
-            </div>
-            <div class="spell-tooltip">
-              <strong>${spell.name}</strong><br>
-              ${spell.description}
-            </div>
-            <div class="cooldown-overlay">
-              <div class="cooldown-fill" style="--cd-progress:${cdProgress}"></div>
-            </div>
-          `;
-
-          card.addEventListener("click", (event) => {
-            event.stopPropagation();
-            const opened = card.classList.contains("open");
-            dom.spellSlots.querySelectorAll(".spell-slot").forEach((el) => el.classList.remove("open"));
-            if (!opened) card.classList.add("open");
-          });
-
-          dom.spellSlots.appendChild(card);
+          card.querySelector(".spell-name").textContent = spell.name;
+          card.querySelector(".color-dot").textContent = colorLabel(spell.color);
+          card.querySelector(".archetype-tag").textContent = spell.archetype;
+          card.querySelector(".spell-tier").textContent = `${spell.circle}서클 | 하트 ${spell.heartCost}`;
+          card.querySelector(".spell-cost").textContent = `MP ${spell.manaCost} ${cdText(cd)}`;
+          const detailLines = spellDetailLines(spell).map((line) => `• ${line}`).join("<br>");
+          card.querySelector(".spell-tooltip").innerHTML = `<strong>${spell.name}</strong><br>${spell.description}<br>${detailLines}`;
+          card.querySelector(".cooldown-fill").style.setProperty("--cd-progress", String(cdProgress));
+          const warn = card.querySelector(".spell-warning");
+          if (player.mp < spell.manaCost && cd <= 0) {
+            warn.textContent = "MP 부족";
+          } else {
+            warn.textContent = "";
+          }
         });
       }
     };
@@ -622,24 +718,36 @@
 
   // systems/statusSystem
   systems.statusSystem = (() => {
+    function normalizeStatus(payload) {
+      const next = { ...payload };
+      if (typeof next.remaining !== "number" && typeof next.duration === "number") {
+        next.remaining = next.duration;
+      }
+      if (typeof next.stacks !== "number") {
+        next.stacks = 1;
+      }
+      return next;
+    }
+
     function mergeStatus(current, incoming) {
+      const nextIncoming = normalizeStatus(incoming);
       if (!current) {
-        return { ...incoming, tick: 0 };
+        return { ...nextIncoming, tick: 0 };
       }
       return {
         ...current,
-        stacks: Math.max(current.stacks || 1, incoming.stacks || 1),
-        remaining: Math.max(current.remaining || 0, incoming.remaining || 0),
-        dps: incoming.dps ?? current.dps,
-        slowPct: incoming.slowPct ?? current.slowPct,
-        vulnPct: incoming.vulnPct ?? current.vulnPct,
-        critPct: incoming.critPct ?? current.critPct,
-        shieldBreakPct: incoming.shieldBreakPct ?? current.shieldBreakPct,
-        growPerTick: incoming.growPerTick ?? current.growPerTick,
-        mpDrain: incoming.mpDrain ?? current.mpDrain,
-        healPerTick: incoming.healPerTick ?? current.healPerTick,
-        poisonStacks: incoming.poisonStacks ?? current.poisonStacks,
-        stunChance: incoming.stunChance ?? current.stunChance,
+        stacks: Math.max(current.stacks || 1, nextIncoming.stacks || 1),
+        remaining: Math.max(current.remaining || 0, nextIncoming.remaining || 0),
+        dps: nextIncoming.dps ?? current.dps,
+        slowPct: nextIncoming.slowPct ?? current.slowPct,
+        vulnPct: nextIncoming.vulnPct ?? current.vulnPct,
+        critPct: nextIncoming.critPct ?? current.critPct,
+        shieldBreakPct: nextIncoming.shieldBreakPct ?? current.shieldBreakPct,
+        growPerTick: nextIncoming.growPerTick ?? current.growPerTick,
+        mpDrain: nextIncoming.mpDrain ?? current.mpDrain,
+        healPerTick: nextIncoming.healPerTick ?? current.healPerTick,
+        poisonStacks: nextIncoming.poisonStacks ?? current.poisonStacks,
+        stunChance: nextIncoming.stunChance ?? current.stunChance,
         tick: current.tick || 0
       };
     }

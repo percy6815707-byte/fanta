@@ -369,6 +369,9 @@ button {
   padding: 7px;
   font-size: 11px;
   line-height: 1.35;
+  max-height: 140px;
+  overflow: auto;
+  scrollbar-width: thin;
   opacity: 0;
   pointer-events: none;
   transition: opacity 120ms ease;
