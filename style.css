@@ -478,8 +478,36 @@ button {
 
 .rearrange-card h2 { margin: 0 0 8px; }
 .rearrange-card p { margin: 4px 0; font-size: 13px; }
+.rearrange-hint { color: #ffd6a6; min-height: 18px; }
 
 .rearrange-error { min-height: 18px; color: #ff9a81; }
+
+.phase-buff-choices {
+  margin: 8px 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.phase-buff-btn {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: left;
+  min-height: 88px;
+}
+
+.phase-buff-btn strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.phase-buff-btn.active {
+  border-color: #ffd08d;
+  background: rgba(255, 208, 141, 0.12);
+}
 
 .rearrange-slots {
   margin: 10px 0;
@@ -612,6 +640,7 @@ button {
 }
 
 @media (max-width: 680px) {
+  .phase-buff-choices { grid-template-columns: 1fr; }
   .loadout-slots { grid-template-columns: 1fr 1fr; }
   .spell-slots { grid-template-columns: 1fr 1fr; }
   .rearrange-slots { grid-template-columns: 1fr; }

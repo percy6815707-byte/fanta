@@ -24,6 +24,8 @@
     rearrangePanel: document.getElementById("rearrange-panel"),
     rearrangeTimerText: document.getElementById("rearrange-timer-text"),
     rearrangeHeartText: document.getElementById("rearrange-heart-text"),
+    phaseBuffHint: document.getElementById("phase-buff-hint"),
+    phaseBuffChoices: document.getElementById("phase-buff-choices"),
     rearrangeError: document.getElementById("rearrange-error"),
     rearrangeSlots: document.getElementById("rearrange-slots"),
     readyBtn: document.getElementById("ready-btn"),
@@ -331,6 +333,8 @@
     castGap: 0,
     phaseIndex: 0,
     speed: 1,
+    phaseBuffChosen: false,
+    phaseBuffChoice: null,
     rearrangeRemaining: 0,
     pendingTimeout: null,
     ai: {
@@ -547,7 +551,8 @@
 
   function playerReductionRate() {
     const dampen = player.statuses.dampen;
-    return dampen ? dampen.reduction || 0 : 0;
+    const greenWard = player.statuses.greenWard;
+    return (dampen ? dampen.reduction || 0 : 0) + (greenWard ? greenWard.reduction || 0 : 0);
   }
 
   function dealPlayerDamage(rawDamage, options = {}) {
@@ -638,6 +643,7 @@
 
   // ui/enemyStatusBar
   ui.enemyStatusBar = (() => {
+    let openStatusId = null;
     const info = {
       burn: { icon: "🔥", name: "화상" },
       poison: { icon: "☠", name: "중독" },
@@ -674,7 +680,7 @@
     }
 
     function closeAll() {
-      dom.enemyStatusBar.querySelectorAll(".status-icon").forEach((el) => el.classList.remove("open"));
+      openStatusId = null;
     }
 
     document.addEventListener("click", (event) => {
@@ -693,6 +699,9 @@
           const node = document.createElement("button");
           node.type = "button";
           node.className = "status-icon";
+          if (openStatusId === id) {
+            node.classList.add("open");
+          }
           node.innerHTML = `
             <span>${meta.icon}</span>
             <span class="status-stack">${value.stacks || 1}</span>
@@ -700,9 +709,7 @@
           `;
           node.addEventListener("click", (event) => {
             event.stopPropagation();
-            const opened = node.classList.contains("open");
-            closeAll();
-            if (!opened) node.classList.add("open");
+            openStatusId = openStatusId === id ? null : id;
           });
           dom.enemyStatusBar.appendChild(node);
         });
@@ -975,9 +982,81 @@
             dom.rearrangeError.textContent = "";
           }
           dom.rearrangeHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
+          renderPhaseBuffChoices();
         });
 
         dom.rearrangeSlots.appendChild(block);
+      }
+    }
+
+    function colorCounts() {
+      const counts = { blue: 0, red: 0, green: 0 };
+      player.spellSlots.forEach((id) => {
+        const spell = spellLibrary[id];
+        if (spell && counts[spell.color] !== undefined) {
+          counts[spell.color] += 1;
+        }
+      });
+      return counts;
+    }
+
+    function applyPhaseBuff(choice) {
+      if (choice === "blue") {
+        const counts = colorCounts();
+        const bonus = 4 + counts.blue * 2;
+        systems.statusSystem.applyPlayer({ id: "bluePulse", duration: 9999, bonus, stacks: 1 });
+        ui.combatLog.push(`강화 선택: 청색 공명 (MP 재생 +${bonus}/초)`, true);
+      }
+      if (choice === "red") {
+        const counts = colorCounts();
+        const damagePct = 10 + counts.red * 6;
+        systems.statusSystem.applyPlayer({ id: "redFury", duration: 9999, damagePct, stacks: 1 });
+        ui.combatLog.push(`강화 선택: 적색 격류 (적색 피해 +${damagePct}%)`, true);
+      }
+      if (choice === "green") {
+        const counts = colorCounts();
+        const reduction = 0.06 + counts.green * 0.04;
+        const regenPerSec = 2 + counts.green;
+        systems.statusSystem.applyPlayer({ id: "greenWard", duration: 9999, reduction, regenPerSec, stacks: 1 });
+        ui.combatLog.push(`강화 선택: 녹색 생장 (피해감소 ${Math.floor(reduction * 100)}%, 초당 회복 ${regenPerSec})`, true);
+      }
+      state.phaseBuffChoice = choice;
+      state.phaseBuffChosen = true;
+      dom.readyBtn.disabled = false;
+      renderPhaseBuffChoices();
+    }
+
+    function renderPhaseBuffChoices() {
+      const counts = colorCounts();
+      const blueBonus = 4 + counts.blue * 2;
+      const redBonus = 10 + counts.red * 6;
+      const greenReduction = Math.floor((0.06 + counts.green * 0.04) * 100);
+      const greenRegen = 2 + counts.green;
+      const choices = [
+        { id: "blue", name: "청색 공명", desc: `MP 재생 +${blueBonus}/초` },
+        { id: "red", name: "적색 격류", desc: `적색 마법 피해 +${redBonus}%` },
+        { id: "green", name: "녹색 생장", desc: `피해감소 ${greenReduction}% + 초당 ${greenRegen} 회복` }
+      ];
+      dom.phaseBuffChoices.innerHTML = "";
+      choices.forEach((choice) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "phase-buff-btn";
+        if (state.phaseBuffChoice === choice.id) {
+          btn.classList.add("active");
+        }
+        btn.innerHTML = `<strong>${choice.name}</strong><span>${choice.desc}</span>`;
+        btn.disabled = state.phaseBuffChosen;
+        btn.addEventListener("click", () => {
+          if (state.phaseBuffChosen) return;
+          applyPhaseBuff(choice.id);
+        });
+        dom.phaseBuffChoices.appendChild(btn);
+      });
+      if (state.phaseBuffChosen) {
+        dom.phaseBuffHint.textContent = "강화 선택 완료.";
+      } else {
+        dom.phaseBuffHint.textContent = "페이즈 강화 1개를 선택하세요.";
       }
     }
 
@@ -1027,10 +1106,14 @@
             ui.phaseOverlay.hide();
             state.mode = "rearrange";
             state.rearrangeRemaining = 10;
+            state.phaseBuffChosen = false;
+            state.phaseBuffChoice = null;
             dom.rearrangePanel.classList.remove("hidden");
             dom.rearrangeError.textContent = "";
             dom.rearrangeHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
+            dom.readyBtn.disabled = true;
             renderRearrange();
+            renderPhaseBuffChoices();
             ui.combatLog.push("마법서 재배치 시간(10초).", true);
           }, 1300);
           return true;
@@ -1046,11 +1129,18 @@
         state.rearrangeRemaining = Math.max(0, state.rearrangeRemaining - dt);
         dom.rearrangeTimerText.textContent = `남은 시간: ${state.rearrangeRemaining.toFixed(1)}초`;
         if (state.rearrangeRemaining <= 0) {
+          if (!state.phaseBuffChosen) {
+            applyPhaseBuff("blue");
+          }
           this.exitRearrange();
         }
       },
       exitRearrange() {
         if (state.mode !== "rearrange") return;
+        if (!state.phaseBuffChosen) {
+          dom.rearrangeError.textContent = "강화 선택 후 진행할 수 있습니다.";
+          return;
+        }
         dom.rearrangePanel.classList.add("hidden");
         state.mode = "running";
         systems.combatLoop.setPaused(false);
@@ -1086,6 +1176,10 @@
     const vulnPct = systems.statusSystem.enemyVulnerability();
     if (vulnPct > 0) {
       damage = Math.floor(damage * (1 + vulnPct / 100));
+    }
+
+    if (spell.color === "red" && player.statuses.redFury) {
+      damage = Math.floor(damage * (1 + (player.statuses.redFury.damagePct || 0) / 100));
     }
 
     if (spell.id === "aerisAzureSeal") {
@@ -1258,7 +1352,8 @@
 
   function playerManaRegenPerSec() {
     const flow = player.statuses.manaFlow ? (player.statuses.manaFlow.bonus || 0) : 0;
-    return player.manaRegen + flow;
+    const bluePulse = player.statuses.bluePulse ? (player.statuses.bluePulse.bonus || 0) : 0;
+    return player.manaRegen + flow + bluePulse;
   }
 
   function phase1AI(dt) {
@@ -1372,6 +1467,9 @@
   function runCombat(dt) {
     player.mp = Math.min(player.maxMp, player.mp + playerManaRegenPerSec() * dt);
     enemy.mp = Math.min(enemy.maxMp, enemy.mp + enemy.manaRegen * dt);
+    if (player.statuses.greenWard && player.statuses.greenWard.regenPerSec) {
+      player.hp = Math.min(player.maxHp, player.hp + player.statuses.greenWard.regenPerSec * dt);
+    }
 
     spellList.forEach((spell) => {
       state.cooldowns[spell.id] = Math.max(0, (state.cooldowns[spell.id] || 0) - dt);
@@ -1478,6 +1576,8 @@
     state.castGap = 0;
     state.rearrangeRemaining = 0;
     state.pendingTimeout = null;
+    state.phaseBuffChosen = false;
+    state.phaseBuffChoice = null;
 
     resetCooldowns();
 
@@ -1491,6 +1591,9 @@
     systems.phaseSystem.resetPhase();
 
     dom.rearrangePanel.classList.add("hidden");
+    dom.phaseBuffChoices.innerHTML = "";
+    dom.phaseBuffHint.textContent = "페이즈 강화 1개를 선택하세요.";
+    dom.readyBtn.disabled = false;
     systems.combatLoop.setPaused(true);
 
     ui.combatLog.clear();
