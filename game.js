@@ -144,10 +144,10 @@
   };
 
   const player = {
-    hp: 420,
-    maxHp: 420,
-    mp: 220,
-    maxMp: 220,
+    hp: 560,
+    maxHp: 560,
+    mp: 320,
+    maxMp: 320,
     manaRegen: 18,
     maxHearts: 10,
     shield: 0,
