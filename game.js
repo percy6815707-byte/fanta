@@ -1084,6 +1084,11 @@
         if (state.phaseIndex < phaseDefs.length - 1) {
           state.phaseIndex += 1;
           const phase = currentPhase();
+
+          // Phase transition reward: fully restore player resources.
+          player.hp = player.maxHp;
+          player.mp = player.maxMp;
+
           enemy.maxHp = phase.maxHp;
           enemy.hp = phase.maxHp;
           enemy.maxMp = phase.enemyMaxMp;
