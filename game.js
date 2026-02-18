@@ -3,10 +3,13 @@
     playerHpFill: document.getElementById("player-hp-fill"),
     playerMpFill: document.getElementById("player-mp-fill"),
     bossHpFill: document.getElementById("boss-hp-fill"),
+    bossMpFill: document.getElementById("boss-mp-fill"),
     playerHpText: document.getElementById("player-hp-text"),
     playerMpText: document.getElementById("player-mp-text"),
     bossHpText: document.getElementById("boss-hp-text"),
+    bossMpText: document.getElementById("boss-mp-text"),
     heartText: document.getElementById("heart-text"),
+    enemyHeartText: document.getElementById("enemy-heart-text"),
     phasePill: document.getElementById("phase-pill"),
     loadoutHeartText: document.getElementById("loadout-heart-text"),
     loadoutSlots: document.getElementById("loadout-slots"),
@@ -250,23 +253,47 @@
       name: "적색 진명",
       title: "페이즈 1: 적색 진명",
       quote: "불꽃은 거짓말을 하지 않는다. 네가 약할 뿐이다.",
-      maxHp: 640
+      maxHp: 640,
+      enemyMaxMp: 180,
+      enemyManaRegen: 14,
+      enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
     },
     {
       id: 2,
       name: "홍염의 폭주",
       title: "페이즈 2: 홍염의 폭주",
       quote: "이제 시험은 끝이다. 네가 버티는지 보겠다.",
-      maxHp: 760
+      maxHp: 760,
+      enemyMaxMp: 220,
+      enemyManaRegen: 16,
+      enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
     },
     {
       id: 3,
       name: "푸르가토리움의 잔재",
       title: "페이즈 3: 푸르가토리움의 잔재",
       quote: "태워라… 전부 태워라… 남는 것은 재 뿐이다…",
-      maxHp: 920
+      maxHp: 920,
+      enemyMaxMp: 260,
+      enemyManaRegen: 18,
+      enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
     }
   ];
+
+  const enemySpellLibrary = {
+    flareBurst: { id: "flareBurst", name: "연속 화염탄", heartCost: 1, manaCost: 14, cooldown: 1.2, damage: [8, 13], hits: 2, shieldBreakMul: 2, addPlayerStatus: { id: "burn", stacks: 1, duration: 4, dps: 2 } },
+    scarletShard: { id: "scarletShard", name: "적염 파편", heartCost: 1, manaCost: 18, cooldown: 2.8, damage: [18, 24], hits: 1, shieldBreakMul: 2 },
+    brandBreaker: { id: "brandBreaker", name: "폭열 파쇄", heartCost: 2, manaCost: 26, cooldown: 4.6, damage: [22, 30], hits: 1, shieldBreakMul: 2, addEnemyStatus: { id: "mark", stacks: 1, duration: 3, shieldBreakPct: 50 } },
+    allenTrueName: { id: "allenTrueName", name: "적색 진명", heartCost: 4, manaCost: 52, cooldown: 6.4, damage: [30, 44], hits: 1, shieldBreakMul: 2, highCircle: true },
+    flameStrike: { id: "flameStrike", name: "화염 강타", heartCost: 2, manaCost: 26, cooldown: 2.9, damage: [20, 30], hits: 1 },
+    allensMark: { id: "allensMark", name: "과열 표식", heartCost: 2, manaCost: 22, cooldown: 4.4, damage: [14, 20], hits: 1, addEnemyStatus: { id: "overheat", stacks: 1, duration: 2.1, critPct: 15 } },
+    infernoCharge: { id: "infernoCharge", name: "홍염 예열", heartCost: 3, manaCost: 30, cooldown: 6.8, damage: [16, 22], hits: 1, addPlayerStatus: { id: "burn", stacks: 2, duration: 6, dps: 3 } },
+    skyFallingFlame: { id: "skyFallingFlame", name: "불꽃이 내리는 하늘", heartCost: 4, manaCost: 68, cooldown: 8.2, damage: [66, 86], hits: 1, highCircle: true, critBase: 0.32, critMul: 1.45, addPlayerStatus: { id: "burn", stacks: 6, duration: 8, dps: 3 } },
+    ragingFlare: { id: "ragingFlare", name: "폭주 화염", heartCost: 3, manaCost: 42, cooldown: 2.4, damage: [40, 56], hits: 1, highCircle: true },
+    purgatoriumEcho: { id: "purgatoriumEcho", name: "푸르가토리움 메아리", heartCost: 4, manaCost: 58, cooldown: 4.6, damage: [54, 72], hits: 1, addPlayerStatus: { id: "burn", stacks: 3, duration: 6, dps: 4 } },
+    searingPrison: { id: "searingPrison", name: "작열 구속", heartCost: 4, manaCost: 66, cooldown: 6.8, damage: [26, 34], hits: 1, addPlayerStatus: { id: "stun", stacks: 1, duration: 0.8 } },
+    selfImmolation: { id: "selfImmolation", name: "자소 연소", heartCost: 5, manaCost: 72, cooldown: 7.2, damage: [36, 48], hits: 1, selfBurnPct: 0.05, addEnemyStatus: { id: "overheat", stacks: 2, duration: 2, critPct: 15 } }
+  };
 
   const state = {
     mode: "prep",
@@ -304,6 +331,12 @@
   const enemy = {
     hp: phaseDefs[0].maxHp,
     maxHp: phaseDefs[0].maxHp,
+    mp: phaseDefs[0].enemyMaxMp,
+    maxMp: phaseDefs[0].enemyMaxMp,
+    manaRegen: phaseDefs[0].enemyManaRegen,
+    maxHearts: 10,
+    spellSlots: [...phaseDefs[0].enemyLoadout],
+    cooldowns: Object.fromEntries(Object.keys(enemySpellLibrary).map((id) => [id, 0])),
     statuses: {}
   };
 
@@ -321,6 +354,13 @@
   function usedHearts(slots = player.spellSlots) {
     return slots.reduce((sum, id) => {
       const spell = spellLibrary[id];
+      return sum + (spell ? spell.heartCost : 0);
+    }, 0);
+  }
+
+  function enemyUsedHearts(slots = enemy.spellSlots) {
+    return slots.reduce((sum, id) => {
+      const spell = enemySpellLibrary[id];
       return sum + (spell ? spell.heartCost : 0);
     }, 0);
   }
@@ -903,6 +943,13 @@
         const phase = currentPhase();
         enemy.maxHp = phase.maxHp;
         enemy.hp = phase.maxHp;
+        enemy.maxMp = phase.enemyMaxMp;
+        enemy.mp = phase.enemyMaxMp;
+        enemy.manaRegen = phase.enemyManaRegen;
+        enemy.spellSlots = [...phase.enemyLoadout];
+        Object.keys(enemy.cooldowns).forEach((id) => {
+          enemy.cooldowns[id] = 0;
+        });
         enemy.statuses = {};
         setupPhaseAI();
       },
@@ -916,6 +963,13 @@
           const phase = currentPhase();
           enemy.maxHp = phase.maxHp;
           enemy.hp = phase.maxHp;
+          enemy.maxMp = phase.enemyMaxMp;
+          enemy.mp = phase.enemyMaxMp;
+          enemy.manaRegen = phase.enemyManaRegen;
+          enemy.spellSlots = [...phase.enemyLoadout];
+          Object.keys(enemy.cooldowns).forEach((id) => {
+            enemy.cooldowns[id] = 0;
+          });
           enemy.statuses = {};
           setupPhaseAI();
 
@@ -1052,9 +1106,61 @@
     }
   }
 
+  function castEnemySpell(spellId, options = {}) {
+    const spell = enemySpellLibrary[spellId];
+    if (!spell) return { ok: false, reason: "missing" };
+    if (!enemy.spellSlots.includes(spellId)) return { ok: false, reason: "not-equipped" };
+    if ((enemy.cooldowns[spell.id] || 0) > 0) return { ok: false, reason: "cooldown" };
+    if (enemy.mp < spell.manaCost) return { ok: false, reason: "mana" };
+
+    enemy.mp = Math.max(0, enemy.mp - spell.manaCost);
+    enemy.cooldowns[spell.id] = spell.cooldown;
+
+    let damage = 0;
+    const hitCount = spell.hits || 1;
+    for (let i = 0; i < hitCount; i += 1) {
+      damage += randomInt(spell.damage[0], spell.damage[1]);
+    }
+
+    if (spell.critBase) {
+      const critChance = spell.critBase + systems.statusSystem.enemyOverheatCrit() / 100;
+      if (Math.random() < critChance) {
+        damage = Math.floor(damage * (spell.critMul || 1.4));
+      }
+    }
+
+    if (options.rampBonus) {
+      damage += options.rampBonus;
+    }
+
+    const dealt = dealPlayerDamage(damage, { shieldBreakMul: spell.shieldBreakMul || 1 });
+    applyReactiveSlow();
+
+    if (spell.addPlayerStatus) {
+      systems.statusSystem.applyPlayer(spell.addPlayerStatus);
+    }
+    if (spell.addEnemyStatus) {
+      systems.statusSystem.applyEnemy(spell.addEnemyStatus);
+    }
+    if (spell.selfBurnPct) {
+      const selfBurn = Math.floor(enemy.maxHp * spell.selfBurnPct);
+      enemy.hp = Math.max(0, enemy.hp - selfBurn);
+      ui.damageFloat.show(selfBurn);
+    }
+
+    const message = options.logName || spell.name;
+    if (spell.highCircle || options.important) {
+      ui.combatLog.push(`알렌: ${message}! ${dealt} 피해.`, true);
+    } else {
+      ui.combatLog.push(`알렌의 ${message}! ${dealt} 피해.`);
+    }
+    return { ok: true, dealt };
+  }
+
   function runAutoCast(dt) {
     state.castGap = Math.max(0, state.castGap - dt);
     if (state.castGap > 0) return;
+    if (player.statuses.stun) return;
 
     for (let i = 0; i < player.spellSlots.length; i += 1) {
       const spell = spellLibrary[player.spellSlots[i]];
@@ -1089,22 +1195,18 @@
 
     if (state.ai.rapidTimer <= 0) {
       state.ai.rapidTimer += 1.05 + Math.random() * 0.25;
-      const hitCount = randomInt(2, 3);
-      let total = 0;
-      for (let i = 0; i < hitCount; i += 1) {
-        total += dealPlayerDamage(randomInt(8, 13), { shieldBreakMul: 2 });
-        applyReactiveSlow();
+      const cast = castEnemySpell("flareBurst");
+      if (!cast.ok) {
+        castEnemySpell("scarletShard");
       }
-      systems.statusSystem.applyPlayer({ id: "burn", stacks: 1, duration: 4, dps: 2 });
-      systems.statusSystem.applyEnemy({ id: "mark", stacks: 1, duration: 2.8, shieldBreakPct: 50 });
-      ui.combatLog.push(`알렌의 연속 화염탄! ${total} 피해.`);
     }
 
     if (state.ai.burstTimer <= 0) {
       state.ai.burstTimer += 4.6 + Math.random() * 1.2;
-      const dealt = dealPlayerDamage(randomInt(30, 44), { shieldBreakMul: 2 });
-      applyReactiveSlow();
-      ui.combatLog.push(`알렌: 4서클 마법 '적색 진명'! ${dealt} 피해.`, true);
+      const cast = castEnemySpell("allenTrueName", { logName: "4서클 마법 '적색 진명'", important: true });
+      if (!cast.ok) {
+        castEnemySpell("brandBreaker");
+      }
     }
   }
 
@@ -1116,20 +1218,9 @@
       if (state.ai.chargeRemaining <= 0) {
         state.ai.charging = false;
         state.ai.chargeRemaining = 3.4 + Math.random() * 1.1;
-
-        let damage = randomInt(66, 86);
-        const critChance = 0.32 + systems.statusSystem.enemyOverheatCrit() / 100;
-        const crit = Math.random() < critChance;
-        if (crit) damage = Math.floor(damage * 1.45);
-
-        const dealt = dealPlayerDamage(damage);
-        applyReactiveSlow();
-        systems.statusSystem.applyPlayer({ id: "burn", stacks: randomInt(5, 8), duration: 8, dps: 3 });
-
-        if (crit) {
-          ui.combatLog.push(`알렌: 4서클 마법 '불꽃이 내리는 하늘'! ${dealt} 피해 (치명).`, true);
-        } else {
-          ui.combatLog.push(`알렌: 4서클 마법 '불꽃이 내리는 하늘'! ${dealt} 피해.`, true);
+        const cast = castEnemySpell("skyFallingFlame", { logName: "4서클 마법 '불꽃이 내리는 하늘'", important: true });
+        if (!cast.ok) {
+          castEnemySpell("infernoCharge");
         }
       }
     } else {
@@ -1142,9 +1233,10 @@
 
     if (state.ai.basicTimer <= 0) {
       state.ai.basicTimer += 2.9;
-      const dealt = dealPlayerDamage(randomInt(20, 30));
-      applyReactiveSlow();
-      ui.combatLog.push(`알렌의 화염 강타! ${dealt} 피해.`);
+      const cast = castEnemySpell("flameStrike");
+      if (!cast.ok) {
+        castEnemySpell("allensMark");
+      }
     }
 
     systems.statusSystem.applyEnemy({ id: "overheat", stacks: 1, duration: 2.1, critPct: 15 });
@@ -1172,16 +1264,19 @@
 
     if (state.ai.frenzyTimer <= 0) {
       state.ai.frenzyTimer += Math.max(1.3, 2.4 - state.ai.phase3Ramp * 0.08);
-      const base = randomInt(40, 56) + state.ai.phase3Ramp * 3;
-      const dealt = dealPlayerDamage(base);
-      applyReactiveSlow();
-      ui.combatLog.push(`알렌의 폭주 화염! ${dealt} 피해.`, true);
+      const cast = castEnemySpell("ragingFlare", { rampBonus: state.ai.phase3Ramp * 3, important: true });
+      if (!cast.ok) {
+        castEnemySpell("purgatoriumEcho", { rampBonus: Math.floor(state.ai.phase3Ramp * 1.5), important: true });
+      }
     }
 
     if (state.ai.meltdownRemaining <= 0) {
-      const dealt = dealPlayerDamage(randomInt(96, 132));
-      applyReactiveSlow();
-      ui.combatLog.push(`알렌: 푸르가토리움 붕괴! ${dealt} 피해.`, true);
+      const cast = castEnemySpell("selfImmolation", { logName: "푸르가토리움 붕괴", important: true });
+      if (!cast.ok) {
+        const dealt = dealPlayerDamage(randomInt(96, 132));
+        applyReactiveSlow();
+        ui.combatLog.push(`알렌: 푸르가토리움 붕괴! ${dealt} 피해.`, true);
+      }
       if (player.hp > 0) {
         state.mode = "victory";
         systems.combatLoop.setPaused(true);
@@ -1204,9 +1299,13 @@
 
   function runCombat(dt) {
     player.mp = Math.min(player.maxMp, player.mp + player.manaRegen * dt);
+    enemy.mp = Math.min(enemy.maxMp, enemy.mp + enemy.manaRegen * dt);
 
     spellList.forEach((spell) => {
       state.cooldowns[spell.id] = Math.max(0, (state.cooldowns[spell.id] || 0) - dt);
+    });
+    Object.keys(enemy.cooldowns).forEach((id) => {
+      enemy.cooldowns[id] = Math.max(0, (enemy.cooldowns[id] || 0) - dt);
     });
 
     systems.statusSystem.tickEnemy(dt);
@@ -1274,12 +1373,15 @@
     dom.playerHpFill.style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
     dom.playerMpFill.style.width = `${Math.max(0, (player.mp / player.maxMp) * 100)}%`;
     dom.bossHpFill.style.width = `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`;
+    dom.bossMpFill.style.width = `${Math.max(0, (enemy.mp / enemy.maxMp) * 100)}%`;
 
     dom.playerHpText.textContent = `${Math.floor(player.hp)} / ${player.maxHp}`;
     dom.playerMpText.textContent = `${Math.floor(player.mp)} / ${player.maxMp}`;
     dom.bossHpText.textContent = `${Math.floor(enemy.hp)} / ${enemy.maxHp}`;
+    dom.bossMpText.textContent = `${Math.floor(enemy.mp)} / ${enemy.maxMp}`;
 
     dom.heartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts} | 보호막 ${Math.floor(player.shield)}`;
+    dom.enemyHeartText.textContent = `보스 하트: ${enemyUsedHearts()} / ${enemy.maxHearts}`;
     dom.loadoutHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
     dom.loadoutSlots.querySelectorAll("select").forEach((select) => {
       select.disabled = state.mode !== "prep";
