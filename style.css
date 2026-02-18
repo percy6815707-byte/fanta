@@ -172,6 +172,20 @@ body {
   gap: 8px;
 }
 
+.enemy-status-detail {
+  margin-top: 6px;
+  min-height: 40px;
+  width: min(260px, 90vw);
+  border: 1px solid rgba(193, 220, 240, 0.3);
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #d6e8f6;
+  background: rgba(7, 16, 24, 0.75);
+  text-align: left;
+}
+
 .status-icon {
   width: 30px;
   height: 30px;

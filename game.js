@@ -20,6 +20,7 @@
     speedBtn: document.getElementById("speed-btn"),
     enemyPortraitFrame: document.getElementById("enemy-portrait-frame"),
     enemyStatusBar: document.getElementById("enemy-status-bar"),
+    enemyStatusDetail: document.getElementById("enemy-status-detail"),
     enemyFloatLayer: document.getElementById("enemy-float-layer"),
     rearrangePanel: document.getElementById("rearrange-panel"),
     rearrangeTimerText: document.getElementById("rearrange-timer-text"),
@@ -333,6 +334,7 @@
     castGap: 0,
     phaseIndex: 0,
     speed: 1,
+    playerDamageBonus: 0.18,
     phaseBuffChosen: false,
     phaseBuffChoice: null,
     rearrangeRemaining: 0,
@@ -352,12 +354,12 @@
   };
 
   const player = {
-    hp: 560,
-    maxHp: 560,
-    mp: 320,
-    maxMp: 320,
-    manaRegen: 18,
-    maxHearts: 10,
+    hp: 700,
+    maxHp: 700,
+    mp: 420,
+    maxMp: 420,
+    manaRegen: 24,
+    maxHearts: 12,
     shield: 0,
     spellSlots: ["frostShard", "fireball", "venomVine", "skyOfEmbers"],
     statuses: {}
@@ -681,6 +683,7 @@
 
     function closeAll() {
       openStatusId = null;
+      dom.enemyStatusDetail.textContent = "상태이상을 탭하면 상세가 표시됩니다.";
     }
 
     document.addEventListener("click", (event) => {
@@ -693,23 +696,34 @@
       render(statuses) {
         const entries = Object.entries(statuses).filter(([, value]) => value && value.remaining > 0);
         dom.enemyStatusBar.innerHTML = "";
+        if (entries.length === 0) {
+          dom.enemyStatusDetail.textContent = "현재 상태이상 없음.";
+        }
 
         entries.forEach(([id, value]) => {
           const meta = info[id] || { icon: "?", name: id };
+          const detailText = tooltipFor(id, value);
           const node = document.createElement("button");
           node.type = "button";
           node.className = "status-icon";
           if (openStatusId === id) {
             node.classList.add("open");
+            dom.enemyStatusDetail.innerHTML = detailText.replace(/\n/g, "<br>");
           }
           node.innerHTML = `
             <span>${meta.icon}</span>
             <span class="status-stack">${value.stacks || 1}</span>
-            <span class="status-tooltip">${tooltipFor(id, value).replace(/\n/g, "<br>")}</span>
+            <span class="status-tooltip">${detailText.replace(/\n/g, "<br>")}</span>
           `;
           node.addEventListener("click", (event) => {
             event.stopPropagation();
-            openStatusId = openStatusId === id ? null : id;
+            const next = openStatusId === id ? null : id;
+            openStatusId = next;
+            if (next) {
+              dom.enemyStatusDetail.innerHTML = detailText.replace(/\n/g, "<br>");
+            } else {
+              dom.enemyStatusDetail.textContent = "상태이상을 탭하면 상세가 표시됩니다.";
+            }
           });
           dom.enemyStatusBar.appendChild(node);
         });
@@ -1085,9 +1099,9 @@
           state.phaseIndex += 1;
           const phase = currentPhase();
 
-          // Phase transition reward: fully restore player resources.
-          player.hp = player.maxHp;
-          player.mp = player.maxMp;
+          // Phase transition reward: recover 25% of max resources.
+          player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.25));
+          player.mp = Math.min(player.maxMp, player.mp + Math.floor(player.maxMp * 0.25));
 
           enemy.maxHp = phase.maxHp;
           enemy.hp = phase.maxHp;
@@ -1186,6 +1200,7 @@
     if (spell.color === "red" && player.statuses.redFury) {
       damage = Math.floor(damage * (1 + (player.statuses.redFury.damagePct || 0) / 100));
     }
+    damage = Math.floor(damage * (1 + state.playerDamageBonus));
 
     if (spell.id === "aerisAzureSeal") {
       let successChance = spell.executionChance || 0.1;
