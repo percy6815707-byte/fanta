@@ -17,6 +17,7 @@
     spellSlots: document.getElementById("spell-slots"),
     startBtn: document.getElementById("start-btn"),
     resetBtn: document.getElementById("reset-btn"),
+    speedBtn: document.getElementById("speed-btn"),
     enemyPortraitFrame: document.getElementById("enemy-portrait-frame"),
     enemyStatusBar: document.getElementById("enemy-status-bar"),
     enemyFloatLayer: document.getElementById("enemy-float-layer"),
@@ -59,6 +60,20 @@
       reactiveSlow: { duration: 3.5, slowPct: 10 },
       description: "보호막 40 + 피격 시 둔화 부여"
     },
+    manaSpring: {
+      id: "manaSpring",
+      name: "에테르 우물",
+      color: "blue",
+      circle: 2,
+      archetype: "생존",
+      manaCost: 18,
+      cooldown: 4.6,
+      heartCost: 2,
+      damage: [4, 8],
+      mpRestore: [28, 36],
+      manaFlow: { duration: 6, bonus: 9 },
+      description: "즉시 MP 회복 + 재생 증가"
+    },
     frostShackle: {
       id: "frostShackle",
       name: "빙결의 족쇄",
@@ -72,6 +87,21 @@
       chanceStun: 0.3,
       stunBonusDamage: [22, 30],
       description: "중간 피해 + 30% 마비, 성공 시 추가 피해"
+    },
+    azureSiphon: {
+      id: "azureSiphon",
+      name: "청맥 흡류",
+      color: "blue",
+      circle: 3,
+      archetype: "제어",
+      manaCost: 30,
+      cooldown: 5.8,
+      heartCost: 3,
+      damage: [18, 26],
+      enemyMpBurn: [22, 34],
+      mpStealRatio: 0.6,
+      applyEnemyStatus: { id: "slow", stacks: 1, duration: 3, slowPct: 12 },
+      description: "적 MP 소각 + 일부 흡수 + 둔화"
     },
     abyssalFrost: {
       id: "abyssalFrost",
@@ -300,6 +330,7 @@
     cooldowns: Object.fromEntries(spellList.map((spell) => [spell.id, 0])),
     castGap: 0,
     phaseIndex: 0,
+    speed: 1,
     rearrangeRemaining: 0,
     pendingTimeout: null,
     ai: {
@@ -416,6 +447,18 @@
     }
     if (spell.heal) {
       lines.push(`회복: ${spell.heal[0]}~${spell.heal[1]}`);
+    }
+    if (spell.mpRestore) {
+      lines.push(`MP 회복: ${spell.mpRestore[0]}~${spell.mpRestore[1]}`);
+    }
+    if (spell.manaFlow) {
+      lines.push(`MP 재생 +${spell.manaFlow.bonus}/초 (${spell.manaFlow.duration}초)`);
+    }
+    if (spell.enemyMpBurn) {
+      lines.push(`적 MP 소각: ${spell.enemyMpBurn[0]}~${spell.enemyMpBurn[1]}`);
+    }
+    if (spell.mpStealRatio) {
+      lines.push(`소각 MP 흡수율: ${Math.floor(spell.mpStealRatio * 100)}%`);
     }
     if (spell.castTime) {
       lines.push(`시전 시간: ${spell.castTime}초`);
@@ -788,6 +831,7 @@
         healPerTick: nextIncoming.healPerTick ?? current.healPerTick,
         poisonStacks: nextIncoming.poisonStacks ?? current.poisonStacks,
         stunChance: nextIncoming.stunChance ?? current.stunChance,
+        bonus: nextIncoming.bonus ?? current.bonus,
         tick: current.tick || 0
       };
     }
@@ -1075,6 +1119,29 @@
       line += ` ${heal} 회복.`;
     }
 
+    if (spell.mpRestore) {
+      const gain = randomInt(spell.mpRestore[0], spell.mpRestore[1]);
+      player.mp = Math.min(player.maxMp, player.mp + gain);
+      line += ` MP ${gain} 회복.`;
+    }
+
+    if (spell.manaFlow) {
+      systems.statusSystem.applyPlayer({ id: "manaFlow", duration: spell.manaFlow.duration, bonus: spell.manaFlow.bonus, stacks: 1 });
+    }
+
+    if (spell.enemyMpBurn) {
+      const burn = randomInt(spell.enemyMpBurn[0], spell.enemyMpBurn[1]);
+      const actualBurn = Math.min(enemy.mp, burn);
+      enemy.mp = Math.max(0, enemy.mp - actualBurn);
+      if (spell.mpStealRatio) {
+        const gain = Math.floor(actualBurn * spell.mpStealRatio);
+        player.mp = Math.min(player.maxMp, player.mp + gain);
+        line += ` 적 MP ${actualBurn} 소각, MP ${gain} 흡수.`;
+      } else {
+        line += ` 적 MP ${actualBurn} 소각.`;
+      }
+    }
+
     if (spell.poisonRes) {
       systems.statusSystem.applyPlayer({ id: "poisonRes", duration: spell.poisonRes.duration, reduction: spell.poisonRes.reduction, stacks: 1 });
     }
@@ -1189,6 +1256,11 @@
     }
   }
 
+  function playerManaRegenPerSec() {
+    const flow = player.statuses.manaFlow ? (player.statuses.manaFlow.bonus || 0) : 0;
+    return player.manaRegen + flow;
+  }
+
   function phase1AI(dt) {
     state.ai.rapidTimer -= dt;
     state.ai.burstTimer -= dt;
@@ -1298,7 +1370,7 @@
   }
 
   function runCombat(dt) {
-    player.mp = Math.min(player.maxMp, player.mp + player.manaRegen * dt);
+    player.mp = Math.min(player.maxMp, player.mp + playerManaRegenPerSec() * dt);
     enemy.mp = Math.min(enemy.maxMp, enemy.mp + enemy.manaRegen * dt);
 
     spellList.forEach((spell) => {
@@ -1344,7 +1416,7 @@
 
       if (!paused) {
         if (state.mode === "running") {
-          runCombat(dt);
+          runCombat(dt * state.speed);
         }
         if (state.mode === "rearrange") {
           systems.phaseSystem.updateRearrange(dt);
@@ -1386,6 +1458,8 @@
     dom.loadoutSlots.querySelectorAll("select").forEach((select) => {
       select.disabled = state.mode !== "prep";
     });
+    dom.speedBtn.textContent = `속도 x${state.speed}`;
+    dom.speedBtn.classList.toggle("active", state.speed > 1);
 
     if (state.mode === "running") dom.phasePill.textContent = `페이즈 ${state.phaseIndex + 1}`;
     if (state.mode === "rearrange") dom.phasePill.textContent = "재배치";
@@ -1400,6 +1474,7 @@
     ui.phaseOverlay.hide();
 
     state.mode = "prep";
+    state.speed = 1;
     state.castGap = 0;
     state.rearrangeRemaining = 0;
     state.pendingTimeout = null;
@@ -1439,6 +1514,10 @@
   function bindEvents() {
     dom.startBtn.addEventListener("click", startBattle);
     dom.resetBtn.addEventListener("click", resetBattle);
+    dom.speedBtn.addEventListener("click", () => {
+      state.speed = state.speed === 1 ? 2 : 1;
+      updateUI();
+    });
     dom.readyBtn.addEventListener("click", () => {
       systems.phaseSystem.exitRearrange();
     });

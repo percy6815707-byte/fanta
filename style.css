@@ -294,6 +294,12 @@ button {
   border: 1px solid var(--line);
 }
 
+.btn-secondary.active {
+  border-color: #ffcf86;
+  color: #ffcf86;
+  background: rgba(255, 207, 134, 0.08);
+}
+
 .battle-panel { padding: 12px; }
 
 .combat-log-panel {
