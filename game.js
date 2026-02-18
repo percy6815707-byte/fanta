@@ -587,6 +587,18 @@
     }
   };
 
+  function currentEnemyProfile() {
+    return enemyProfiles[state.enemyProfileId] || enemyProfiles.allen;
+  }
+
+  function setEnemyProfile(profileId) {
+    if (enemyProfiles[profileId]) {
+      state.enemyProfileId = profileId;
+    } else {
+      state.enemyProfileId = "allen";
+    }
+  }
+
   const relicPool = [
     "숲지기의 징표",
     "붉은 홍옥",
@@ -2571,14 +2583,3 @@
 
   init();
 })();
-  function currentEnemyProfile() {
-    return enemyProfiles[state.enemyProfileId] || enemyProfiles.allen;
-  }
-
-  function setEnemyProfile(profileId) {
-    if (enemyProfiles[profileId]) {
-      state.enemyProfileId = profileId;
-    } else {
-      state.enemyProfileId = "allen";
-    }
-  }
