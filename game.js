@@ -941,7 +941,7 @@
     rearrangeRemaining: 0,
     rearrangeSelectedFormulaIndex: null,
     rearrangeEntryFormulaIndex: null,
-    brokenFormulaIds: new Set(),
+    brokenFormulaIndexes: new Set(),
     pendingTimeout: null,
     ai: {
       rapidTimer: 1.0,
@@ -1231,25 +1231,33 @@
     saveSpellSlots(player.spellSlots);
   }
 
-  function isFormulaBroken(formula) {
+  function isFormulaBrokenByIndex(index) {
+    return state.brokenFormulaIndexes.has(index);
+  }
+
+  function isFormulaBroken(formula, index = -1) {
+    if (Number.isInteger(index) && index >= 0) return isFormulaBrokenByIndex(index);
     if (!formula) return false;
-    return state.brokenFormulaIds.has(formula.id);
+    const idx = player.formulaBook.formulas.findIndex((item) => item?.id === formula.id);
+    return idx >= 0 ? isFormulaBrokenByIndex(idx) : false;
   }
 
   function nextUsableFormulaIndex() {
     for (let i = 0; i < player.formulaBook.formulas.length; i += 1) {
       if (i === player.activeFormulaIndex) continue;
-      if (!isFormulaBroken(player.formulaBook.formulas[i])) return i;
+      if (!isFormulaBrokenByIndex(i)) return i;
     }
     return -1;
   }
 
   function handlePlayerFormulaBreak() {
+    const brokenIndex = player.activeFormulaIndex;
     const broken = getActiveFormula();
-    if (broken?.id) state.brokenFormulaIds.add(broken.id);
+    state.brokenFormulaIndexes.add(brokenIndex);
+    ui.combatLog.push(`내 술식 파괴: ${broken?.name || `${brokenIndex + 1}번 술식`}.`, true);
 
     if (player.manaHearts <= 0) {
-      ui.combatLog.push("전투 마나하트가 0이라 다음 술식 기동 실패.", true);
+      ui.combatLog.push("전투 마나하트가 0이라 다음 술식 기동 실패. 즉시 패배.", true);
       return false;
     }
 
@@ -1267,7 +1275,7 @@
     player.shield = 0;
     player.coreCastCount = 0;
     state.castGap = 0;
-    ui.combatLog.push(`내 술식 파괴. ${getActiveFormula().name} 자동 기동.`, true);
+    ui.combatLog.push(`${getActiveFormula().name} 자동 기동. (전투 마나하트 ${Math.floor(player.manaHearts)})`, true);
     return true;
   }
 
@@ -2467,7 +2475,10 @@
 
     function renderRow(state, statuses, mpValue) {
       if (state.mana) {
-        state.mana.innerHTML = `<span class="inline-mana-flag"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나수정">MP ${Math.floor(mpValue)}</span>`;
+        const heartFlag = state.config.key === "playerBuff"
+          ? ` <span class="inline-mana-flag"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나수정">하트 ${Math.floor(player.manaHearts)} / ${player.maxManaHearts}</span>`
+          : "";
+        state.mana.innerHTML = `<span class="inline-mana-flag"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나수정">MP ${Math.floor(mpValue)}</span>${heartFlag}`;
       }
 
       const entries = rowEntries(statuses, state.config.kind);
@@ -3480,7 +3491,7 @@
         block.className = "rearrange-slot rearrange-formula-btn";
         if (index === selectedIndex) block.classList.add("active");
         if (index === entryIndex) block.classList.add("current");
-        const broken = isFormulaBroken(formula);
+        const broken = isFormulaBroken(formula, index);
         if (broken) block.disabled = true;
         const core = getCoreById(formula.coreId);
         const hearts = usedHearts(formula.spellIds || []);
@@ -3508,7 +3519,7 @@
         ? Math.min(2, Math.max(0, state.rearrangeSelectedFormulaIndex))
         : entryIndex;
       const selectedFormula = player.formulaBook.formulas[selectedIndex];
-      if (isFormulaBroken(selectedFormula)) {
+      if (isFormulaBroken(selectedFormula, selectedIndex)) {
         selectedIndex = entryIndex;
         state.rearrangeSelectedFormulaIndex = entryIndex;
       }
@@ -4178,7 +4189,7 @@
     const enemyCore = getCurrentEnemyCore();
     const activeFormula = getActiveFormula();
     const phase = currentPhase();
-    dom.heartText.textContent = `핵: ${playerCore.name} | 전투 마나하트: ${Math.floor(player.manaHearts)} / ${player.maxManaHearts} | 보호막 ${Math.floor(player.shield)}`;
+    dom.heartText.textContent = `전투 마나하트: ${Math.floor(player.manaHearts)} / ${player.maxManaHearts} | 핵: ${playerCore.name} | 보호막 ${Math.floor(player.shield)}`;
     dom.enemyHeartText.textContent = `핵: ${enemyCore.name} | 하트: ${enemyUsedHearts()} / ${enemy.maxHearts}`;
     dom.loadoutHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
 
@@ -4226,7 +4237,7 @@
     state.rearrangeRemaining = 0;
     state.rearrangeSelectedFormulaIndex = null;
     state.rearrangeEntryFormulaIndex = null;
-    state.brokenFormulaIds = new Set();
+    state.brokenFormulaIndexes = new Set();
     state.pendingTimeout = null;
 
     resetCooldowns();
@@ -4271,7 +4282,7 @@
       resetBattle();
     }
     setWorldMode("battle");
-    state.brokenFormulaIds = new Set();
+    state.brokenFormulaIndexes = new Set();
     player.coreCastCount = 0;
     const openGain = applyOpeningCorePassive(player, getActiveFormulaCore());
     if (openGain > 0) {
