@@ -2,19 +2,28 @@
   const dom = {
     appShell: document.querySelector(".app-shell"),
     playerHpFill: document.getElementById("player-hp-fill"),
-    playerMpFill: document.getElementById("player-mp-fill"),
     bossHpFill: document.getElementById("boss-hp-fill"),
-    bossMpFill: document.getElementById("boss-mp-fill"),
     playerHpText: document.getElementById("player-hp-text"),
-    playerMpText: document.getElementById("player-mp-text"),
     bossHpText: document.getElementById("boss-hp-text"),
-    bossMpText: document.getElementById("boss-mp-text"),
+    playerBuffsText: document.getElementById("player-buffs-text"),
+    playerDebuffsText: document.getElementById("player-debuffs-text"),
+    bossBuffsText: document.getElementById("boss-buffs-text"),
+    bossDebuffsText: document.getElementById("boss-debuffs-text"),
+    playerNameText: document.getElementById("player-name-text"),
+    enemyNameText: document.getElementById("enemy-name-text"),
+    playerCorePassiveTip: document.getElementById("player-core-passive-tip"),
+    bossCorePassiveTip: document.getElementById("boss-core-passive-tip"),
     heartText: document.getElementById("heart-text"),
     enemyHeartText: document.getElementById("enemy-heart-text"),
     phasePill: document.getElementById("phase-pill"),
     loadoutHeartText: document.getElementById("loadout-heart-text"),
     loadoutSlots: document.getElementById("loadout-slots"),
     combatLog: document.getElementById("combat-log"),
+    combatLogToggle: document.getElementById("combat-log-toggle"),
+    combatLogBody: document.getElementById("combat-log-body"),
+    enemyBoard: document.getElementById("enemy-board"),
+    playerGridTitle: document.getElementById("player-grid-title"),
+    enemyGridTitle: document.getElementById("enemy-grid-title"),
     spellSlots: document.getElementById("spell-slots"),
     startBtn: document.getElementById("start-btn"),
     resetBtn: document.getElementById("reset-btn"),
@@ -296,9 +305,157 @@
     }
   };
 
+  const v2SpellData = [
+    { id: "red_flame_shard", name: "화염 파편", color: "red", circle: 1, manaCost: 1, cooldown: 1.0, effects: [{ type: "damage", value: 1 }, { type: "dot", value: 1, duration: 1 }], notes: "기본 반복 공격 + 약화 연소" },
+    { id: "red_ignite", name: "연소", color: "red", circle: 1, manaCost: 1, cooldown: 2.0, effects: [{ type: "dot", value: 1, duration: 2 }], notes: "2초 도트" },
+    { id: "red_lunge", name: "급습", color: "red", circle: 1, manaCost: 1, cooldown: 1.5, effects: [{ type: "damage", value: 2 }, { type: "dot", value: 1, duration: 1 }], notes: "개시 압박 + 점화" },
+    { id: "red_heat_stock", name: "열기 축적", color: "red", circle: 1, manaCost: 0, cooldown: 2.0, effects: [{ type: "manaGain", value: 1 }], notes: "마나 충전" },
+    { id: "red_blast_chain", name: "폭열 연계", color: "red", circle: 2, manaCost: 2, cooldown: 2.0, effects: [{ type: "damage", value: 3 }, { type: "manaOnEvent", event: "onDamageDealt", value: 1 }], notes: "피해 성공 시 마나 +1" },
+    { id: "red_overheat_cycle", name: "과열 순환", color: "red", circle: 2, manaCost: 2, cooldown: 3.0, effects: [{ type: "manaGain", value: 1 }], notes: "리스크 충전" },
+    { id: "red_chain_strike", name: "연쇄 타격", color: "red", circle: 2, manaCost: 2, cooldown: 3.0, effects: [{ type: "damage", value: 2 }, { type: "dot", value: 1, duration: 2 }], notes: "연쇄 타격 + 화상 연계" },
+    { id: "red_quick_slash", name: "홍염 참격", color: "red", circle: 2, manaCost: 2, cooldown: 2.4, effects: [{ type: "damage", value: 4 }, { type: "dot", value: 2, duration: 1 }], notes: "고타점 + 즉발 연소" },
+    { id: "red_smoke_burst", name: "연막 작열", color: "red", circle: 2, manaCost: 2, cooldown: 3.4, effects: [{ type: "dot", value: 2, duration: 2 }], notes: "화상 부여" },
+    { id: "red_overheat_burst", name: "과열 폭발", color: "red", circle: 3, manaCost: 3, cooldown: 4.0, effects: [{ type: "damage", value: 5 }, { type: "manaOnEvent", event: "onDamageDealt", value: 1 }], notes: "결정타 + 연소 회수" },
+    { id: "red_burn_storm", name: "연소 폭풍", color: "red", circle: 3, manaCost: 3, cooldown: 5.0, effects: [{ type: "dot", value: 1, duration: 3 }], notes: "지속 압박" },
+    { id: "red_full_focus", name: "전력 집중", color: "red", circle: 4, manaCost: 4, cooldown: 6.0, effects: [{ type: "damage", value: 6 }, { type: "dot", value: 2, duration: 2 }, { type: "manaOnCondition", condition: "selfManaLow", value: 2 }], notes: "고위 타격 + 연소 누적" },
+    { id: "red_collapse_flare", name: "폭염 붕괴", color: "red", circle: 5, manaCost: 5, cooldown: 8.0, effects: [{ type: "damage", value: 7 }, { type: "manaDelete", value: 99 }], notes: "마나 붕괴" },
+    { id: "blue_frost_poke", name: "서리 견제", color: "blue", circle: 1, manaCost: 1, cooldown: 1.5, effects: [{ type: "damage", value: 1 }, { type: "frostSlow", slowPct: 12, cooldownRate: 0.92, duration: 2 }, { type: "cooldownAdd", value: 0.5 }], notes: "쿨 지연 + 둔화" },
+    { id: "blue_chill_condense", name: "냉기 응집", color: "blue", circle: 1, manaCost: 0, cooldown: 3.0, effects: [{ type: "manaGain", value: 1 }, { type: "frostSlow", slowPct: 10, cooldownRate: 0.95, duration: 2 }], notes: "충전 + 약둔화" },
+    { id: "blue_suppress", name: "억제", color: "blue", circle: 1, manaCost: 1, cooldown: 2.0, effects: [{ type: "manaReduce", value: 1 }, { type: "frostSlow", slowPct: 14, cooldownRate: 0.9, duration: 2 }], notes: "마나 감소 + 둔화" },
+    { id: "blue_analyze", name: "분석", color: "blue", circle: 1, manaCost: 1, cooldown: 2.0, effects: [{ type: "manaGain", value: 1 }, { type: "frostSlow", slowPct: 10, cooldownRate: 0.94, duration: 2 }], notes: "조건부 충전 + 둔화" },
+    { id: "blue_shard_shot", name: "결정 사격", color: "blue", circle: 1, manaCost: 1, cooldown: 1.8, effects: [{ type: "damage", value: 2 }, { type: "frostSlow", slowPct: 15, cooldownRate: 0.88, duration: 2 }], notes: "피해 + 둔화 견제" },
+    { id: "blue_ice_barrier", name: "빙정 장벽", color: "blue", circle: 2, manaCost: 2, cooldown: 3.2, effects: [{ type: "shield", value: 2 }, { type: "frostSlow", slowPct: 18, cooldownRate: 0.85, duration: 2 }], notes: "보호막 + 냉기 둔화" },
+    { id: "blue_freeze_bind", name: "결빙 속박", color: "blue", circle: 2, manaCost: 2, cooldown: 3.0, effects: [{ type: "silence", duration: 1 }, { type: "manaOnEvent", event: "onControlApplied", value: 1 }], notes: "동결(시전 봉인)" },
+    { id: "blue_cooldown_chill", name: "냉각", color: "blue", circle: 2, manaCost: 2, cooldown: 3.0, effects: [{ type: "frostSlow", slowPct: 30, cooldownRate: 0.7, duration: 2 }], notes: "쿨다운 둔화" },
+    { id: "blue_flow_block", name: "흐름 차단", color: "blue", circle: 2, manaCost: 2, cooldown: 4.0, effects: [{ type: "silence", duration: 1 }], notes: "발동 차단" },
+    { id: "blue_frost_trace", name: "빙흔 추적", color: "blue", circle: 2, manaCost: 2, cooldown: 3.2, effects: [{ type: "frostSlow", slowPct: 22, cooldownRate: 0.8, duration: 2 }], notes: "둔화 각인" },
+    { id: "blue_zero_bind", name: "제로 구속", color: "blue", circle: 3, manaCost: 3, cooldown: 4.8, effects: [{ type: "silence", duration: 1.5 }], notes: "강화 동결" },
+    { id: "blue_mana_seal", name: "마력 봉쇄", color: "blue", circle: 3, manaCost: 3, cooldown: 4.0, effects: [{ type: "manaReduce", value: 2 }], notes: "마나 봉쇄" },
+    { id: "blue_time_dilate", name: "시간 지연", color: "blue", circle: 3, manaCost: 3, cooldown: 5.0, effects: [{ type: "silence", duration: 2 }, { type: "manaOnEvent", event: "onControlApplied", value: 1 }], notes: "지연 성공 시 마나 +1" },
+    { id: "blue_stop_order", name: "정지 명령", color: "blue", circle: 4, manaCost: 4, cooldown: 7.0, effects: [{ type: "silence", duration: 2 }, { type: "manaOnEvent", event: "onControlApplied", value: 2 }], notes: "완전 정지 + 마나 회수" },
+    { id: "blue_time_freeze", name: "시간 동결", color: "blue", circle: 5, manaCost: 5, cooldown: 9.0, effects: [{ type: "silence", duration: 2 }, { type: "manaReduce", value: 2 }], notes: "판도 제어" },
+    { id: "green_natural_recover", name: "자연 회복", color: "green", circle: 1, manaCost: 1, cooldown: 2.0, effects: [{ type: "heal", value: 1 }, { type: "regen", value: 1, duration: 2 }], notes: "기본 회복 + 재생" },
+    { id: "green_life_breath", name: "생명의 숨결", color: "green", circle: 1, manaCost: 0, cooldown: 3.0, effects: [{ type: "manaGain", value: 1 }, { type: "manaFlow", value: 1, duration: 3 }], notes: "지속 충전" },
+    { id: "green_absorb", name: "흡수", color: "green", circle: 1, manaCost: 1, cooldown: 2.0, effects: [{ type: "damage", value: 1 }, { type: "heal", value: 1 }, { type: "dot", value: 1, duration: 2 }], notes: "흡혈 + 독성 침식" },
+    { id: "green_guard_bud", name: "보호의 싹", color: "green", circle: 1, manaCost: 1, cooldown: 2.0, effects: [{ type: "shield", value: 1 }], notes: "기초 보호막" },
+    { id: "green_brutal_branch", name: "난타 덩굴", color: "green", circle: 1, manaCost: 1, cooldown: 1.9, effects: [{ type: "damage", value: 2 }], notes: "순수 타격" },
+    { id: "green_venom_seed", name: "맹독 씨앗", color: "green", circle: 1, manaCost: 1, cooldown: 2.8, effects: [{ type: "dot", value: 1, duration: 3 }], notes: "중독 씨앗 부여" },
+    { id: "green_life_curtain", name: "생명의 장막", color: "green", circle: 2, manaCost: 2, cooldown: 3.0, effects: [{ type: "shield", value: 3 }, { type: "manaOnCondition", condition: "selfShieldPositive", value: 1 }], notes: "보호막 유지 시 마나 +1" },
+    { id: "green_cycle_boost", name: "순환 강화", color: "green", circle: 2, manaCost: 2, cooldown: 4.0, effects: [{ type: "manaGain", value: 1 }, { type: "regen", value: 1, duration: 3 }], notes: "역전 충전 + 재생" },
+    { id: "green_regrowth", name: "재생", color: "green", circle: 2, manaCost: 2, cooldown: 3.0, effects: [{ type: "regen", value: 1, duration: 4 }], notes: "초당 체력 회복" },
+    { id: "green_moss_grasp", name: "이끼 속박", color: "green", circle: 2, manaCost: 2, cooldown: 3.6, effects: [{ type: "dot", value: 2, duration: 2 }], notes: "짧은 중독 속박" },
+    { id: "green_thorn_barrage", name: "가시 탄막", color: "green", circle: 3, manaCost: 3, cooldown: 4.3, effects: [{ type: "damage", value: 4 }, { type: "dot", value: 1, duration: 2 }], notes: "강한 단일 피해 + 독가시" },
+    { id: "green_bark_skin", name: "수피 갑주", color: "green", circle: 2, manaCost: 2, cooldown: 3.4, effects: [{ type: "shield", value: 2 }, { type: "regen", value: 1, duration: 3 }], notes: "중형 보호막 + 재생" },
+    { id: "green_thorn_ward", name: "가시 수호", color: "green", circle: 3, manaCost: 3, cooldown: 4.6, effects: [{ type: "shield", value: 4 }, { type: "dot", value: 1, duration: 3 }], notes: "강한 보호막 + 독성 역장" },
+    { id: "green_cycle_oath", name: "순환의 맹세", color: "green", circle: 3, manaCost: 3, cooldown: 5.0, effects: [{ type: "shield", value: 3 }, { type: "manaOnCondition", condition: "selfShieldPositive", value: 1 }], notes: "위기 반전 + 순환 회수" },
+    { id: "green_life_transfer", name: "생명 전이", color: "green", circle: 3, manaCost: 3, cooldown: 4.0, effects: [{ type: "damage", value: 2 }, { type: "heal", value: 2 }], notes: "공수 전환" },
+    { id: "green_earth_guard", name: "대지의 가호", color: "green", circle: 4, manaCost: 4, cooldown: 6.0, effects: [{ type: "shield", value: 5 }, { type: "manaOnCondition", condition: "selfShieldPositive", value: 2 }], notes: "대형 방어 + 마나 순환" },
+    { id: "green_life_return", name: "생명의 귀환", color: "green", circle: 5, manaCost: 5, cooldown: 8.0, effects: [{ type: "heal", value: 5 }, { type: "manaGain", value: 2 }], notes: "대회복" }
+  ];
+
+  function convertV2ToRuntime(v2) {
+    const damageValue = v2.effects.filter((e) => e.type === "damage" || e.type === "conditionalDamage").reduce((sum, e) => sum + (e.value || 0), 0);
+    const healValue = v2.effects.filter((e) => e.type === "heal").reduce((sum, e) => sum + (e.value || 0), 0);
+    const shieldValue = v2.effects.filter((e) => e.type === "shield").reduce((sum, e) => sum + (e.value || 0), 0);
+    const manaGain = v2.effects.filter((e) => e.type === "manaGain").reduce((sum, e) => sum + (e.value || 0), 0);
+    const manaOnEvent = v2.effects.find((e) => e.type === "manaOnEvent");
+    const manaOnCondition = v2.effects.find((e) => e.type === "manaOnCondition");
+    const manaBurn = v2.effects.filter((e) => e.type === "manaReduce" || e.type === "manaDelete").reduce((sum, e) => sum + (e.value || 0), 0);
+    const silence = v2.effects.find((e) => e.type === "silence");
+    const dot = v2.effects.find((e) => e.type === "dot");
+    const regen = v2.effects.find((e) => e.type === "regen");
+    const manaFlowEff = v2.effects.find((e) => e.type === "manaFlow");
+    const frostSlow = v2.effects.find((e) => e.type === "frostSlow");
+    const archetype = v2.color === "red" ? "속공" : v2.color === "blue" ? "제어" : "생존";
+    const runtime = {
+      id: v2.id,
+      name: v2.name,
+      color: v2.color,
+      circle: v2.circle,
+      archetype,
+      manaCost: v2.manaCost,
+      cooldown: v2.cooldown,
+      heartCost: v2.circle,
+      damage: [damageValue, damageValue],
+      description: v2.notes || `${v2.circle}서클 ${archetype} 주문`
+    };
+    if (healValue > 0) runtime.heal = [healValue, healValue];
+    if (shieldValue > 0) runtime.shield = shieldValue;
+    if (manaGain > 0) runtime.mpRestore = [manaGain, manaGain];
+    if (manaOnEvent) runtime.manaOnEvent = { event: manaOnEvent.event, value: manaOnEvent.value || 1 };
+    if (manaOnCondition) runtime.manaOnCondition = { condition: manaOnCondition.condition, value: manaOnCondition.value || 1 };
+    if (manaBurn > 0) runtime.enemyMpBurn = [manaBurn, manaBurn];
+    if (dot) {
+      runtime.applyEnemyStatus = (v2.color === "green")
+        ? { id: "poison", stacks: 1, duration: dot.duration || 2, dps: dot.value || 1, decayPerTick: 1 }
+        : { id: "burn", stacks: 2, duration: dot.duration || 2, dps: dot.value || 1, stackDecayOnHealthHit: 1 };
+    }
+    if (silence) runtime.applyEnemyStatus = { id: "freeze", stacks: 1, duration: silence.duration || 1 };
+    if (frostSlow) {
+      runtime.applyEnemyStatus = {
+        id: "slow",
+        stacks: 1,
+        duration: frostSlow.duration || 2,
+        slowPct: frostSlow.slowPct || 20,
+        cooldownRate: frostSlow.cooldownRate || 0.75
+      };
+    }
+    if (regen) {
+      runtime.applySelfStatus = { id: "regen", stacks: 1, duration: regen.duration || 3, healPerTick: regen.value || 1 };
+    }
+    if (manaFlowEff) {
+      runtime.applySelfStatus = { id: "manaFlow", stacks: 1, duration: manaFlowEff.duration || 3, manaPerTick: manaFlowEff.value || 1 };
+    }
+    return runtime;
+  }
+
+  const runtimeV2Library = Object.fromEntries(v2SpellData.map((item) => {
+    const runtime = convertV2ToRuntime(item);
+    return [runtime.id, runtime];
+  }));
+
+  Object.keys(spellLibrary).forEach((id) => delete spellLibrary[id]);
+  Object.assign(spellLibrary, runtimeV2Library);
+
   const spellList = Object.values(spellLibrary);
 
   const enemyProfiles = {
+    hunter: {
+      id: "hunter",
+      name: "사냥꾼",
+      portrait: "assets/적/enemy_allen_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "경계 태세",
+          title: "사냥꾼 - 경계 태세",
+          quote: "거기서 멈춰. 한 걸음만 더 오면 쏜다.",
+          maxHp: 12,
+          coreId: "core_balanced",
+          enemyMaxMp: 5,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_heat_stock"]
+        }
+      ]
+    },
+    lesser_spirit: {
+      id: "lesser_spirit",
+      name: "숲의 하급 정령",
+      portrait: "assets/적/enemy_serion_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "잔향 맥동",
+          title: "숲의 하급 정령 - 잔향 맥동",
+          quote: "이질적인 것… 멈춰…",
+          maxHp: 13,
+          coreId: "core_lance",
+          enemyMaxMp: 5,
+          enemyManaRegen: 0,
+          enemyLoadout: ["green_life_breath"]
+        }
+      ]
+    },
     allen: {
       id: "allen",
       name: "적색의 알렌",
@@ -309,30 +466,33 @@
           name: "적색 진명",
           title: "페이즈 1: 적색 진명",
           quote: "불꽃은 거짓말을 하지 않는다. 네가 약할 뿐이다.",
-          maxHp: 640,
-          enemyMaxMp: 180,
-          enemyManaRegen: 14,
-          enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+          maxHp: 18,
+          coreId: "core_lance",
+          enemyMaxMp: 8,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_heat_stock", "red_overheat_cycle", "red_flame_shard", "red_ignite", "red_blast_chain", "red_overheat_burst"]
         },
         {
           id: 2,
           name: "홍염의 폭주",
           title: "페이즈 2: 홍염의 폭주",
           quote: "이제 시험은 끝이다. 네가 버티는지 보겠다.",
-          maxHp: 760,
-          enemyMaxMp: 220,
-          enemyManaRegen: 16,
-          enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
+          maxHp: 22,
+          coreId: "core_balanced",
+          enemyMaxMp: 10,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_heat_stock", "red_overheat_cycle", "blue_chill_condense", "blue_frost_poke", "blue_freeze_bind", "blue_mana_seal", "blue_stop_order"]
         },
         {
           id: 3,
           name: "푸르가토리움의 잔재",
           title: "페이즈 3: 푸르가토리움의 잔재",
           quote: "태워라… 전부 태워라… 남는 것은 재 뿐이다…",
-          maxHp: 920,
-          enemyMaxMp: 260,
-          enemyManaRegen: 18,
-          enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+          maxHp: 26,
+          coreId: "core_bastion",
+          enemyMaxMp: 12,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_heat_stock", "red_overheat_cycle", "green_life_breath", "green_cycle_boost", "green_guard_bud", "green_life_curtain", "green_cycle_oath", "green_earth_guard"]
         }
       ]
     },
@@ -346,30 +506,33 @@
           name: "청맥의 봉쇄",
           title: "페이즈 1: 청맥의 봉쇄",
           quote: "네 호흡을 얼려주지. 한 걸음도 더 못 간다.",
-          maxHp: 620,
-          enemyMaxMp: 200,
-          enemyManaRegen: 15,
-          enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+          maxHp: 18,
+          coreId: "core_balanced",
+          enemyMaxMp: 8,
+          enemyManaRegen: 0,
+          enemyLoadout: ["blue_chill_condense", "blue_analyze", "blue_frost_poke", "blue_ice_barrier", "blue_freeze_bind", "blue_cooldown_chill", "blue_mana_seal"]
         },
         {
           id: 2,
           name: "빙결 연산",
           title: "페이즈 2: 빙결 연산",
           quote: "수식은 완성됐다. 너의 선택지는 없다.",
-          maxHp: 740,
-          enemyMaxMp: 235,
-          enemyManaRegen: 17,
-          enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
+          maxHp: 22,
+          coreId: "core_lance",
+          enemyMaxMp: 10,
+          enemyManaRegen: 0,
+          enemyLoadout: ["blue_chill_condense", "blue_analyze", "blue_frost_poke", "blue_ice_barrier", "blue_freeze_bind", "blue_flow_block", "blue_mana_seal", "red_full_focus"]
         },
         {
           id: 3,
           name: "절대영도 재귀",
           title: "페이즈 3: 절대영도 재귀",
           quote: "무한히 반복되는 냉각 속에서 사라져라.",
-          maxHp: 900,
-          enemyMaxMp: 275,
-          enemyManaRegen: 19,
-          enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+          maxHp: 26,
+          coreId: "core_bastion",
+          enemyMaxMp: 12,
+          enemyManaRegen: 0,
+          enemyLoadout: ["blue_chill_condense", "blue_analyze", "blue_ice_barrier", "blue_freeze_bind", "blue_flow_block", "blue_time_dilate", "blue_stop_order", "blue_time_freeze"]
         }
       ]
     },
@@ -383,30 +546,33 @@
           name: "심록의 맹아",
           title: "페이즈 1: 심록의 맹아",
           quote: "싹은 약해 보여도 뿌리는 단단하지.",
-          maxHp: 680,
-          enemyMaxMp: 175,
-          enemyManaRegen: 13,
-          enemyLoadout: ["flareBurst", "scarletShard", "brandBreaker", "allenTrueName"]
+          maxHp: 20,
+          coreId: "core_bastion",
+          enemyMaxMp: 8,
+          enemyManaRegen: 0,
+          enemyLoadout: ["green_life_breath", "green_cycle_boost", "green_natural_recover", "green_absorb", "green_guard_bud", "green_bark_skin", "green_life_curtain"]
         },
         {
           id: 2,
           name: "덩굴의 포위",
           title: "페이즈 2: 덩굴의 포위",
           quote: "도망칠 길은 없다. 숲은 이미 널 감쌌다.",
-          maxHp: 810,
-          enemyMaxMp: 215,
-          enemyManaRegen: 16,
-          enemyLoadout: ["flameStrike", "allensMark", "skyFallingFlame", "infernoCharge"]
+          maxHp: 24,
+          coreId: "core_balanced",
+          enemyMaxMp: 10,
+          enemyManaRegen: 0,
+          enemyLoadout: ["green_life_breath", "green_cycle_boost", "green_bark_skin", "green_life_curtain", "green_regrowth", "green_life_transfer", "green_earth_guard"]
         },
         {
           id: 3,
           name: "거목의 심판",
           title: "페이즈 3: 거목의 심판",
           quote: "모든 생장은 끝내 회수된다.",
-          maxHp: 960,
-          enemyMaxMp: 250,
-          enemyManaRegen: 18,
-          enemyLoadout: ["ragingFlare", "purgatoriumEcho", "searingPrison", "selfImmolation"]
+          maxHp: 28,
+          coreId: "core_lance",
+          enemyMaxMp: 12,
+          enemyManaRegen: 0,
+          enemyLoadout: ["green_life_breath", "green_cycle_boost", "green_bark_skin", "green_thorn_ward", "green_life_curtain", "green_cycle_oath", "green_life_return", "blue_time_freeze", "red_collapse_flare"]
         }
       ]
     }
@@ -427,15 +593,121 @@
     selfImmolation: { id: "selfImmolation", name: "자소 연소", heartCost: 5, manaCost: 72, cooldown: 7.2, damage: [36, 48], hits: 1, selfBurnPct: 0.05, addEnemyStatus: { id: "overheat", stacks: 2, duration: 2, critPct: 15 } }
   };
 
+  Object.keys(enemySpellLibrary).forEach((id) => delete enemySpellLibrary[id]);
+  Object.values(spellLibrary).forEach((spell) => {
+    const cloned = {
+      id: spell.id,
+      name: spell.name,
+      color: spell.color,
+      archetype: spell.archetype,
+      heartCost: spell.heartCost,
+      manaCost: spell.manaCost,
+      cooldown: spell.cooldown,
+      damage: spell.damage || [0, 0],
+      hits: spell.hits || 1
+    };
+    if (spell.mpRestore) cloned.mpRestore = spell.mpRestore;
+    if (spell.manaFlow) cloned.manaFlow = spell.manaFlow;
+    if (spell.manaOnEvent) cloned.manaOnEvent = spell.manaOnEvent;
+    if (spell.manaOnCondition) cloned.manaOnCondition = spell.manaOnCondition;
+    if (spell.applyEnemyStatus) cloned.addPlayerStatus = spell.applyEnemyStatus;
+    if (spell.applySelfStatus) cloned.addEnemyStatus = spell.applySelfStatus;
+    if (spell.applyEnemyStatuses && spell.applyEnemyStatuses[0]) cloned.addPlayerStatus = spell.applyEnemyStatuses[0];
+    if (spell.enemyMpBurn) cloned.enemyMpBurn = spell.enemyMpBurn;
+    enemySpellLibrary[cloned.id] = cloned;
+  });
+
   const LOADOUT_STORAGE_KEY = "fanta_spell_loadout_v1";
   const FORMULA_BOOK_STORAGE_KEY = "fanta_formula_book_v2";
-  const DEFAULT_PLAYER_SPELL_SLOTS = ["frostShard", "fireball", "venomVine", "skyOfEmbers"];
+  const UNLOCKED_SPELLS_STORAGE_KEY = "fanta_unlocked_spells_v1";
+  const UNLOCKED_CORES_STORAGE_KEY = "fanta_unlocked_cores_v1";
+  const STARTER_SPELL_IDS = [
+    "red_flame_shard",
+    "red_heat_stock",
+    "blue_frost_poke",
+    "blue_chill_condense",
+    "green_guard_bud",
+    "green_life_breath"
+  ];
+  const DEFAULT_PLAYER_SPELL_SLOTS = ["red_flame_shard", "blue_frost_poke", "green_guard_bud", "red_heat_stock"];
+  const DEFAULT_CORE_ID = "core_balanced";
+  const CORE_LIBRARY = {
+    core_balanced: {
+      id: "core_balanced",
+      name: "낡은 마도서",
+      rarity: "common",
+      cols: 4,
+      rows: 4,
+      blocked: [],
+      passive: { type: "opening_mana", value: 1, text: "[일반] 전투 시작 시 마나 +1" }
+    },
+    core_lance: {
+      id: "core_lance",
+      name: "빛바랜 오브",
+      rarity: "common",
+      cols: 5,
+      rows: 5,
+      blocked: [[0, 0], [4, 0], [0, 4], [4, 4]],
+      passive: { type: "cycle_mana", every: 3, value: 1, text: "[일반] 주문 3회 발동마다 마나 +1" }
+    },
+    core_bastion: {
+      id: "core_bastion",
+      name: "고목나무 지팡이",
+      rarity: "common",
+      cols: 2,
+      rows: 8,
+      blocked: [],
+      passive: { type: "high_circle_power", minCircle: 2, bonusDamage: 1, text: "[일반] 2서클 이상 주문 피해 +1" }
+    },
+    core_grimoire_plus: {
+      id: "core_grimoire_plus",
+      name: "고급 마도서",
+      rarity: "rare",
+      cols: 4,
+      rows: 4,
+      blocked: [],
+      passive: { type: "opening_mana", value: 5, text: "[희귀] 전투 시작 시 마나 +5" }
+    },
+    core_frozen_staff: {
+      id: "core_frozen_staff",
+      name: "얼어붙은 지팡이",
+      rarity: "rare",
+      cols: 5,
+      rows: 4,
+      blocked: [[0, 0], [4, 0]],
+      passive: { type: "status_stack_bonus", statusIds: ["slow", "freeze", "stun"], bonusStacks: 1, text: "[희귀] 한기/둔화/동결 부여 시 스택 +1" }
+    },
+    core_morellonomicon: {
+      id: "core_morellonomicon",
+      name: "모렐로노미콘",
+      rarity: "legendary",
+      cols: 5,
+      rows: 5,
+      blocked: [],
+      passive: { type: "opening_mana", value: 50, text: "[전설] 전투 시작 시 마나 +50" }
+    },
+    core_inferno_orb: {
+      id: "core_inferno_orb",
+      name: "연옥의 오브",
+      rarity: "legendary",
+      cols: 6,
+      rows: 4,
+      blocked: [[0, 0], [5, 0], [0, 3], [5, 3]],
+      passive: { type: "red_double_cast", text: "[전설] 모든 적색 술식 2회 발동" }
+    }
+  };
+  const STARTER_CORE_IDS = ["core_balanced", "core_lance", "core_bastion"];
+  const RARE_CORE_IDS = ["core_grimoire_plus", "core_frozen_staff"];
+  const LEGENDARY_CORE_IDS = ["core_morellonomicon", "core_inferno_orb"];
   const DEFAULT_PLAYER_FORMULAS = [
-    { id: "formula_1", name: "술식 1", spellIds: ["frostShard", "fireball", "venomVine", "skyOfEmbers"] },
-    { id: "formula_2", name: "술식 2", spellIds: ["freezingVeil", "blastBrand", "natureGrace", "magmaEruption"] },
-    { id: "formula_3", name: "술식 3", spellIds: ["manaSpring", "frostShackle", "lifeSprout", "dryadOfGreatForest"] }
+    { id: "formula_1", name: "술식 1", coreId: "core_balanced", spellIds: ["red_flame_shard", "blue_frost_poke", "green_guard_bud", "red_heat_stock"] },
+    { id: "formula_2", name: "술식 2", coreId: "core_lance", spellIds: ["blue_chill_condense", "green_life_breath", "red_flame_shard", "green_guard_bud"] },
+    { id: "formula_3", name: "술식 3", coreId: "core_bastion", spellIds: ["green_life_breath", "red_heat_stock", "blue_frost_poke", "green_guard_bud"] }
   ];
   const PLAYER_MAX_HEARTS = 12;
+  const PLAYER_BATTLE_HEARTS = 100;
+  let unlockedSpellSet = new Set();
+  let unlockedCoreSet = new Set();
 
   function totalHeartCost(slots) {
     return slots.reduce((sum, id) => {
@@ -444,9 +716,101 @@
     }, 0);
   }
 
+  function normalizeUnlockedSpellIds(ids) {
+    const source = Array.isArray(ids) ? ids : STARTER_SPELL_IDS;
+    const normalized = source.filter((id) => spellLibrary[id]);
+    STARTER_SPELL_IDS.forEach((id) => {
+      if (spellLibrary[id] && !normalized.includes(id)) normalized.push(id);
+    });
+    return normalized;
+  }
+
+  function loadUnlockedSpellSet() {
+    try {
+      const raw = localStorage.getItem(UNLOCKED_SPELLS_STORAGE_KEY);
+      if (!raw) return new Set(normalizeUnlockedSpellIds(STARTER_SPELL_IDS));
+      return new Set(normalizeUnlockedSpellIds(JSON.parse(raw)));
+    } catch (error) {
+      return new Set(normalizeUnlockedSpellIds(STARTER_SPELL_IDS));
+    }
+  }
+
+  function normalizeUnlockedCoreIds(ids) {
+    const source = Array.isArray(ids) ? ids : STARTER_CORE_IDS;
+    const normalized = source.filter((id) => CORE_LIBRARY[id]);
+    STARTER_CORE_IDS.forEach((id) => {
+      if (CORE_LIBRARY[id] && !normalized.includes(id)) normalized.push(id);
+    });
+    return normalized;
+  }
+
+  function loadUnlockedCoreSet() {
+    try {
+      const raw = localStorage.getItem(UNLOCKED_CORES_STORAGE_KEY);
+      if (!raw) return new Set(normalizeUnlockedCoreIds(STARTER_CORE_IDS));
+      return new Set(normalizeUnlockedCoreIds(JSON.parse(raw)));
+    } catch (error) {
+      return new Set(normalizeUnlockedCoreIds(STARTER_CORE_IDS));
+    }
+  }
+
+  function saveUnlockedCoreSet() {
+    try {
+      const payload = normalizeUnlockedCoreIds([...unlockedCoreSet]);
+      localStorage.setItem(UNLOCKED_CORES_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      // Ignore storage errors silently.
+    }
+  }
+
+  function saveUnlockedSpellSet() {
+    try {
+      const payload = normalizeUnlockedSpellIds([...unlockedSpellSet]);
+      localStorage.setItem(UNLOCKED_SPELLS_STORAGE_KEY, JSON.stringify(payload));
+    } catch (error) {
+      // Ignore storage errors silently.
+    }
+  }
+
+  function isSpellUnlocked(spellId) {
+    return unlockedSpellSet.has(spellId);
+  }
+
+  function isCoreUnlocked(coreId) {
+    return unlockedCoreSet.has(coreId);
+  }
+
+  function unlockedSpellList() {
+    return spellList.filter((spell) => isSpellUnlocked(spell.id));
+  }
+
+  function unlockSpell(spellId, sourceLabel = "연구") {
+    if (!spellLibrary[spellId]) return false;
+    if (isSpellUnlocked(spellId)) return false;
+    unlockedSpellSet.add(spellId);
+    saveUnlockedSpellSet();
+    const spell = spellLibrary[spellId];
+    pushStoryLog(`${sourceLabel} 보상: 주문 해금 - ${spell.name}`);
+    ui.combatLog.push(`주문 해금: ${spell.name}`, true);
+    renderPrepLoadout();
+    return true;
+  }
+
+  function unlockCore(coreId, sourceLabel = "각성") {
+    if (!CORE_LIBRARY[coreId]) return false;
+    if (isCoreUnlocked(coreId)) return false;
+    unlockedCoreSet.add(coreId);
+    saveUnlockedCoreSet();
+    const core = CORE_LIBRARY[coreId];
+    pushStoryLog(`${sourceLabel} 보상: 술식핵 해금 - ${core.name} (${core.rarity === "legendary" ? "전설" : core.rarity === "rare" ? "희귀" : "일반"})`);
+    ui.combatLog.push(`술식핵 해금: ${core.name}`, true);
+    renderPrepLoadout();
+    return true;
+  }
+
   function sanitizeSpellSlots(candidate, maxHearts = PLAYER_MAX_HEARTS) {
-    if (!Array.isArray(candidate) || candidate.length !== 4) return null;
-    const normalized = candidate.map((id) => (spellLibrary[id] ? id : null));
+    if (!Array.isArray(candidate) || candidate.length < 1) return null;
+    const normalized = candidate.map((id) => (spellLibrary[id] && isSpellUnlocked(id) ? id : null));
     if (normalized.some((id) => !id)) return null;
     if (totalHeartCost(normalized) > maxHearts) return null;
     return normalized;
@@ -460,11 +824,25 @@
     if (!formula || typeof formula !== "object") return null;
     const spellIds = sanitizeSpellSlots(formula.spellIds, maxHearts);
     if (!spellIds) return null;
+    const gridLayout = (formula.gridLayout && typeof formula.gridLayout === "object")
+      ? Object.fromEntries(
+          Object.entries(formula.gridLayout)
+            .filter(([k, v]) => typeof k === "string" && v && typeof v === "object")
+            .map(([k, v]) => {
+              const x = Number.isFinite(v.x) ? Math.floor(v.x) : 0;
+              const y = Number.isFinite(v.y) ? Math.floor(v.y) : 0;
+              const variant = Number.isFinite(v.variant) ? Math.floor(v.variant) : 0;
+              return [k, { x, y, variant }];
+            })
+        )
+      : {};
     return {
       id: typeof formula.id === "string" && formula.id.trim() ? formula.id : `formula_${Math.random().toString(36).slice(2, 8)}`,
       name: typeof formula.name === "string" && formula.name.trim() ? formula.name.trim() : "이름 없는 술식",
+      coreId: (typeof formula.coreId === "string" && CORE_LIBRARY[formula.coreId] && isCoreUnlocked(formula.coreId)) ? formula.coreId : DEFAULT_CORE_ID,
       spellIds,
-      totalCircle: calcFormulaCircle(spellIds)
+      totalCircle: calcFormulaCircle(spellIds),
+      gridLayout
     };
   }
 
@@ -560,9 +938,10 @@
     phaseIndex: 0,
     speed: 1,
     playerDamageBonus: 0.18,
-    phaseBuffChosen: false,
-    phaseBuffChoice: null,
     rearrangeRemaining: 0,
+    rearrangeSelectedFormulaIndex: null,
+    rearrangeEntryFormulaIndex: null,
+    brokenFormulaIds: new Set(),
     pendingTimeout: null,
     ai: {
       rapidTimer: 1.0,
@@ -574,7 +953,8 @@
       phase3Tick: 0,
       phase3BurnTick: 0,
       phase3Ramp: 0,
-      meltdownRemaining: 0
+      meltdownRemaining: 0,
+      enemyRearrangeTimer: 5.2
     },
     story: {
       sceneIndex: 0,
@@ -610,14 +990,14 @@
   const act1Scenes = [
     {
       id: "s1",
-      title: "① 낯선 길 위에서",
-      body: "정신을 차려보니 이 길 위에 서 있다.",
-      image: "assets/씬/scene_open_frontier_road.png",
+      title: "① 기억의 잔향",
+      body: "나는 바람이 스치는 초원 위, 길 한가운데에 서 있다.\n\n어디서 왔는지 기억나지 않는다.\n\n머릿속에는 불타는 탑과, 누군가를 해친 감각만이 파편처럼 남아 있다.\n\n단 하나 확실한 것.\n\n세상 끝, 영원의 마탑으로 가야 한다는 사실.\n\n이유는 모른다. 하지만 몸은 이미 그 방향을 알고 있다.\n\n나는 허공에 마력을 그어본다. 냉기. 미약한 화염. 희미한 치유. 어설픈 주문들을 엮어 작은 술식을 구성한다.\n\n정보가 필요하다. 이 세계가 어떤 상태인지 알아야 한다.\n\n앞에는 두 갈래 길이 놓여 있다. 왼쪽은 마을, 오른쪽은 숲. 그리고 등 뒤에는, 기억나지 않는 길이 이어져 있다.",
+      image: "assets/씬/scene_valley_bridge_path.png",
       tone: "neutral",
       choices: [
-        { label: "기억을 더듬는다", effect: "memory_plus" },
-        { label: "주변의 마력을 감지한다", effect: "gain_random_circle1" },
-        { label: "아무 생각 없이 전진한다", effect: "battle_bias_up" }
+        { label: "마을로 향한다.", effect: "battle_farmer" },
+        { label: "숲으로 향한다.", effect: "gain_random_circle1" },
+        { label: "뒤로 돌아, 오던 길을 거슬러 걷는다.", effect: "memory_plus" }
       ]
     },
     {
@@ -628,7 +1008,7 @@
       tone: "amber",
       choices: [
         { label: "집을 수색한다", effect: "battle_farmer" },
-        { label: "광장을 조사한다", effect: "relic_pick" },
+        { label: "술식핵 공명을 조사한다", effect: "relic_pick" },
         { label: "그냥 떠난다", effect: "heal_small" }
       ]
     },
@@ -653,7 +1033,7 @@
       choices: [
         { label: "근원으로 간다", effect: "battle_red_mage" },
         { label: "멀리서 관찰한다", effect: "enemy_intel" },
-        { label: "다른 길을 택한다", effect: "relic_pick" }
+        { label: "숨겨진 술식핵 흔적을 쫓는다", effect: "relic_pick" }
       ]
     },
     {
@@ -687,7 +1067,7 @@
       image: "assets/씬/scene_crimson_sky_tower.png",
       tone: "red",
       choices: [
-        { label: "깊이 들어간다", effect: "battle_hard_relic" },
+        { label: "핵 수호체를 격파한다", effect: "battle_hard_relic" },
         { label: "가장자리 탐색", effect: "mid_reward" },
         { label: "돌아간다", effect: "heal_small" }
       ]
@@ -713,7 +1093,7 @@
       choices: [
         { label: "정면 돌파", effect: "battle_boss_now" },
         { label: "술식 정비 후 진입", effect: "heart_up_boss_up" },
-        { label: "다른 루트 탐색", effect: "battle_miniboss_relic" }
+        { label: "술식핵 회수 루트 탐색", effect: "battle_miniboss_relic" }
       ]
     },
     {
@@ -730,33 +1110,42 @@
     }
   ];
 
+  unlockedSpellSet = loadUnlockedSpellSet();
+  saveUnlockedSpellSet();
+  unlockedCoreSet = loadUnlockedCoreSet();
+  saveUnlockedCoreSet();
   const initialLegacySlots = loadStoredSpellSlots() || [...DEFAULT_PLAYER_SPELL_SLOTS];
   const initialFormulaBook = loadStoredFormulaBook(initialLegacySlots);
   const initialActiveFormula = initialFormulaBook.formulas[initialFormulaBook.activeFormulaIndex] || initialFormulaBook.formulas[0];
 
   const player = {
-    hp: 700,
-    maxHp: 700,
-    mp: 420,
-    maxMp: 420,
-    manaRegen: 24,
+    hp: 24,
+    maxHp: 24,
+    mp: 0,
+    maxMp: 12,
+    manaRegen: 0,
+    manaHearts: PLAYER_BATTLE_HEARTS,
+    maxManaHearts: PLAYER_BATTLE_HEARTS,
     maxHearts: PLAYER_MAX_HEARTS,
     shield: 0,
     formulaBook: initialFormulaBook,
     activeFormulaIndex: initialFormulaBook.activeFormulaIndex,
     activeFormulaId: initialActiveFormula.id,
     spellSlots: [...initialActiveFormula.spellIds],
+    coreCastCount: 0,
     statuses: {}
   };
 
   const enemy = {
     hp: currentEnemyProfile().phaseDefs[0].maxHp,
     maxHp: currentEnemyProfile().phaseDefs[0].maxHp,
-    mp: currentEnemyProfile().phaseDefs[0].enemyMaxMp,
+    mp: 0,
     maxMp: currentEnemyProfile().phaseDefs[0].enemyMaxMp,
     manaRegen: currentEnemyProfile().phaseDefs[0].enemyManaRegen,
+    coreId: currentEnemyProfile().phaseDefs[0].coreId || DEFAULT_CORE_ID,
     maxHearts: 10,
     spellSlots: [...currentEnemyProfile().phaseDefs[0].enemyLoadout],
+    coreCastCount: 0,
     cooldowns: Object.fromEntries(Object.keys(enemySpellLibrary).map((id) => [id, 0])),
     statuses: {}
   };
@@ -766,6 +1155,59 @@
 
   function getActiveFormula() {
     return player.formulaBook.formulas[player.activeFormulaIndex] || player.formulaBook.formulas[0];
+  }
+
+  function getCoreById(coreId) {
+    return CORE_LIBRARY[coreId] || CORE_LIBRARY[DEFAULT_CORE_ID];
+  }
+
+  function getActiveFormulaCore() {
+    const formula = getActiveFormula();
+    return getCoreById(formula?.coreId);
+  }
+
+  function getCurrentEnemyCore() {
+    return getCoreById(enemy.coreId);
+  }
+
+  function passiveCircleOf(spell) {
+    return Number.isFinite(spell.circle) ? spell.circle : (Number.isFinite(spell.heartCost) ? spell.heartCost : 1);
+  }
+
+  function applyCoreStatusBonus(core, status) {
+    if (!core?.passive || !status) return status;
+    if (core.passive.type !== "status_stack_bonus") return status;
+    const ids = new Set(core.passive.statusIds || []);
+    if (!ids.has(status.id)) return status;
+    return {
+      ...status,
+      stacks: Math.max(1, status.stacks || 1) + Math.max(1, core.passive.bonusStacks || 1)
+    };
+  }
+
+  function applyOpeningCorePassive(target, core) {
+    if (!core?.passive) return 0;
+    if (core.passive.type !== "opening_mana") return 0;
+    const gain = Math.max(0, core.passive.value || 0);
+    target.mp = target.mp + gain;
+    return gain;
+  }
+
+  function corePassiveDamageBonus(target, core, spell) {
+    if (!core?.passive) return 0;
+    if (core.passive.type !== "high_circle_power") return 0;
+    const minCircle = core.passive.minCircle || 2;
+    return passiveCircleOf(spell) >= minCircle ? (core.passive.bonusDamage || 0) : 0;
+  }
+
+  function applyCycleCorePassive(target, core) {
+    if (!core?.passive || core.passive.type !== "cycle_mana") return 0;
+    target.coreCastCount = (target.coreCastCount || 0) + 1;
+    const every = Math.max(1, core.passive.every || 3);
+    if (target.coreCastCount % every !== 0) return 0;
+    const gain = Math.max(0, core.passive.value || 0);
+    target.mp = target.mp + gain;
+    return gain;
   }
 
   function syncPlayerSlotsFromActiveFormula() {
@@ -789,6 +1231,46 @@
     saveSpellSlots(player.spellSlots);
   }
 
+  function isFormulaBroken(formula) {
+    if (!formula) return false;
+    return state.brokenFormulaIds.has(formula.id);
+  }
+
+  function nextUsableFormulaIndex() {
+    for (let i = 0; i < player.formulaBook.formulas.length; i += 1) {
+      if (i === player.activeFormulaIndex) continue;
+      if (!isFormulaBroken(player.formulaBook.formulas[i])) return i;
+    }
+    return -1;
+  }
+
+  function handlePlayerFormulaBreak() {
+    const broken = getActiveFormula();
+    if (broken?.id) state.brokenFormulaIds.add(broken.id);
+
+    if (player.manaHearts <= 0) {
+      ui.combatLog.push("전투 마나하트가 0이라 다음 술식 기동 실패.", true);
+      return false;
+    }
+
+    const nextIndex = nextUsableFormulaIndex();
+    if (nextIndex < 0) {
+      ui.combatLog.push("남은 술식이 없어 전투를 지속할 수 없다.", true);
+      return false;
+    }
+
+    player.activeFormulaIndex = nextIndex;
+    syncPlayerSlotsFromActiveFormula();
+    ui.spellBar.resetPlayerLayout();
+    resetCooldowns();
+    player.hp = player.maxHp;
+    player.shield = 0;
+    player.coreCastCount = 0;
+    state.castGap = 0;
+    ui.combatLog.push(`내 술식 파괴. ${getActiveFormula().name} 자동 기동.`, true);
+    return true;
+  }
+
   function setWorldMode(mode) {
     state.worldMode = mode;
     document.body.classList.toggle("story-mode", mode === "story");
@@ -803,24 +1285,70 @@
   }
 
   function randomSpellBy(filterFn) {
-    const pool = spellList.filter(filterFn);
+    const pool = unlockedSpellList().filter(filterFn);
     if (pool.length === 0) return null;
     return pool[randomInt(0, pool.length - 1)];
   }
 
-  function randomRelicName() {
-    return relicPool[randomInt(0, relicPool.length - 1)];
+  function randomLockedSpellBy(filterFn) {
+    const pool = spellList.filter((spell) => !isSpellUnlocked(spell.id) && filterFn(spell));
+    if (pool.length === 0) return null;
+    return pool[randomInt(0, pool.length - 1)];
+  }
+
+  function coreRarityLabel(rarity) {
+    if (rarity === "legendary") return "전설";
+    if (rarity === "rare") return "희귀";
+    return "일반";
+  }
+
+  function randomLockedCoreByRarity(rarity) {
+    const pool = Object.values(CORE_LIBRARY).filter((core) => core.rarity === rarity && !isCoreUnlocked(core.id));
+    if (pool.length === 0) return null;
+    return pool[randomInt(0, pool.length - 1)];
+  }
+
+  function maybeUnlockCoreFromBattleWin(pending) {
+    const profileId = pending?.enemyProfileId || state.enemyProfileId || "hunter";
+    let rareChance = 0.12;
+    let legendaryChance = 0.01;
+
+    if (profileId === "dalahans" || profileId === "serion") {
+      rareChance = 0.28;
+      legendaryChance = 0.05;
+    }
+    if (profileId === "allen") {
+      rareChance = 0.45;
+      legendaryChance = 0.2;
+    }
+    if (state.story.sceneIndex >= 8) {
+      rareChance += 0.08;
+      legendaryChance += 0.03;
+    }
+
+    const legendary = randomLockedCoreByRarity("legendary");
+    if (legendary && Math.random() < legendaryChance) {
+      return unlockCore(legendary.id, "전투 승리");
+    }
+    const rare = randomLockedCoreByRarity("rare");
+    if (rare && Math.random() < rareChance) {
+      return unlockCore(rare.id, "전투 승리");
+    }
+    return false;
   }
 
   function renderStoryHeroInfo() {
     if (!dom.storyHeroInfo) return;
     const lines = [
-      `HP: ${Math.floor(player.hp)} / ${player.maxHp}`,
-      `MP: ${Math.floor(player.mp)} / ${player.maxMp}`,
-      `마나하트: ${player.maxHearts}`,
+      `술식 내구도: ${Math.floor(player.hp)} / ${player.maxHp}`,
+      `버프 마나: ${Math.floor(player.mp)}`,
+      `전투 마나하트: ${Math.floor(player.manaHearts)} / ${player.maxManaHearts}`,
+      `술식 구성 하트 한도: ${player.maxHearts}`,
+      `해금 주문: ${unlockedSpellSet.size} / ${spellList.length}`,
+      `해금 술식핵: ${unlockedCoreSet.size} / ${Object.keys(CORE_LIBRARY).length}`,
       `기억의 파편: ${state.story.memoryFragments}`,
       `적 술식 정보: ${state.story.enemyIntel}`,
-      `획득 유물: ${state.story.relics.length > 0 ? state.story.relics.join(", ") : "없음"}`
+      `획득 술식핵: ${state.story.relics.length > 0 ? state.story.relics.join(", ") : "없음"}`
     ];
     dom.storyHeroInfo.innerHTML = lines.map((line) => `<p>${line}</p>`).join("");
   }
@@ -851,9 +1379,15 @@
     setWorldMode("battle");
     resetBattle();
 
-    if (config.phase1EnemyHpMul) {
-      enemy.maxHp = Math.max(1, Math.floor(enemy.maxHp * config.phase1EnemyHpMul));
+    const earlyBattleDefaultMul = state.story.sceneIndex <= 2 ? 0.78 : 1;
+    const hpMul = (typeof config.phase1EnemyHpMul === "number") ? config.phase1EnemyHpMul : earlyBattleDefaultMul;
+    if (hpMul !== 1) {
+      enemy.maxHp = Math.max(1, Math.floor(enemy.maxHp * hpMul));
       enemy.hp = enemy.maxHp;
+    }
+    if (typeof config.phase1EnemyMpMul === "number") {
+      enemy.maxMp = Math.max(2, Math.floor(enemy.maxMp * config.phase1EnemyMpMul));
+      enemy.mp = Math.max(0, enemy.mp);
     }
     if (config.playerShield) {
       player.shield += config.playerShield;
@@ -862,7 +1396,7 @@
       player.hp = Math.min(player.maxHp, Math.max(1, player.hp + config.playerHpDelta));
     }
     if (config.playerMpDelta) {
-      player.mp = Math.min(player.maxMp, Math.max(0, player.mp + config.playerMpDelta));
+      player.mp = Math.max(0, player.mp + config.playerMpDelta);
     }
 
     pushStoryLog(`전투 발생: ${config.enemyName}`);
@@ -871,11 +1405,32 @@
   }
 
   function offerRelicSelection(onDone) {
-    const options = [randomRelicName(), randomRelicName(), randomRelicName()];
-    renderStoryChoices(options.map((name) => ({ label: `${name} 획득` })), (choice) => {
-      const relicName = choice.label.replace(" 획득", "");
-      state.story.relics.push(relicName);
-      pushStoryLog(`유물 획득: ${relicName}`);
+    const locked = Object.values(CORE_LIBRARY)
+      .filter((core) => !isCoreUnlocked(core.id))
+      .sort((a, b) => {
+        const order = { common: 1, rare: 2, legendary: 3 };
+        return (order[a.rarity] - order[b.rarity]) || a.name.localeCompare(b.name);
+      });
+    if (locked.length === 0) {
+      pushStoryLog("추가로 해금할 술식핵이 없습니다.");
+      onDone();
+      return;
+    }
+    const picks = [];
+    const pool = [...locked];
+    while (pool.length > 0 && picks.length < 3) {
+      const idx = randomInt(0, pool.length - 1);
+      picks.push(pool.splice(idx, 1)[0]);
+    }
+    renderStoryChoices(picks.map((core) => ({ label: `[${coreRarityLabel(core.rarity)}] ${core.name} 획득`, coreId: core.id })), (choice) => {
+      const coreId = choice.coreId;
+      if (coreId && unlockCore(coreId, "유적 탐색")) {
+        const core = CORE_LIBRARY[coreId];
+        state.story.relics.push(core.name);
+        pushStoryLog(`술식핵 획득: [${coreRarityLabel(core.rarity)}] ${core.name}`);
+      } else {
+        pushStoryLog("선택한 술식핵은 이미 보유 중입니다.");
+      }
       onDone();
     });
   }
@@ -888,8 +1443,9 @@
       return;
     }
     if (effectId === "gain_random_circle1") {
-      const spell = randomSpellBy((item) => item.circle === 1);
-      pushStoryLog(`랜덤 1서클 주문 연구: ${spell ? spell.name : "없음"}`);
+      const spell = randomLockedSpellBy((item) => item.circle === 1) || randomSpellBy((item) => item.circle === 1);
+      if (spell) unlockSpell(spell.id, "탐색");
+      else pushStoryLog("새로 해금할 1서클 주문이 없습니다.");
       sceneContinueButton();
       return;
     }
@@ -900,7 +1456,12 @@
       return;
     }
     if (effectId === "battle_farmer") {
-      startStoryBattle({ enemyName: "되살아난 농부" });
+      startStoryBattle({
+        enemyName: "사냥꾼",
+        enemyProfileId: "hunter",
+        phase1EnemyHpMul: 0.95,
+        phase1EnemyMpMul: 0.9
+      });
       return;
     }
     if (effectId === "relic_pick") {
@@ -915,31 +1476,41 @@
       return;
     }
     if (effectId === "gain_green_spell") {
-      const spell = randomSpellBy((item) => item.color === "green");
-      pushStoryLog(`녹색 주문 연구: ${spell ? spell.name : "없음"}`);
+      const spell = randomLockedSpellBy((item) => item.color === "green") || randomSpellBy((item) => item.color === "green");
+      if (spell) unlockSpell(spell.id, "정령 계약");
+      else pushStoryLog("새로 해금할 녹색 주문이 없습니다.");
       sceneContinueButton();
       return;
     }
     if (effectId === "battle_dryad_reward") {
       startStoryBattle({
-        enemyName: "드라이어드",
-        enemyProfileId: "serion",
+        enemyName: "숲의 하급 정령",
+        enemyProfileId: "lesser_spirit",
+        phase1EnemyHpMul: 1,
+        phase1EnemyMpMul: 0.9,
         onWin: () => {
-          state.story.relics.push("심층 녹림의 인장");
-          pushStoryLog("고급 보상 획득: 심층 녹림의 인장");
+          const core = randomLockedCoreByRarity("rare");
+          if (core && unlockCore(core.id, "드라이어드 전투")) {
+            state.story.relics.push(core.name);
+            pushStoryLog(`고급 보상 획득: [희귀] ${core.name}`);
+          } else {
+            pushStoryLog("고급 술식핵은 이미 모두 해금되었습니다.");
+          }
+          const spell = randomLockedSpellBy((item) => item.color === "green" || item.circle <= 2);
+          if (spell) unlockSpell(spell.id, "드라이어드 전투");
         }
       });
       return;
     }
     if (effectId === "mana_recover") {
       const gain = Math.floor(player.maxMp * 0.2);
-      player.mp = Math.min(player.maxMp, player.mp + gain);
+      player.mp = player.mp + gain;
       pushStoryLog(`아무 일 없음. MP ${gain} 회복`);
       sceneContinueButton();
       return;
     }
     if (effectId === "battle_red_mage") {
-      startStoryBattle({ enemyName: "적색 술식 사용자", phase1EnemyHpMul: 1.08 });
+      startStoryBattle({ enemyName: "적색 술식 사용자", phase1EnemyHpMul: 0.9 });
       return;
     }
     if (effectId === "enemy_intel") {
@@ -949,16 +1520,17 @@
       return;
     }
     if (effectId === "gain_circle3_with_hp_cost") {
-      const spell = randomSpellBy((item) => item.circle === 3);
+      const spell = randomLockedSpellBy((item) => item.circle === 3) || randomSpellBy((item) => item.circle === 3);
       const loss = Math.floor(player.maxHp * 0.14);
       player.hp = Math.max(1, player.hp - loss);
-      pushStoryLog(`3서클 주문 연구: ${spell ? spell.name : "없음"} / HP ${loss} 감소`);
+      if (spell) unlockSpell(spell.id, "금서 열람");
+      pushStoryLog(`대가: 내구도 ${loss} 감소`);
       sceneContinueButton();
       return;
     }
     if (effectId === "max_heart_up") {
       player.maxHearts = Math.min(15, player.maxHearts + 1);
-      pushStoryLog(`마나하트 +1 (현재 ${player.maxHearts})`);
+      pushStoryLog(`술식 구성 하트 한도 +1 (현재 ${player.maxHearts})`);
       sceneContinueButton();
       return;
     }
@@ -971,9 +1543,10 @@
       startStoryBattle({
         enemyName: "청색의 달라한스",
         enemyProfileId: "dalahans",
+        phase1EnemyHpMul: 0.88,
         onWin: () => {
-          const spell = randomSpellBy((item) => item.color === "blue");
-          pushStoryLog(`청색 주문 해금: ${spell ? spell.name : "없음"}`);
+          const spell = randomLockedSpellBy((item) => item.color === "blue") || randomSpellBy((item) => item.color === "blue");
+          if (spell) unlockSpell(spell.id, "청색 처형자 격파");
         }
       });
       return;
@@ -985,9 +1558,12 @@
       return;
     }
     if (effectId === "random_spell_trade") {
-      const give = randomSpellBy(() => true);
-      const take = randomSpellBy(() => true);
-      pushStoryLog(`술식 교환: ${give ? give.name : "-"} -> ${take ? take.name : "-"}`);
+      const take = randomLockedSpellBy(() => true);
+      if (take) {
+        unlockSpell(take.id, "유랑 상인 거래");
+      } else {
+        pushStoryLog("교환 가능한 신규 주문이 없습니다.");
+      }
       sceneContinueButton();
       return;
     }
@@ -997,15 +1573,19 @@
         enemyProfileId: "serion",
         phase1EnemyHpMul: 1.15,
         onWin: () => {
-          const relic = randomRelicName();
-          state.story.relics.push(relic);
-          pushStoryLog(`고급 유물 획득: ${relic}`);
+          const core = randomLockedCoreByRarity("legendary") || randomLockedCoreByRarity("rare");
+          if (core && unlockCore(core.id, "오염핵 격파")) {
+            state.story.relics.push(core.name);
+            pushStoryLog(`고급 술식핵 획득: [${coreRarityLabel(core.rarity)}] ${core.name}`);
+          } else {
+            pushStoryLog("추가로 획득할 술식핵이 없습니다.");
+          }
         }
       });
       return;
     }
     if (effectId === "mid_reward") {
-      player.mp = Math.min(player.maxMp, player.mp + 60);
+      player.mp = player.mp + 60;
       pushStoryLog("중급 보상 획득: MP +60");
       sceneContinueButton();
       return;
@@ -1036,7 +1616,7 @@
     }
     if (effectId === "heart_up_boss_up") {
       player.maxHearts = Math.min(15, player.maxHearts + 1);
-      pushStoryLog("마나하트 +1, 다음 보스가 강화됩니다.");
+      pushStoryLog("술식 구성 하트 한도 +1, 다음 보스가 강화됩니다.");
       startStoryBattle({ enemyName: "강화된 세상 끝의 수문장", phase1EnemyHpMul: 1.2 });
       return;
     }
@@ -1044,9 +1624,13 @@
       startStoryBattle({
         enemyName: "미니보스 - 심연의 파수꾼",
         onWin: () => {
-          const relic = randomRelicName();
-          state.story.relics.push(relic);
-          pushStoryLog(`유물 획득: ${relic}`);
+          const core = randomLockedCoreByRarity("rare") || randomLockedCoreByRarity("common");
+          if (core && unlockCore(core.id, "심연의 파수꾼 격파")) {
+            state.story.relics.push(core.name);
+            pushStoryLog(`술식핵 획득: [${coreRarityLabel(core.rarity)}] ${core.name}`);
+          } else {
+            pushStoryLog("추가로 획득할 술식핵이 없습니다.");
+          }
         }
       });
       return;
@@ -1109,6 +1693,15 @@
 
     if (result === "victory") {
       pushStoryLog(`전투 승리: ${pending.enemyName}`);
+      const rewardSpell =
+        randomLockedSpellBy((spell) => spell.circle <= 2)
+        || randomLockedSpellBy(() => true);
+      if (rewardSpell) {
+        unlockSpell(rewardSpell.id, "전투 승리");
+      } else {
+        pushStoryLog("추가로 해금할 주문이 없습니다.");
+      }
+      maybeUnlockCoreFromBattleWin(pending);
       if (typeof pending.onWin === "function") pending.onWin();
     } else {
       pushStoryLog(`전투 패배: ${pending.enemyName}`);
@@ -1159,35 +1752,164 @@
     return `${spell.name} | ${colorKo} | ${spell.circle}서클 | ${spell.archetype} | MP ${spell.manaCost} | 하트 ${spell.heartCost}`;
   }
 
+  const REARRANGE_STAY_RECOVER_RATIO = 0.12;
+
   function spellIconPath(spell) {
+    if (v2SpellData.some((item) => item.id === spell.id)) {
+      return `assets/spells/v2/${spell.id}.svg`;
+    }
     return `assets/spells/${spell.id}.svg`;
   }
 
+  const MANA_CRYSTAL_ICON_PATH = "assets/status/mana_crystal.svg";
+  const STATUS_ICON_PATHS = {
+    burn: "assets/status/burn.svg",
+    poison: "assets/status/poison.svg",
+    regen: "assets/status/regen.svg",
+    manaFlow: "assets/status/manaFlow.svg",
+    freeze: "assets/status/freeze.svg",
+    bleed: "assets/status/bleed.svg",
+    slow: "assets/status/slow.svg",
+    stun: "assets/status/stun.svg",
+    shield: "assets/status/shield.svg",
+    weak: "assets/status/weak.svg",
+    mark: "assets/status/mark.svg",
+    overheat: "assets/status/overheat.svg",
+    inferno: "assets/status/inferno.svg",
+    dampen: "assets/status/dampen.svg",
+    poisonRes: "assets/status/poisonRes.svg",
+    reactiveSlow: "assets/status/reactiveSlow.svg",
+    dryad: "assets/status/dryad.svg",
+    greenWard: "assets/status/greenWard.svg",
+    redFury: "assets/status/redFury.svg"
+  };
+  const STATUS_NAME_MAP = {
+    burn: "화상",
+    poison: "중독",
+    regen: "재생",
+    manaFlow: "마나순환",
+    freeze: "동결",
+    bleed: "출혈",
+    slow: "둔화",
+    stun: "봉인/행동불가",
+    shield: "보호막",
+    weak: "약점",
+    mark: "표식",
+    overheat: "과열",
+    inferno: "연옥 화상",
+    dampen: "피해완화",
+    poisonRes: "해독 보호",
+    reactiveSlow: "반응 둔화",
+    dryad: "드라이어드",
+    greenWard: "녹의 가호",
+    redFury: "적의 분노"
+  };
+  const STATUS_META_MAP = {
+    burn: { effect: "지속 피해" },
+    poison: { effect: "지속 피해" },
+    regen: { effect: "초당 회복" },
+    manaFlow: { effect: "초당 마나 회복" },
+    freeze: { effect: "시전 봉인" },
+    bleed: { effect: "지속 피해" },
+    slow: { effect: "행동/쿨다운 속도 저하" },
+    stun: { effect: "일시 행동 불능" },
+    shield: { effect: "피해 흡수" },
+    weak: { effect: "받는 피해 증가" },
+    mark: { effect: "보호막 추가 파괴" },
+    overheat: { effect: "치명타율 증가" },
+    inferno: { effect: "매초 피해가 증가하는 화상" },
+    dampen: { effect: "받는 피해 감소" },
+    poisonRes: { effect: "화상/중독 피해 저항" },
+    reactiveSlow: { effect: "피격 시 적 둔화 반격" },
+    dryad: { effect: "유지 중 자동 시전" },
+    greenWard: { effect: "지속 회복 보호 효과" },
+    redFury: { effect: "적색 주문 강화" }
+  };
+
+  function statusIconPath(statusId) {
+    return STATUS_ICON_PATHS[statusId] || null;
+  }
+
+  function statusName(statusId) {
+    return STATUS_NAME_MAP[statusId] || statusId;
+  }
+
+  function statusTooltipText(statusId, status) {
+    const meta = STATUS_META_MAP[statusId] || {};
+    const lines = [`${statusName(statusId)} x${status.stacks || 1}`];
+    if (meta.effect) {
+      lines.push(`효과: ${meta.effect}`);
+    }
+    if (typeof status.dps === "number") {
+      lines.push(`매초 ${status.dps * (status.stacks || 1)} 피해`);
+    }
+    if (typeof status.growPerTick === "number" && status.growPerTick > 0) {
+      lines.push(`피해 증가: 매초 +${status.growPerTick}`);
+    }
+    if (typeof status.decayPerTick === "number" && status.decayPerTick > 0) {
+      lines.push(`피해 감소: 매초 -${status.decayPerTick}`);
+    }
+    if (typeof status.slowPct === "number") {
+      lines.push(`감속 ${status.slowPct}%`);
+    }
+    if (typeof status.vulnPct === "number") {
+      lines.push(`받는 피해 +${status.vulnPct}%`);
+    }
+    if (typeof status.critPct === "number") {
+      lines.push(`치명타율 +${status.critPct}%`);
+    }
+    if (typeof status.shieldBreakPct === "number") {
+      lines.push(`보호막 피해 +${status.shieldBreakPct}%`);
+    }
+    if (typeof status.cooldownRate === "number") {
+      lines.push(`쿨다운 회복 x${status.cooldownRate.toFixed(2)}`);
+    }
+    if (typeof status.healPerTick === "number") {
+      lines.push(`매초 체력 +${status.healPerTick}`);
+    }
+    if (typeof status.manaPerTick === "number") {
+      lines.push(`매초 마나 +${status.manaPerTick}`);
+    }
+    if (typeof status.reduction === "number") {
+      lines.push(`피해 감소 ${Math.floor(status.reduction * 100)}%`);
+    }
+    if (typeof status.damagePct === "number") {
+      lines.push(`피해량 +${status.damagePct}%`);
+    }
+    if (typeof status.regenPerSec === "number") {
+      lines.push(`매초 체력 +${status.regenPerSec}`);
+    }
+    if (typeof status.mpDrain === "number") {
+      lines.push(`매초 MP 소모 ${status.mpDrain}`);
+    }
+    lines.push(`${toFixed1(Math.max(0, status.remaining || 0))}초 남음`);
+    return lines.join("\n");
+  }
+
   function statusLine(status) {
-    const nameMap = {
-      burn: "화상",
-      poison: "중독",
-      slow: "둔화",
-      weak: "약점",
-      stun: "봉인/행동불가",
-      inferno: "연옥 화상"
-    };
-    const chunks = [`${nameMap[status.id] || status.id}`];
+    const chunks = [statusName(status.id)];
     if (status.stacks) chunks.push(`${status.stacks}스택`);
     if (status.duration) chunks.push(`${status.duration}초`);
     if (status.dps) chunks.push(`매초 ${status.dps} 피해`);
     if (status.slowPct) chunks.push(`감속 ${status.slowPct}%`);
     if (status.vulnPct) chunks.push(`받피 +${status.vulnPct}%`);
     if (status.growPerTick) chunks.push(`피해/초 +${status.growPerTick} 증가`);
+    if (status.decayPerTick) chunks.push(`피해/초 -${status.decayPerTick} 감소`);
+    if (status.stackDecayOnHealthHit) chunks.push(`체력 피해 시 스택 -${status.stackDecayOnHealthHit}`);
+    if (status.cooldownRate) chunks.push(`쿨회복 x${status.cooldownRate}`);
+    if (status.healPerTick) chunks.push(`매초 체력 +${status.healPerTick}`);
+    if (status.manaPerTick) chunks.push(`매초 마나 +${status.manaPerTick}`);
     return chunks.join(" / ");
   }
 
   function spellDetailLines(spell) {
     const lines = [];
     const hitCount = spell.hits || 1;
-    const minTotal = spell.damage[0] * hitCount;
-    const maxTotal = spell.damage[1] * hitCount;
-    lines.push(`직접 피해: ${minTotal}~${maxTotal}${hitCount > 1 ? ` (${hitCount}타)` : ""}`);
+    if (Array.isArray(spell.damage)) {
+      const minTotal = spell.damage[0] * hitCount;
+      const maxTotal = spell.damage[1] * hitCount;
+      lines.push(`직접 피해: ${minTotal}~${maxTotal}${hitCount > 1 ? ` (${hitCount}타)` : ""}`);
+    }
 
     if (spell.burnBonusPerStack) {
       lines.push(`추가 피해: 화상 1스택당 +${spell.burnBonusPerStack}`);
@@ -1252,6 +1974,21 @@
         lines.push(`부여: ${statusLine(status)}`);
       });
     }
+    if (spell.addPlayerStatus) {
+      lines.push(`부여: ${statusLine(spell.addPlayerStatus)}`);
+    }
+    if (spell.addEnemyStatus) {
+      lines.push(`자신 부여: ${statusLine(spell.addEnemyStatus)}`);
+    }
+    if (spell.selfBurnPct) {
+      lines.push(`자가 피해: 최대 HP의 ${Math.floor(spell.selfBurnPct * 100)}%`);
+    }
+    if (typeof spell.critBase === "number") {
+      lines.push(`기본 치명타율: ${Math.floor(spell.critBase * 100)}%`);
+      if (typeof spell.critMul === "number") {
+        lines.push(`치명타 배율: x${spell.critMul.toFixed(2)}`);
+      }
+    }
     if (spell.id === "aerisAzureSeal") {
       lines.push(`봉인 판정: ${Math.floor((spell.executionChance || 0) * 100)}% (둔화/마비 시 보정)`);
       lines.push("성공: 적 최대 HP 65% 피해 + 봉인(행동불가) 3초");
@@ -1260,12 +1997,176 @@
     return lines;
   }
 
+  function spellManaGainHint(spell) {
+    if (!spell) return "";
+    let flat = 0;
+    if (Array.isArray(spell.mpRestore)) {
+      flat += Math.max(0, spell.mpRestore[0] || 0);
+    }
+    if (spell.manaOnEvent?.value) {
+      flat += Math.max(0, spell.manaOnEvent.value || 0);
+    }
+    if (spell.manaOnCondition?.value) {
+      flat += Math.max(0, spell.manaOnCondition.value || 0);
+    }
+    const parts = [];
+    if (flat > 0) parts.push(`+M${flat}`);
+    if (spell.manaFlow?.bonus || spell.manaFlow?.manaPerTick) parts.push("Flow");
+    return parts.join(" ");
+  }
+
+  function hashCode(text) {
+    let hash = 0;
+    for (let i = 0; i < text.length; i += 1) {
+      hash = ((hash << 5) - hash) + text.charCodeAt(i);
+      hash |= 0;
+    }
+    return Math.abs(hash);
+  }
+
+  function rotateCell(cell, turns) {
+    const t = ((turns % 4) + 4) % 4;
+    if (t === 0) return [cell[0], cell[1]];
+    if (t === 1) return [cell[1], -cell[0]];
+    if (t === 2) return [-cell[0], -cell[1]];
+    return [-cell[1], cell[0]];
+  }
+
+  function normalizeCells(cells) {
+    let minX = Infinity;
+    let minY = Infinity;
+    cells.forEach(([x, y]) => {
+      if (x < minX) minX = x;
+      if (y < minY) minY = y;
+    });
+    return cells.map(([x, y]) => [x - minX, y - minY]);
+  }
+
+  function canonicalCells(cells) {
+    return [...cells]
+      .sort((a, b) => (a[1] - b[1]) || (a[0] - b[0]))
+      .map(([x, y]) => `${x},${y}`)
+      .join("|");
+  }
+
+  function makeCircleShape(circle) {
+    if (circle <= 1) return [[0, 0]];
+    if (circle === 2) return [[0, 0], [1, 0]];
+    if (circle === 3) return [[0, 0], [1, 0], [0, 1]];
+    if (circle === 4) return [[0, 0], [1, 0], [0, 1], [1, 1]];
+    return [[0, 0], [1, 0], [2, 0], [1, 1], [1, 2]];
+  }
+
+  function makeShapeVariants(circle) {
+    const base = makeCircleShape(circle);
+    const unique = new Map();
+    for (let turns = 0; turns < 4; turns += 1) {
+      const rotated = normalizeCells(base.map((cell) => rotateCell(cell, turns)));
+      unique.set(canonicalCells(rotated), rotated);
+      const flipped = normalizeCells(rotated.map(([x, y]) => [-x, y]));
+      unique.set(canonicalCells(flipped), flipped);
+    }
+    return [...unique.values()];
+  }
+
+  function fitsShape(occupied, cols, rows, shape, x, y, blockedSet = null) {
+    for (let i = 0; i < shape.length; i += 1) {
+      const px = x + shape[i][0];
+      const py = y + shape[i][1];
+      if (px < 0 || py < 0 || px >= cols || py >= rows) return false;
+      if (blockedSet && blockedSet.has(`${px},${py}`)) return false;
+      if (occupied[py][px]) return false;
+    }
+    return true;
+  }
+
+  function markShape(occupied, shape, x, y, value) {
+    shape.forEach(([sx, sy]) => {
+      occupied[y + sy][x + sx] = value;
+    });
+  }
+
+  function buildBoardLayout(rawSpells, cols = 6, rows = 3, manualLayout = null, blocked = []) {
+    const occupied = Array.from({ length: rows }, () => Array(cols).fill(null));
+    const blockedSet = new Set((blocked || []).map(([x, y]) => `${x},${y}`));
+    const spells = [...rawSpells].sort((a, b) => (b.circle - a.circle) || (a.slotIndex - b.slotIndex));
+    const placements = [];
+    const pending = [];
+
+    function tryPlaceEntry(entry, shape, x, y, variant = 0) {
+      if (!fitsShape(occupied, cols, rows, shape, x, y, blockedSet)) return false;
+      markShape(occupied, shape, x, y, entry.id);
+      placements.push({ ...entry, x, y, shape, variant });
+      return true;
+    }
+
+    if (manualLayout) {
+      spells.forEach((entry) => {
+        const key = entry.itemKey;
+        const preset = key ? manualLayout[key] : null;
+        if (!preset) {
+          pending.push(entry);
+          return;
+        }
+        const variants = makeShapeVariants(entry.circle);
+        const variant = Math.max(0, preset.variant || 0) % variants.length;
+        const shape = variants[variant];
+        const x = Math.floor(preset.x || 0);
+        const y = Math.floor(preset.y || 0);
+        if (!tryPlaceEntry(entry, shape, x, y, variant)) {
+          pending.push(entry);
+        }
+      });
+    } else {
+      pending.push(...spells);
+    }
+
+    pending.forEach((entry) => {
+      const variants = makeShapeVariants(entry.circle);
+      const hash = hashCode(`${entry.id}:${entry.slotIndex}`);
+      const rotatedStart = hash % variants.length;
+      const orderedVariants = variants.slice(rotatedStart).concat(variants.slice(0, rotatedStart));
+      let placed = false;
+
+      for (let v = 0; v < orderedVariants.length && !placed; v += 1) {
+        const shape = orderedVariants[v];
+        const width = Math.max(...shape.map((cell) => cell[0])) + 1;
+        const height = Math.max(...shape.map((cell) => cell[1])) + 1;
+        for (let y = 0; y <= rows - height && !placed; y += 1) {
+          for (let x = 0; x <= cols - width && !placed; x += 1) {
+            if (!fitsShape(occupied, cols, rows, shape, x, y, blockedSet)) continue;
+            placed = tryPlaceEntry(entry, shape, x, y, v);
+          }
+        }
+      }
+
+      if (!placed) {
+        for (let y = 0; y < rows && !placed; y += 1) {
+          for (let x = 0; x < cols && !placed; x += 1) {
+            if (blockedSet.has(`${x},${y}`)) continue;
+            if (occupied[y][x]) continue;
+            placed = tryPlaceEntry(entry, [[0, 0]], x, y, 0);
+          }
+        }
+      }
+    });
+
+    return placements;
+  }
+
+  function enemySpellColor(spellId) {
+    if (/frost|azure|shackle|seal|chill|ice/i.test(spellId)) return "blue";
+    if (/vine|dryad|nature|life|garden|bloom|root/i.test(spellId)) return "green";
+    return "red";
+  }
+
   function renderPrepLoadout() {
     dom.loadoutSlots.innerHTML = "";
-    const sorted = [...spellList].sort(spellSort);
+    const sorted = [...unlockedSpellList()].sort(spellSort);
+    if (sorted.length === 0) return;
     const options = sorted.map((spell) => `<option value="${spell.id}">${spellLabel(spell)}</option>`).join("");
 
-    for (let i = 0; i < 4; i += 1) {
+    for (let i = 0; i < player.spellSlots.length; i += 1) {
       const card = document.createElement("div");
       card.className = "loadout-slot";
       card.innerHTML = `
@@ -1273,6 +2174,9 @@
         <select id="loadout-slot-${i}">${options}</select>
       `;
       const select = card.querySelector("select");
+      if (!isSpellUnlocked(player.spellSlots[i])) {
+        player.spellSlots[i] = sorted[0].id;
+      }
       select.value = player.spellSlots[i];
       select.disabled = state.mode !== "prep";
       select.addEventListener("change", (event) => {
@@ -1402,46 +2306,6 @@
   ui.enemyStatusBar = (() => {
     let openStatusId = null;
     const nodesById = new Map();
-    const info = {
-      burn: { icon: "🔥", name: "화상", effect: "지속 피해" },
-      poison: { icon: "☠", name: "중독", effect: "지속 피해" },
-      bleed: { icon: "🩸", name: "출혈", effect: "지속 피해" },
-      slow: { icon: "🕒", name: "둔화", effect: "행동 속도 감소" },
-      stun: { icon: "⚡", name: "마비", effect: "일시 행동 불능" },
-      shield: { icon: "🛡", name: "보호막", effect: "피해 흡수" },
-      weak: { icon: "💥", name: "약점", effect: "받는 피해 증가" },
-      mark: { icon: "👁", name: "표식", effect: "보호막 추가 파괴" },
-      overheat: { icon: "⚠", name: "과열", effect: "치명타율 증가" },
-      inferno: { icon: "🔥", name: "연옥 화상", effect: "매초 피해가 증가하는 화상" }
-    };
-
-    function tooltipFor(id, status) {
-      const base = info[id] || { name: id };
-      const lines = [`${base.name} x${status.stacks || 1}`];
-      if (base.effect) {
-        lines.push(`효과: ${base.effect}`);
-      }
-      if (typeof status.dps === "number") {
-        lines.push(`매초 ${status.dps * (status.stacks || 1)} 피해`);
-      }
-      if (typeof status.growPerTick === "number" && status.growPerTick > 0) {
-        lines.push(`피해 증가: 매초 +${status.growPerTick}`);
-      }
-      if (typeof status.slowPct === "number") {
-        lines.push(`감속 ${status.slowPct}%`);
-      }
-      if (typeof status.vulnPct === "number") {
-        lines.push(`받는 피해 +${status.vulnPct}%`);
-      }
-      if (typeof status.critPct === "number") {
-        lines.push(`치명타율 +${status.critPct}%`);
-      }
-      if (typeof status.shieldBreakPct === "number") {
-        lines.push(`보호막 피해 +${status.shieldBreakPct}%`);
-      }
-      lines.push(`${toFixed1(Math.max(0, status.remaining))}초 남음`);
-      return lines.join("\n");
-    }
 
     function closeAll() {
       openStatusId = null;
@@ -1455,7 +2319,13 @@
 
     return {
       render(statuses) {
-        const entries = Object.entries(statuses).filter(([, value]) => value && value.remaining > 0);
+        const entries = Object.entries(statuses)
+          .filter(([, value]) => value && value.remaining > 0)
+          .sort((a, b) => {
+            if (a[0] === "manaFlow") return -1;
+            if (b[0] === "manaFlow") return 1;
+            return a[0].localeCompare(b[0]);
+          });
         const liveIds = new Set(entries.map(([id]) => id));
 
         nodesById.forEach((node, id) => {
@@ -1473,15 +2343,18 @@
         }
 
         entries.forEach(([id, value]) => {
-          const meta = info[id] || { icon: "?", name: id };
-          const detailText = tooltipFor(id, value);
+          const detailText = statusTooltipText(id, value);
+          const iconPath = statusIconPath(id);
           let node = nodesById.get(id);
           if (!node) {
             node = document.createElement("button");
             node.type = "button";
             node.className = "status-icon";
             node.innerHTML = `
-              <span class="status-glyph"></span>
+              <span class="status-glyph">
+                <img class="status-glyph-img" alt="">
+                <span class="status-glyph-fallback"></span>
+              </span>
               <span class="status-stack"></span>
               <span class="status-tooltip"></span>
             `;
@@ -1493,13 +2366,194 @@
             nodesById.set(id, node);
           }
 
-          node.querySelector(".status-glyph").textContent = meta.icon;
+          const glyphImg = node.querySelector(".status-glyph-img");
+          const glyphFallback = node.querySelector(".status-glyph-fallback");
+          if (iconPath) {
+            glyphImg.src = iconPath;
+            glyphImg.alt = `${statusName(id)} 아이콘`;
+            glyphImg.classList.remove("hidden");
+            glyphFallback.textContent = "";
+          } else {
+            glyphImg.classList.add("hidden");
+            glyphFallback.textContent = statusName(id).slice(0, 1);
+          }
           node.querySelector(".status-stack").textContent = String(value.stacks || 1);
           node.querySelector(".status-tooltip").innerHTML = detailText.replace(/\n/g, "<br>");
           node.classList.toggle("open", openStatusId === id);
 
           if (!node.isConnected) {
             dom.enemyStatusBar.appendChild(node);
+          }
+        });
+      }
+    };
+  })();
+
+  // ui/statusSummary
+  ui.statusSummary = (() => {
+    const debuffIds = new Set(["burn", "poison", "bleed", "slow", "stun", "freeze", "weak", "mark", "inferno"]);
+    const rowConfigs = [
+      { key: "playerBuff", el: dom.playerBuffsText, label: "버프", kind: "buff", withMana: true },
+      { key: "playerDebuff", el: dom.playerDebuffsText, label: "디버프", kind: "debuff", withMana: false },
+      { key: "bossBuff", el: dom.bossBuffsText, label: "버프", kind: "buff", withMana: true },
+      { key: "bossDebuff", el: dom.bossDebuffsText, label: "디버프", kind: "debuff", withMana: false }
+    ].filter((row) => Boolean(row.el));
+    const stateByKey = new Map();
+
+    function sortEntries(entries) {
+      return entries.sort((a, b) => {
+        if (a[0] === "manaFlow") return -1;
+        if (b[0] === "manaFlow") return 1;
+        return a[0].localeCompare(b[0]);
+      });
+    }
+
+    function rowEntries(statuses, kind) {
+      const filtered = Object.entries(statuses || {}).filter(([id, value]) => {
+        if (!value || value.remaining <= 0) return false;
+        const isDebuff = debuffIds.has(id);
+        return kind === "debuff" ? isDebuff : !isDebuff;
+      });
+      return sortEntries(filtered);
+    }
+
+    function ensureRowState(config) {
+      let state = stateByKey.get(config.key);
+      if (state) return state;
+
+      const line = config.el;
+      line.textContent = "";
+      line.classList.add("status-inline-row");
+
+      const label = document.createElement("span");
+      label.className = "status-row-label";
+      label.textContent = `${config.label}:`;
+      line.appendChild(label);
+
+      let mana = null;
+      if (config.withMana) {
+        mana = document.createElement("span");
+        mana.className = "status-row-mp";
+        line.appendChild(mana);
+      }
+
+      const list = document.createElement("span");
+      list.className = "status-inline-list";
+      line.appendChild(list);
+
+      const empty = document.createElement("span");
+      empty.className = "status-inline-empty";
+      empty.textContent = "없음";
+      list.appendChild(empty);
+
+      state = {
+        config,
+        line,
+        mana,
+        list,
+        empty,
+        openStatusId: null,
+        nodesById: new Map()
+      };
+      stateByKey.set(config.key, state);
+      return state;
+    }
+
+    function syncOpenState(state) {
+      state.nodesById.forEach((node, id) => {
+        node.classList.toggle("open", state.openStatusId === id);
+      });
+    }
+
+    function renderRow(state, statuses, mpValue) {
+      if (state.mana) {
+        state.mana.innerHTML = `<span class="inline-mana-flag"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나수정">MP ${Math.floor(mpValue)}</span>`;
+      }
+
+      const entries = rowEntries(statuses, state.config.kind);
+      const liveIds = new Set(entries.map(([id]) => id));
+
+      state.nodesById.forEach((node, id) => {
+        if (!liveIds.has(id)) {
+          node.remove();
+          state.nodesById.delete(id);
+          if (state.openStatusId === id) {
+            state.openStatusId = null;
+          }
+        }
+      });
+
+      state.empty.classList.toggle("hidden", entries.length > 0);
+      if (entries.length === 0) {
+        return;
+      }
+
+      entries.forEach(([id, value]) => {
+        const detailText = statusTooltipText(id, value);
+        const iconPath = statusIconPath(id);
+        let node = state.nodesById.get(id);
+        if (!node) {
+          node = document.createElement("button");
+          node.type = "button";
+          node.className = "status-icon status-inline-icon";
+          node.innerHTML = `
+            <span class="status-glyph">
+              <img class="status-glyph-img" alt="">
+              <span class="status-glyph-fallback"></span>
+            </span>
+            <span class="status-stack"></span>
+            <span class="status-tooltip"></span>
+          `;
+          node.addEventListener("click", (event) => {
+            event.stopPropagation();
+            state.openStatusId = state.openStatusId === id ? null : id;
+            syncOpenState(state);
+          });
+          state.nodesById.set(id, node);
+        }
+
+        const glyphImg = node.querySelector(".status-glyph-img");
+        const glyphFallback = node.querySelector(".status-glyph-fallback");
+        if (iconPath) {
+          glyphImg.src = iconPath;
+          glyphImg.alt = `${statusName(id)} 아이콘`;
+          glyphImg.classList.remove("hidden");
+          glyphFallback.textContent = "";
+        } else {
+          glyphImg.classList.add("hidden");
+          glyphFallback.textContent = statusName(id).slice(0, 1);
+        }
+        node.querySelector(".status-stack").textContent = String(value.stacks || 1);
+        node.querySelector(".status-tooltip").innerHTML = detailText.replace(/\n/g, "<br>");
+
+        if (!node.isConnected) {
+          state.list.appendChild(node);
+        }
+      });
+
+      syncOpenState(state);
+    }
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".status-inline-icon")) return;
+      stateByKey.forEach((state) => {
+        state.openStatusId = null;
+        syncOpenState(state);
+      });
+    });
+
+    return {
+      render(playerStatuses, enemyStatuses) {
+        rowConfigs.forEach((config) => {
+          const state = ensureRowState(config);
+          if (config.key === "playerBuff") {
+            renderRow(state, playerStatuses, player.mp);
+          } else if (config.key === "playerDebuff") {
+            renderRow(state, playerStatuses, 0);
+          } else if (config.key === "bossBuff") {
+            renderRow(state, enemyStatuses, enemy.mp);
+          } else {
+            renderRow(state, enemyStatuses, 0);
           }
         });
       }
@@ -1546,11 +2600,159 @@
   // ui/spellBar
   ui.spellBar = (() => {
     const flashing = new Set();
+    const procEffects = [];
+    const PROC_EFFECT_DURATION_MS = 620;
+    let detailNode = null;
+    let detailPinned = false;
+    let detailPinnedKey = null;
+    let dragState = null;
+    let listenersBound = false;
+    let playerPlacementsByKey = new Map();
+    let enemyPlacementsByKey = new Map();
+    let lastPlayerEntries = [];
+    let lastEnemyEntries = [];
 
-    function colorLabel(color) {
-      if (color === "red") return "● 적";
-      if (color === "green") return "● 녹";
-      return "● 청";
+    const playerLayoutByFormula = {};
+    const enemyLayoutByPhase = {};
+    let enemyShuffleFxUntil = 0;
+
+    function ensureDetailNode() {
+      if (detailNode) return detailNode;
+      detailNode = document.createElement("aside");
+      detailNode.className = "grid-spell-detail hidden";
+      detailNode.innerHTML = `
+        <h4 class="grid-spell-detail-title"></h4>
+        <p class="grid-spell-detail-meta"></p>
+        <ul class="grid-spell-detail-lines"></ul>
+      `;
+      detailNode.addEventListener("click", (event) => event.stopPropagation());
+      document.body.appendChild(detailNode);
+      return detailNode;
+    }
+
+    function hideSpellDetail() {
+      if (!detailNode) return;
+      detailNode.classList.add("hidden");
+    }
+
+    function unpinSpellDetail() {
+      detailPinned = false;
+      detailPinnedKey = null;
+    }
+
+    function positionSpellDetail(anchorX, anchorY) {
+      if (!detailNode) return;
+      const margin = 12;
+      const vw = window.innerWidth || 360;
+      const vh = window.innerHeight || 640;
+      detailNode.style.left = "0px";
+      detailNode.style.top = "0px";
+      const rect = detailNode.getBoundingClientRect();
+      const desiredX = anchorX + 12;
+      const desiredY = anchorY + 12;
+      const x = Math.max(margin, Math.min(vw - rect.width - margin, desiredX));
+      const y = Math.max(margin, Math.min(vh - rect.height - margin, desiredY));
+      detailNode.style.left = `${Math.round(x)}px`;
+      detailNode.style.top = `${Math.round(y)}px`;
+    }
+
+    function showSpellDetail(spell, entry, event, owner, options = {}) {
+      if (!spell || !entry) return;
+      const node = ensureDetailNode();
+      const lines = spellDetailLines(spell);
+      node.querySelector(".grid-spell-detail-title").textContent = `${entry.name}`;
+      node.querySelector(".grid-spell-detail-meta").textContent = `${owner === "enemy" ? "적" : "플레이어"} | ${entry.circle}서클 | MP ${entry.manaCost} | CD ${entry.cooldown.toFixed(1)}s`;
+      node.querySelector(".grid-spell-detail-lines").innerHTML = lines.map((line) => `<li>${line}</li>`).join("");
+      node.classList.remove("hidden");
+      if (options.pin) {
+        detailPinned = true;
+        detailPinnedKey = `${owner}:${entry.itemKey}`;
+      }
+      const pointX = typeof event?.clientX === "number" ? event.clientX : ((window.innerWidth || 360) * 0.5);
+      const pointY = typeof event?.clientY === "number" ? event.clientY : ((window.innerHeight || 640) * 0.5);
+      positionSpellDetail(pointX, pointY);
+    }
+
+    function showDetailFromTile(tile, owner, event, options = {}) {
+      if (!tile) return false;
+      const itemKey = tile.dataset.itemKey;
+      if (!itemKey) return false;
+      const entry = owner === "enemy"
+        ? lastEnemyEntries.find((item) => item.itemKey === itemKey)
+        : lastPlayerEntries.find((item) => item.itemKey === itemKey);
+      if (!entry) return false;
+      const spell = owner === "enemy" ? enemySpellLibrary[entry.id] : spellLibrary[entry.id];
+      if (!spell) return false;
+      showSpellDetail(spell, entry, event, owner, options);
+      return true;
+    }
+
+    function pruneProcEffects(now = Date.now()) {
+      for (let i = procEffects.length - 1; i >= 0; i -= 1) {
+        if ((procEffects[i].endsAt || 0) <= now) {
+          procEffects.splice(i, 1);
+        }
+      }
+    }
+
+    function effectOpacity(progress) {
+      if (progress <= 0 || progress >= 1) return 0;
+      if (progress < 0.15) return progress / 0.15;
+      return (1 - progress) / 0.85;
+    }
+
+    function renderProcEffects(container, layout, owner, now) {
+      const active = procEffects.filter((fx) => fx.owner === owner && fx.startsAt <= now && fx.endsAt > now);
+      if (active.length === 0) return;
+      const bySlot = new Map();
+      active.forEach((fx) => {
+        const list = bySlot.get(fx.slotIndex) || [];
+        list.push(fx);
+        bySlot.set(fx.slotIndex, list);
+      });
+
+      layout.forEach((entry) => {
+        const list = bySlot.get(entry.slotIndex);
+        if (!list || list.length === 0) return;
+        const sortedShape = [...entry.shape].sort((a, b) => (a[1] - b[1]) || (a[0] - b[0]));
+        const [anchorX, anchorY] = sortedShape[0];
+
+        list
+          .sort((a, b) => (a.startsAt - b.startsAt))
+          .slice(0, 3)
+          .forEach((fx, fxIndex) => {
+          const progress = (now - fx.startsAt) / Math.max(1, (fx.endsAt - fx.startsAt));
+          if (progress <= 0 || progress >= 1) return;
+          const risePx = Math.round(progress * 14) + (fxIndex * 5);
+          const scale = 0.96 + (0.08 * (1 - progress));
+          const node = document.createElement("div");
+          node.className = `grid-proc-fx${fx.tone ? ` grid-proc-fx--${fx.tone}` : ""}`;
+          node.style.gridColumn = `${entry.x + anchorX + 1}`;
+          node.style.gridRow = `${entry.y + anchorY + 1}`;
+          node.style.opacity = String(effectOpacity(progress));
+          node.style.transform = `translate(20%, ${-risePx}px) scale(${scale.toFixed(3)})`;
+          if (fx.iconPath) {
+            const icon = document.createElement("img");
+            icon.className = "grid-proc-icon";
+            icon.src = fx.iconPath;
+            icon.alt = fx.label || "효과";
+            node.appendChild(icon);
+          }
+          const text = document.createElement("span");
+          text.className = "grid-proc-text";
+          text.textContent = fx.label || "";
+          node.appendChild(text);
+          container.appendChild(node);
+          });
+      });
+    }
+
+    function playerCore() {
+      return getActiveFormulaCore();
+    }
+
+    function enemyCore() {
+      return getCurrentEnemyCore();
     }
 
     function stateClass(spell) {
@@ -1560,8 +2762,323 @@
       return "ready";
     }
 
-    function cdText(value) {
-      return `CD ${value > 0 ? value.toFixed(1) : "0.0"}s`;
+    function enemyStateClass(spell) {
+      const cd = enemy.cooldowns[spell.id] || 0;
+      if (cd > 0) return "cooldown";
+      if (enemy.mp < spell.manaCost) return "low-mp";
+      return "ready";
+    }
+
+    function formulaLayout() {
+      const key = player.activeFormulaId || `formula_${player.activeFormulaIndex}`;
+      if (!playerLayoutByFormula[key]) {
+        const formula = getActiveFormula();
+        const source = (formula && formula.gridLayout && typeof formula.gridLayout === "object") ? formula.gridLayout : {};
+        playerLayoutByFormula[key] = Object.fromEntries(
+          Object.entries(source).map(([k, v]) => [k, {
+            x: Number.isFinite(v.x) ? Math.floor(v.x) : 0,
+            y: Number.isFinite(v.y) ? Math.floor(v.y) : 0,
+            variant: Number.isFinite(v.variant) ? Math.floor(v.variant) : 0
+          }])
+        );
+      }
+      return playerLayoutByFormula[key];
+    }
+
+    function enemyPhaseKey() {
+      return `${state.enemyProfileId}:${state.phaseIndex}`;
+    }
+
+    function enemyLayout() {
+      const key = enemyPhaseKey();
+      if (!enemyLayoutByPhase[key]) enemyLayoutByPhase[key] = {};
+      return enemyLayoutByPhase[key];
+    }
+
+    function appendGridCells(container, cols, rows, blocked = []) {
+      const blockedSet = new Set((blocked || []).map(([x, y]) => `${x},${y}`));
+      for (let y = 0; y < rows; y += 1) {
+        for (let x = 0; x < cols; x += 1) {
+          const cell = document.createElement("div");
+          cell.className = "battle-grid-cell";
+          if (blockedSet.has(`${x},${y}`)) {
+            cell.classList.add("blocked");
+          }
+          cell.style.gridColumn = `${x + 1}`;
+          cell.style.gridRow = `${y + 1}`;
+          container.appendChild(cell);
+        }
+      }
+    }
+
+    function renderBoard(container, spells, options = {}) {
+      if (!container) return;
+      const now = Date.now();
+      pruneProcEffects(now);
+      const boardCols = options.cols || 6;
+      const boardRows = options.rows || 3;
+      container.classList.add("battle-grid");
+      container.style.setProperty("--cols", String(boardCols));
+      container.style.setProperty("--rows", String(boardRows));
+      const cellSize = boardRows >= 7 ? 26 : (boardRows >= 5 || boardCols >= 5 ? 32 : 40);
+      container.style.setProperty("--cell-size", `${cellSize}px`);
+      container.innerHTML = "";
+      appendGridCells(container, boardCols, boardRows, options.blocked || []);
+
+      const layout = buildBoardLayout(spells, boardCols, boardRows, options.manualLayout || null, options.blocked || []);
+      if (options.captureLayout) {
+        playerPlacementsByKey = new Map();
+      }
+      if (options.captureEnemyLayout) {
+        enemyPlacementsByKey = new Map();
+      }
+      layout.forEach((entry) => {
+        if (options.captureLayout && entry.itemKey) {
+          playerPlacementsByKey.set(entry.itemKey, { x: entry.x, y: entry.y, variant: entry.variant || 0, shape: entry.shape });
+        }
+        if (options.captureEnemyLayout && entry.itemKey) {
+          enemyPlacementsByKey.set(entry.itemKey, { x: entry.x, y: entry.y, variant: entry.variant || 0, shape: entry.shape });
+        }
+        const sortedShape = [...entry.shape].sort((a, b) => (a[1] - b[1]) || (a[0] - b[0]));
+        sortedShape.forEach(([sx, sy], cellIndex) => {
+          const node = document.createElement("div");
+          node.className = `battle-grid-item ${entry.color} ${entry.stateClass}`;
+          if (entry.casting) node.classList.add("casting");
+          if (entry.itemKey) node.dataset.itemKey = entry.itemKey;
+          node.dataset.sx = String(sx);
+          node.dataset.sy = String(sy);
+          node.style.gridColumn = `${entry.x + sx + 1}`;
+          node.style.gridRow = `${entry.y + sy + 1}`;
+          if (cellIndex === 0) {
+            if (entry.iconPath) {
+              const icon = document.createElement("img");
+              icon.className = "battle-grid-icon";
+              icon.src = entry.iconPath;
+              icon.alt = `${entry.name} 아이콘`;
+              node.appendChild(icon);
+            }
+            const label = document.createElement("span");
+            label.textContent = entry.name;
+            node.appendChild(label);
+            if (entry.manaGainHint) {
+              const manaBadge = document.createElement("small");
+              manaBadge.className = "grid-mana-badge";
+              manaBadge.textContent = entry.manaGainHint;
+              node.appendChild(manaBadge);
+            }
+            if (options.editable) {
+              const rotateBtn = document.createElement("button");
+              rotateBtn.type = "button";
+              rotateBtn.className = "grid-rotate-btn";
+              rotateBtn.textContent = "⟳";
+              rotateBtn.dataset.itemKey = entry.itemKey || "";
+              rotateBtn.title = "회전";
+              node.appendChild(rotateBtn);
+            }
+          }
+          const mask = document.createElement("div");
+          mask.className = "cooldown-mask";
+          mask.style.setProperty("--cd-progress", String(entry.cdProgress));
+          node.appendChild(mask);
+          node.title = `${entry.name} | ${entry.circle}서클 | MP ${entry.manaCost} | CD ${entry.cooldown.toFixed(1)}s`;
+          container.appendChild(node);
+        });
+      });
+      if (options.procOwner) {
+        renderProcEffects(container, layout, options.procOwner, now);
+      }
+    }
+
+    function pointerToCell(event, container, boardCols, boardRows) {
+      const rect = container.getBoundingClientRect();
+      if (!rect.width || !rect.height) return null;
+      const cellW = rect.width / boardCols;
+      const cellH = rect.height / boardRows;
+      const cx = Math.floor((event.clientX - rect.left) / cellW);
+      const cy = Math.floor((event.clientY - rect.top) / cellH);
+      return {
+        x: Math.max(0, Math.min(boardCols - 1, cx)),
+        y: Math.max(0, Math.min(boardRows - 1, cy))
+      };
+    }
+
+    function applyManualMove(itemKey, nextX, nextY) {
+      const current = formulaLayout()[itemKey] || playerPlacementsByKey.get(itemKey);
+      if (!current) return;
+      formulaLayout()[itemKey] = {
+        x: nextX,
+        y: nextY,
+        variant: current.variant || 0
+      };
+    }
+
+    function applyManualRotate(itemKey) {
+      const current = formulaLayout()[itemKey] || playerPlacementsByKey.get(itemKey);
+      if (!current) return;
+      const entry = lastPlayerEntries.find((item) => item.itemKey === itemKey);
+      if (!entry) return;
+      const variants = makeShapeVariants(entry.circle);
+      formulaLayout()[itemKey] = {
+        x: current.x,
+        y: current.y,
+        variant: ((current.variant || 0) + 1) % variants.length
+      };
+    }
+
+    function bindEditorListeners() {
+      if (listenersBound) return;
+      listenersBound = true;
+
+      dom.spellSlots.addEventListener("pointerdown", (event) => {
+        if (state.mode !== "prep") return;
+        const tile = event.target.closest(".battle-grid-item");
+        if (!tile || !dom.spellSlots.contains(tile)) return;
+        const itemKey = tile.dataset.itemKey;
+        if (!itemKey) return;
+        const place = playerPlacementsByKey.get(itemKey);
+        if (!place) return;
+        const sx = Number(tile.dataset.sx || 0);
+        const sy = Number(tile.dataset.sy || 0);
+        dragState = {
+          pointerId: event.pointerId,
+          itemKey,
+          offsetX: sx,
+          offsetY: sy
+        };
+      });
+
+      dom.spellSlots.addEventListener("click", (event) => {
+        const rotateBtn = event.target.closest(".grid-rotate-btn");
+        if (!rotateBtn || !dom.spellSlots.contains(rotateBtn)) return;
+        if (state.mode !== "prep") return;
+        const itemKey = rotateBtn.dataset.itemKey;
+        if (!itemKey) return;
+        event.stopPropagation();
+        applyManualRotate(itemKey);
+      });
+
+      dom.spellSlots.addEventListener("click", (event) => {
+        const tile = event.target.closest(".battle-grid-item");
+        if (!tile || !dom.spellSlots.contains(tile)) return;
+        if (event.target.closest(".grid-rotate-btn")) return;
+        event.stopPropagation();
+        showDetailFromTile(tile, "player", event, { pin: true });
+      });
+
+      dom.enemyBoard.addEventListener("click", (event) => {
+        const tile = event.target.closest(".battle-grid-item");
+        if (!tile || !dom.enemyBoard.contains(tile)) return;
+        event.stopPropagation();
+        showDetailFromTile(tile, "enemy", event, { pin: true });
+      });
+
+      dom.spellSlots.addEventListener("mousemove", (event) => {
+        if (detailPinned) return;
+        const tile = event.target.closest(".battle-grid-item");
+        if (!tile || !dom.spellSlots.contains(tile)) {
+          hideSpellDetail();
+          return;
+        }
+        if (event.target.closest(".grid-rotate-btn")) return;
+        showDetailFromTile(tile, "player", event);
+      });
+
+      dom.enemyBoard.addEventListener("mousemove", (event) => {
+        if (detailPinned) return;
+        const tile = event.target.closest(".battle-grid-item");
+        if (!tile || !dom.enemyBoard.contains(tile)) {
+          hideSpellDetail();
+          return;
+        }
+        showDetailFromTile(tile, "enemy", event);
+      });
+
+      dom.spellSlots.addEventListener("mouseleave", () => {
+        if (detailPinned) return;
+        hideSpellDetail();
+      });
+      dom.enemyBoard.addEventListener("mouseleave", () => {
+        if (detailPinned) return;
+        hideSpellDetail();
+      });
+
+      dom.spellSlots.addEventListener("dblclick", (event) => {
+        if (state.mode !== "prep") return;
+        const tile = event.target.closest(".battle-grid-item");
+        if (!tile || !dom.spellSlots.contains(tile)) return;
+        const itemKey = tile.dataset.itemKey;
+        if (!itemKey) return;
+        applyManualRotate(itemKey);
+      });
+
+      window.addEventListener("pointermove", (event) => {
+        if (!dragState || event.pointerId !== dragState.pointerId) return;
+        const core = playerCore();
+        const cell = pointerToCell(event, dom.spellSlots, core.cols, core.rows);
+        if (!cell) return;
+        applyManualMove(dragState.itemKey, cell.x - dragState.offsetX, cell.y - dragState.offsetY);
+      });
+
+      window.addEventListener("pointerup", (event) => {
+        if (!dragState || event.pointerId !== dragState.pointerId) return;
+        dragState = null;
+      });
+
+      document.addEventListener("click", (event) => {
+        if (!detailNode) return;
+        if (event.target.closest(".grid-spell-detail")) return;
+        if (event.target.closest(".battle-grid-item")) return;
+        unpinSpellDetail();
+        hideSpellDetail();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          unpinSpellDetail();
+          hideSpellDetail();
+        }
+      });
+      window.addEventListener("resize", () => {
+        unpinSpellDetail();
+        hideSpellDetail();
+      });
+    }
+
+    function randomizeEnemyLayout(options = {}) {
+      const moveCount = Math.max(1, options.maxMoves || 1);
+      const rotateChance = typeof options.rotateChance === "number" ? options.rotateChance : 0.4;
+      const entries = lastEnemyEntries.length > 0 ? [...lastEnemyEntries] : [];
+      if (entries.length === 0) return false;
+      const core = enemyCore();
+      const blockedSet = new Set((core.blocked || []).map(([x, y]) => `${x},${y}`));
+      const layout = enemyLayout();
+      let changed = false;
+      for (let i = 0; i < moveCount; i += 1) {
+        const pick = entries[randomInt(0, entries.length - 1)];
+        if (!pick || !pick.itemKey) continue;
+        const current = enemyPlacementsByKey.get(pick.itemKey) || { x: 0, y: 0, variant: 0 };
+        let nextX = Math.max(0, Math.min(core.cols - 1, current.x + randomInt(-2, 2)));
+        let nextY = Math.max(0, Math.min(core.rows - 1, current.y + randomInt(-1, 1)));
+        if (blockedSet.has(`${nextX},${nextY}`)) {
+          for (let attempts = 0; attempts < 8; attempts += 1) {
+            const rx = randomInt(0, core.cols - 1);
+            const ry = randomInt(0, core.rows - 1);
+            if (blockedSet.has(`${rx},${ry}`)) continue;
+            nextX = rx;
+            nextY = ry;
+            break;
+          }
+        }
+        const variants = makeShapeVariants(pick.circle);
+        const nextVariant = Math.random() < rotateChance
+          ? ((current.variant || 0) + randomInt(1, Math.max(1, variants.length - 1))) % variants.length
+          : (current.variant || 0);
+        layout[pick.itemKey] = { x: nextX, y: nextY, variant: nextVariant };
+        changed = true;
+      }
+      if (changed) {
+        enemyShuffleFxUntil = Date.now() + 420;
+      }
+      return changed;
     }
 
     return {
@@ -1569,71 +3086,121 @@
         flashing.add(index);
         setTimeout(() => flashing.delete(index), 200);
       },
-      render() {
-        if (dom.spellSlots.children.length !== player.spellSlots.length) {
-          dom.spellSlots.innerHTML = "";
-          player.spellSlots.forEach((spellId, index) => {
-            const spell = spellLibrary[spellId];
-            if (!spell) return;
-            const card = document.createElement("article");
-            card.dataset.slotIndex = String(index);
-            card.innerHTML = `
-              <div class="spell-art">
-                <img class="spell-art-img" alt="">
-              </div>
-              <div class="spell-name"></div>
-              <div class="spell-meta">
-                <span class="meta-inline">
-                  <span class="color-dot"></span>
-                  <span class="archetype-tag"></span>
-                </span>
-                <span class="spell-tier"></span>
-                <span class="spell-cost"></span>
-                <span class="spell-warning"></span>
-              </div>
-              <div class="spell-tooltip"></div>
-              <div class="cooldown-overlay">
-                <div class="cooldown-fill"></div>
-              </div>
-            `;
-            card.addEventListener("click", (event) => {
-              event.stopPropagation();
-              const opened = card.classList.contains("open");
-              dom.spellSlots.querySelectorAll(".spell-slot").forEach((el) => el.classList.remove("open"));
-              if (!opened) card.classList.add("open");
-            });
-            dom.spellSlots.appendChild(card);
-          });
-        }
-
-        player.spellSlots.forEach((spellId, index) => {
-          const spell = spellLibrary[spellId];
-          const card = dom.spellSlots.children[index];
-          if (!spell || !card) return;
-
-          const cd = state.cooldowns[spell.id] || 0;
-          const cdProgress = Math.min(1, cd / spell.cooldown);
-          card.className = `spell-slot ${spell.color} ${stateClass(spell)}`;
-          if (flashing.has(index)) card.classList.add("casting");
-
-          const art = card.querySelector(".spell-art-img");
-          art.src = spellIconPath(spell);
-          art.alt = `${spell.name} 아이콘`;
-          card.querySelector(".spell-name").textContent = spell.name;
-          card.querySelector(".color-dot").textContent = colorLabel(spell.color);
-          card.querySelector(".archetype-tag").textContent = spell.archetype;
-          card.querySelector(".spell-tier").textContent = `${spell.circle}서클 | 하트 ${spell.heartCost}`;
-          card.querySelector(".spell-cost").textContent = `MP ${spell.manaCost} ${cdText(cd)}`;
-          const detailLines = spellDetailLines(spell).map((line) => `• ${line}`).join("<br>");
-          card.querySelector(".spell-tooltip").innerHTML = `<strong>${spell.name}</strong><br>${spell.description}<br>${detailLines}`;
-          card.querySelector(".cooldown-fill").style.setProperty("--cd-progress", String(cdProgress));
-          const warn = card.querySelector(".spell-warning");
-          if (player.mp < spell.manaCost && cd <= 0) {
-            warn.textContent = "MP 부족";
-          } else {
-            warn.textContent = "";
-          }
+      showProcEffect(owner, slotIndex, effect) {
+        if (typeof slotIndex !== "number" || slotIndex < 0) return;
+        const now = Date.now();
+        const sameSlotCount = procEffects.filter((fx) => fx.owner === owner && fx.slotIndex === slotIndex && fx.endsAt > now).length;
+        const startsAt = now + (Math.min(2, sameSlotCount) * 70);
+        const tone = effect?.tone || "status";
+        const iconPath = effect?.iconPath || null;
+        const label = effect?.label || "";
+        procEffects.push({
+          owner,
+          slotIndex,
+          iconPath,
+          label,
+          tone,
+          startsAt,
+          endsAt: startsAt + PROC_EFFECT_DURATION_MS
         });
+        while (procEffects.filter((fx) => fx.owner === owner && fx.slotIndex === slotIndex).length > 4) {
+          const oldest = procEffects
+            .filter((fx) => fx.owner === owner && fx.slotIndex === slotIndex)
+            .sort((a, b) => a.startsAt - b.startsAt)[0];
+          if (!oldest) break;
+          const idx = procEffects.indexOf(oldest);
+          if (idx < 0) break;
+          procEffects.splice(idx, 1);
+        }
+      },
+      resetPlayerLayout() {
+        const key = player.activeFormulaId || `formula_${player.activeFormulaIndex}`;
+        delete playerLayoutByFormula[key];
+      },
+      resetEnemyLayout() {
+        delete enemyLayoutByPhase[enemyPhaseKey()];
+      },
+      randomizeEnemyLayout(options = {}) {
+        return randomizeEnemyLayout(options);
+      },
+      render() {
+        bindEditorListeners();
+        const playerCoreDef = playerCore();
+        const playerSpells = player.spellSlots
+          .map((spellId, slotIndex) => {
+            const spell = spellLibrary[spellId];
+            if (!spell) return null;
+            const cd = state.cooldowns[spell.id] || 0;
+            const cdProgress = Math.min(1, cd / spell.cooldown);
+            return {
+              id: spell.id,
+              name: spell.name,
+              color: spell.color,
+              circle: spell.circle,
+              manaCost: spell.manaCost,
+              cooldown: spell.cooldown,
+              slotIndex,
+              itemKey: `${spell.id}@${slotIndex}`,
+              stateClass: stateClass(spell),
+              cdProgress,
+              casting: flashing.has(slotIndex),
+              iconPath: spellIconPath(spell),
+              manaGainHint: spellManaGainHint(spell)
+            };
+          })
+          .filter(Boolean);
+        lastPlayerEntries = playerSpells;
+
+        renderBoard(dom.spellSlots, playerSpells, {
+          cols: playerCoreDef.cols,
+          rows: playerCoreDef.rows,
+          blocked: playerCoreDef.blocked || [],
+          manualLayout: formulaLayout(),
+          captureLayout: true,
+          editable: state.mode === "prep",
+          procOwner: "player"
+        });
+        dom.spellSlots.classList.add("battle-grid-player");
+
+        const enemyCoreDef = enemyCore();
+        const enemySpells = enemy.spellSlots
+          .map((spellId, slotIndex) => {
+            const spell = enemySpellLibrary[spellId];
+            if (!spell) return null;
+            const cd = enemy.cooldowns[spell.id] || 0;
+            const cdProgress = Math.min(1, cd / spell.cooldown);
+            return {
+              id: spell.id,
+              name: spell.name,
+              color: enemySpellColor(spell.id),
+              circle: spell.heartCost || 1,
+              manaCost: spell.manaCost,
+              cooldown: spell.cooldown,
+              slotIndex,
+              itemKey: `${spell.id}@enemy${slotIndex}`,
+              stateClass: enemyStateClass(spell),
+              cdProgress,
+              casting: false,
+              iconPath: null,
+              manaGainHint: spellManaGainHint(spell)
+            };
+          })
+          .filter(Boolean);
+        lastEnemyEntries = enemySpells;
+
+        renderBoard(dom.enemyBoard, enemySpells, {
+          cols: enemyCoreDef.cols,
+          rows: enemyCoreDef.rows,
+          blocked: enemyCoreDef.blocked || [],
+          manualLayout: enemyLayout(),
+          captureEnemyLayout: true,
+          procOwner: "enemy"
+        });
+        if (dom.enemyBoard) {
+          dom.enemyBoard.classList.add("battle-grid-enemy");
+          const activeShuffleFx = Date.now() < enemyShuffleFxUntil;
+          dom.enemyBoard.classList.toggle("shuffling", activeShuffleFx);
+        }
       }
     };
   })();
@@ -1709,6 +3276,10 @@
         growPerTick: nextIncoming.growPerTick ?? current.growPerTick,
         mpDrain: nextIncoming.mpDrain ?? current.mpDrain,
         healPerTick: nextIncoming.healPerTick ?? current.healPerTick,
+        manaPerTick: nextIncoming.manaPerTick ?? current.manaPerTick,
+        decayPerTick: nextIncoming.decayPerTick ?? current.decayPerTick,
+        stackDecayOnHealthHit: nextIncoming.stackDecayOnHealthHit ?? current.stackDecayOnHealthHit,
+        cooldownRate: nextIncoming.cooldownRate ?? current.cooldownRate,
         poisonStacks: nextIncoming.poisonStacks ?? current.poisonStacks,
         stunChance: nextIncoming.stunChance ?? current.stunChance,
         spellSlots: nextIncoming.spellSlots ?? current.spellSlots,
@@ -1739,6 +3310,23 @@
               if (status.growPerTick) {
                 status.dps += status.growPerTick;
               }
+              if (status.decayPerTick) {
+                status.dps = Math.max(0, status.dps - status.decayPerTick);
+              }
+            }
+          }
+
+          if (status.healPerTick) {
+            while (status.tick >= 1) {
+              enemy.hp = Math.min(enemy.maxHp, enemy.hp + status.healPerTick);
+              status.tick -= 1;
+            }
+          }
+
+          if (status.manaPerTick) {
+            while (status.tick >= 1) {
+              enemy.mp = enemy.mp + status.manaPerTick;
+              status.tick -= 1;
             }
           }
 
@@ -1760,6 +3348,23 @@
                 dot = Math.floor(dot * (1 - (player.statuses.poisonRes.reduction || 0)));
               }
               dealPlayerDamage(dot);
+              if (status.decayPerTick) {
+                status.dps = Math.max(0, status.dps - status.decayPerTick);
+              }
+            }
+          }
+
+          if (status.healPerTick) {
+            while (status.tick >= 1) {
+              player.hp = Math.min(player.maxHp, player.hp + status.healPerTick);
+              status.tick -= 1;
+            }
+          }
+
+          if (status.manaPerTick) {
+            while (status.tick >= 1) {
+              player.mp = player.mp + status.manaPerTick;
+              status.tick -= 1;
             }
           }
 
@@ -1796,6 +3401,14 @@
       enemySlowRate() {
         return enemy.statuses.slow ? (enemy.statuses.slow.slowPct || 0) / 100 : 0;
       },
+      playerCooldownRate() {
+        const slow = player.statuses.slow;
+        return slow && typeof slow.cooldownRate === "number" ? slow.cooldownRate : 1;
+      },
+      enemyCooldownRate() {
+        const slow = enemy.statuses.slow;
+        return slow && typeof slow.cooldownRate === "number" ? slow.cooldownRate : 1;
+      },
       enemyOverheatCrit() {
         return enemy.statuses.overheat ? enemy.statuses.overheat.critPct || 0 : 0;
       }
@@ -1822,9 +3435,12 @@
       state.ai.phase3BurnTick = 0;
       state.ai.phase3Ramp = 0;
       state.ai.meltdownRemaining = 0;
+      state.ai.enemyRearrangeTimer = randomInt(32, 54) / 10;
+      ui.spellBar.resetEnemyLayout();
 
       if (state.phaseIndex === 2) {
         state.ai.meltdownRemaining = randomInt(16, 22);
+        state.ai.enemyRearrangeTimer = randomInt(22, 40) / 10;
       }
     }
 
@@ -1834,115 +3450,83 @@
         dom.enemyPortraitImg.src = profile.portrait;
         dom.enemyPortraitImg.alt = `${profile.name} 초상화`;
       }
+      if (dom.enemyNameText) {
+        dom.enemyNameText.textContent = profile.name;
+      }
     }
 
     function renderRearrange() {
       dom.rearrangeSlots.innerHTML = "";
+      const entryIndex = Number.isInteger(state.rearrangeEntryFormulaIndex)
+        ? Math.min(2, Math.max(0, state.rearrangeEntryFormulaIndex))
+        : player.activeFormulaIndex;
+      const selectedIndex = Number.isInteger(state.rearrangeSelectedFormulaIndex)
+        ? Math.min(2, Math.max(0, state.rearrangeSelectedFormulaIndex))
+        : entryIndex;
+      const selectedFormula = player.formulaBook.formulas[selectedIndex] || getActiveFormula();
+      const selectedHearts = usedHearts(selectedFormula?.spellIds || []);
+      const switched = selectedIndex !== entryIndex;
+      const recoverHint = Math.max(1, Math.floor(player.maxHp * REARRANGE_STAY_RECOVER_RATIO));
 
-      for (let i = 0; i < 4; i += 1) {
-        const block = document.createElement("div");
-        block.className = "rearrange-slot";
+      dom.rearrangeError.textContent = "";
+      dom.rearrangeHeartText.textContent = `선택 술식 하트: ${selectedHearts} / ${player.maxHearts}`;
+      dom.phaseBuffHint.textContent = switched
+        ? "술식을 교체하면 내구도 회복 없이 즉시 전투를 재개합니다."
+        : `술식을 유지하면 내구도가 약간 회복됩니다. (최대 +${recoverHint})`;
+
+      player.formulaBook.formulas.forEach((formula, index) => {
+        const block = document.createElement("button");
+        block.type = "button";
+        block.className = "rearrange-slot rearrange-formula-btn";
+        if (index === selectedIndex) block.classList.add("active");
+        if (index === entryIndex) block.classList.add("current");
+        const broken = isFormulaBroken(formula);
+        if (broken) block.disabled = true;
+        const core = getCoreById(formula.coreId);
+        const hearts = usedHearts(formula.spellIds || []);
+        const spellNames = (formula.spellIds || [])
+          .map((id) => spellLibrary[id]?.name || id)
+          .join(", ");
         block.innerHTML = `
-          <label for="rearrange-slot-${i}">슬롯 ${i + 1}</label>
-          <select id="rearrange-slot-${i}">
-            ${[...spellList]
-              .sort(spellSort)
-              .map((spell) => `<option value="${spell.id}">${spellLabel(spell)}</option>`)
-              .join("")}
-          </select>
+          <strong>${index + 1}번 술식${index === entryIndex ? " (현재)" : ""}${broken ? " (파괴됨)" : ""}</strong>
+          <span>핵: ${core.name} | 하트: ${hearts}</span>
+          <small>${spellNames}</small>
         `;
-
-        const select = block.querySelector("select");
-        select.value = player.spellSlots[i];
-
-        select.addEventListener("change", (event) => {
-          const before = [...player.spellSlots];
-          player.spellSlots[i] = event.target.value;
-          if (usedHearts(player.spellSlots) > player.maxHearts) {
-            player.spellSlots = before;
-            event.target.value = before[i];
-            dom.rearrangeError.textContent = "마나 하트 한도를 초과했습니다.";
-          } else {
-            dom.rearrangeError.textContent = "";
-            persistPlayerFormulaState();
-          }
-          dom.rearrangeHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
-          renderPhaseBuffChoices();
+        block.addEventListener("click", () => {
+          state.rearrangeSelectedFormulaIndex = index;
+          renderRearrange();
         });
-
         dom.rearrangeSlots.appendChild(block);
-      }
-    }
-
-    function colorCounts() {
-      const counts = { blue: 0, red: 0, green: 0 };
-      player.spellSlots.forEach((id) => {
-        const spell = spellLibrary[id];
-        if (spell && counts[spell.color] !== undefined) {
-          counts[spell.color] += 1;
-        }
       });
-      return counts;
     }
 
-    function applyPhaseBuff(choice) {
-      if (choice === "blue") {
-        const counts = colorCounts();
-        const bonus = 4 + counts.blue * 2;
-        systems.statusSystem.applyPlayer({ id: "bluePulse", duration: 9999, bonus, stacks: 1 });
-        ui.combatLog.push(`강화 선택: 청색 공명 (MP 재생 +${bonus}/초)`, true);
+    function applyRearrangeChoice() {
+      const entryIndex = Number.isInteger(state.rearrangeEntryFormulaIndex)
+        ? Math.min(2, Math.max(0, state.rearrangeEntryFormulaIndex))
+        : player.activeFormulaIndex;
+      let selectedIndex = Number.isInteger(state.rearrangeSelectedFormulaIndex)
+        ? Math.min(2, Math.max(0, state.rearrangeSelectedFormulaIndex))
+        : entryIndex;
+      const selectedFormula = player.formulaBook.formulas[selectedIndex];
+      if (isFormulaBroken(selectedFormula)) {
+        selectedIndex = entryIndex;
+        state.rearrangeSelectedFormulaIndex = entryIndex;
       }
-      if (choice === "red") {
-        const counts = colorCounts();
-        const damagePct = 10 + counts.red * 6;
-        systems.statusSystem.applyPlayer({ id: "redFury", duration: 9999, damagePct, stacks: 1 });
-        ui.combatLog.push(`강화 선택: 적색 격류 (적색 피해 +${damagePct}%)`, true);
-      }
-      if (choice === "green") {
-        const counts = colorCounts();
-        const reduction = 0.06 + counts.green * 0.04;
-        const regenPerSec = 2 + counts.green;
-        systems.statusSystem.applyPlayer({ id: "greenWard", duration: 9999, reduction, regenPerSec, stacks: 1 });
-        ui.combatLog.push(`강화 선택: 녹색 생장 (피해감소 ${Math.floor(reduction * 100)}%, 초당 회복 ${regenPerSec})`, true);
-      }
-      state.phaseBuffChoice = choice;
-      state.phaseBuffChosen = true;
-      dom.readyBtn.disabled = false;
-      renderPhaseBuffChoices();
-    }
-
-    function renderPhaseBuffChoices() {
-      const counts = colorCounts();
-      const blueBonus = 4 + counts.blue * 2;
-      const redBonus = 10 + counts.red * 6;
-      const greenReduction = Math.floor((0.06 + counts.green * 0.04) * 100);
-      const greenRegen = 2 + counts.green;
-      const choices = [
-        { id: "blue", name: "청색 공명", desc: `MP 재생 +${blueBonus}/초` },
-        { id: "red", name: "적색 격류", desc: `적색 마법 피해 +${redBonus}%` },
-        { id: "green", name: "녹색 생장", desc: `피해감소 ${greenReduction}% + 초당 ${greenRegen} 회복` }
-      ];
-      dom.phaseBuffChoices.innerHTML = "";
-      choices.forEach((choice) => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "phase-buff-btn";
-        if (state.phaseBuffChoice === choice.id) {
-          btn.classList.add("active");
-        }
-        btn.innerHTML = `<strong>${choice.name}</strong><span>${choice.desc}</span>`;
-        btn.disabled = state.phaseBuffChosen;
-        btn.addEventListener("click", () => {
-          if (state.phaseBuffChosen) return;
-          applyPhaseBuff(choice.id);
-        });
-        dom.phaseBuffChoices.appendChild(btn);
-      });
-      if (state.phaseBuffChosen) {
-        dom.phaseBuffHint.textContent = "강화 선택 완료.";
+      if (selectedIndex !== entryIndex) {
+        player.activeFormulaIndex = selectedIndex;
+        syncPlayerSlotsFromActiveFormula();
+        ui.spellBar.resetPlayerLayout();
+        persistPlayerFormulaState();
+        ui.combatLog.push(`술식 교체: ${getActiveFormula().name}.`, true);
       } else {
-        dom.phaseBuffHint.textContent = "페이즈 강화 1개를 선택하세요.";
+        const recover = Math.max(1, Math.floor(player.maxHp * REARRANGE_STAY_RECOVER_RATIO));
+        const beforeHp = player.hp;
+        player.hp = Math.min(player.maxHp, player.hp + recover);
+        const healed = Math.max(0, Math.floor(player.hp - beforeHp));
+        ui.combatLog.push(healed > 0 ? `술식 유지: 내구도 ${healed} 회복.` : "술식 유지: 내구도 회복 없음.");
       }
+      state.rearrangeEntryFormulaIndex = null;
+      state.rearrangeSelectedFormulaIndex = null;
     }
 
     return {
@@ -1953,13 +3537,16 @@
         enemy.maxHp = phase.maxHp;
         enemy.hp = phase.maxHp;
         enemy.maxMp = phase.enemyMaxMp;
-        enemy.mp = phase.enemyMaxMp;
+        enemy.mp = 0;
         enemy.manaRegen = phase.enemyManaRegen;
+        enemy.coreId = phase.coreId || DEFAULT_CORE_ID;
+        enemy.coreCastCount = 0;
         enemy.spellSlots = [...phase.enemyLoadout];
         Object.keys(enemy.cooldowns).forEach((id) => {
           enemy.cooldowns[id] = 0;
         });
         enemy.statuses = {};
+        applyOpeningCorePassive(enemy, getCurrentEnemyCore());
         setupPhaseAI();
       },
       maybeHandlePhaseDeath() {
@@ -1971,20 +3558,22 @@
           state.phaseIndex += 1;
           const phase = currentPhase();
 
-          // Phase transition reward: recover 25% of max resources.
-          player.hp = Math.min(player.maxHp, player.hp + Math.floor(player.maxHp * 0.25));
-          player.mp = Math.min(player.maxMp, player.mp + Math.floor(player.maxMp * 0.25));
+          // Phase transition reward: recover mana only.
+          player.mp = player.mp + Math.floor(player.maxMp * 0.25);
 
           enemy.maxHp = phase.maxHp;
           enemy.hp = phase.maxHp;
           enemy.maxMp = phase.enemyMaxMp;
-          enemy.mp = phase.enemyMaxMp;
+          enemy.mp = 0;
           enemy.manaRegen = phase.enemyManaRegen;
+          enemy.coreId = phase.coreId || DEFAULT_CORE_ID;
+          enemy.coreCastCount = 0;
           enemy.spellSlots = [...phase.enemyLoadout];
           Object.keys(enemy.cooldowns).forEach((id) => {
             enemy.cooldowns[id] = 0;
           });
           enemy.statuses = {};
+          applyOpeningCorePassive(enemy, getCurrentEnemyCore());
           setupPhaseAI();
 
           state.mode = "phase-transition";
@@ -1997,15 +3586,14 @@
             ui.phaseOverlay.hide();
             state.mode = "rearrange";
             state.rearrangeRemaining = 10;
-            state.phaseBuffChosen = false;
-            state.phaseBuffChoice = null;
+            state.rearrangeEntryFormulaIndex = player.activeFormulaIndex;
+            state.rearrangeSelectedFormulaIndex = player.activeFormulaIndex;
             dom.rearrangePanel.classList.remove("hidden");
             dom.rearrangeError.textContent = "";
-            dom.rearrangeHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
-            dom.readyBtn.disabled = true;
+            dom.readyBtn.disabled = false;
             renderRearrange();
-            renderPhaseBuffChoices();
-            ui.combatLog.push("술식 재배치 시간(10초).", true);
+            dom.phaseBuffChoices.innerHTML = "";
+            ui.combatLog.push("술식 교체 선택 시간(10초).", true);
           }, 1300);
           return true;
         }
@@ -2021,22 +3609,16 @@
         state.rearrangeRemaining = Math.max(0, state.rearrangeRemaining - dt);
         dom.rearrangeTimerText.textContent = `남은 시간: ${state.rearrangeRemaining.toFixed(1)}초`;
         if (state.rearrangeRemaining <= 0) {
-          if (!state.phaseBuffChosen) {
-            applyPhaseBuff("blue");
-          }
           this.exitRearrange();
         }
       },
       exitRearrange() {
         if (state.mode !== "rearrange") return;
-        if (!state.phaseBuffChosen) {
-          dom.rearrangeError.textContent = "강화 선택 후 진행할 수 있습니다.";
-          return;
-        }
+        applyRearrangeChoice();
         dom.rearrangePanel.classList.add("hidden");
         state.mode = "running";
         systems.combatLoop.setPaused(false);
-        ui.combatLog.push("술식 재배치 종료. 전투 재개.", true);
+        ui.combatLog.push("술식 선택 종료. 전투 재개.", true);
       },
       clearPendingTimeout: clearTimeoutIfAny
     };
@@ -2048,10 +3630,41 @@
     });
   }
 
-  function castPlayerSpell(slotIndex, spell) {
-    player.mp = Math.max(0, player.mp - spell.manaCost);
-    state.cooldowns[spell.id] = spell.cooldown;
-    ui.spellBar.flash(slotIndex);
+  function queueSpellProcEffect(owner, slotIndex, payload = {}) {
+    if (!ui.spellBar || typeof ui.spellBar.showProcEffect !== "function") return;
+    ui.spellBar.showProcEffect(owner, slotIndex, payload);
+  }
+
+  function queueStatusProc(owner, slotIndex, status) {
+    if (!status || !status.id) return;
+    const stacks = Math.max(1, status.stacks || 1);
+    queueSpellProcEffect(owner, slotIndex, {
+      iconPath: statusIconPath(status.id),
+      label: `+${stacks}`,
+      tone: "status"
+    });
+  }
+
+  function castPlayerSpell(slotIndex, spell, options = {}) {
+    const playerCore = getActiveFormulaCore();
+    const isEchoCast = Boolean(options.echoCast);
+    const heartCost = Math.max(1, spell.heartCost || spell.circle || 1);
+    let unstableDeficit = 0;
+    if (player.manaHearts >= heartCost) {
+      player.manaHearts = Math.max(0, player.manaHearts - heartCost);
+    } else {
+      unstableDeficit = heartCost - player.manaHearts;
+      player.manaHearts = 0;
+      player.hp = Math.max(0, player.hp - unstableDeficit);
+    }
+    if (!isEchoCast) {
+      player.mp = Math.max(0, player.mp - spell.manaCost);
+    }
+    const selfManaLowBeforeCast = player.mp <= 2;
+    if (!isEchoCast) {
+      state.cooldowns[spell.id] = spell.cooldown;
+      ui.spellBar.flash(slotIndex);
+    }
     ui.enemyPortraitEffects.trigger(spell.color);
 
     const hits = spell.hits || 1;
@@ -2073,6 +3686,7 @@
     if (spell.color === "red" && player.statuses.redFury) {
       damage = Math.floor(damage * (1 + (player.statuses.redFury.damagePct || 0) / 100));
     }
+    damage += corePassiveDamageBonus(player, playerCore, spell);
     damage = Math.floor(damage * (1 + state.playerDamageBonus));
 
     if (spell.id === "aerisAzureSeal") {
@@ -2081,15 +3695,23 @@
       if (enemy.statuses.stun) successChance += 0.16;
       if (Math.random() < successChance) {
         damage = Math.floor(enemy.maxHp * 0.65);
-        systems.statusSystem.applyEnemy({ id: "stun", stacks: 1, duration: 3 });
+        const stunStatus = applyCoreStatusBonus(playerCore, { id: "stun", stacks: 1, duration: 3 });
+        systems.statusSystem.applyEnemy(stunStatus);
+        queueStatusProc("player", slotIndex, stunStatus);
       } else {
         damage = Math.floor(enemy.maxHp * 0.34);
       }
     }
 
+    const enemyHpBefore = enemy.hp;
     enemy.hp = Math.max(0, enemy.hp - damage);
+    const healthDamage = Math.max(0, enemyHpBefore - enemy.hp);
 
-    let line = `플레이어의 ${spell.name} 발동! ${damage} 피해.`;
+    let line = `${isEchoCast ? `[${playerCore.name}] 메아리 발동!` : `플레이어의 ${spell.name} 발동!`} ${damage} 피해.`;
+    line += ` 마나하트 -${heartCost}.`;
+    if (unstableDeficit > 0) {
+      line += ` 하트 부족으로 불안정 발동(내구도 -${unstableDeficit}).`;
+    }
 
     if (spell.shield) {
       player.shield += spell.shield;
@@ -2104,16 +3726,53 @@
       const heal = randomInt(spell.heal[0], spell.heal[1]);
       player.hp = Math.min(player.maxHp, player.hp + heal);
       line += ` ${heal} 회복.`;
+      queueSpellProcEffect("player", slotIndex, { iconPath: statusIconPath("regen"), label: `+${heal}`, tone: "heal" });
     }
 
     if (spell.mpRestore) {
       const gain = randomInt(spell.mpRestore[0], spell.mpRestore[1]);
-      player.mp = Math.min(player.maxMp, player.mp + gain);
+      player.mp = player.mp + gain;
       line += ` MP ${gain} 회복.`;
+      queueSpellProcEffect("player", slotIndex, { iconPath: MANA_CRYSTAL_ICON_PATH, label: `+${gain}`, tone: "mana" });
+    }
+
+    let bonusMana = 0;
+    if (spell.manaOnEvent?.event === "onDamageDealt" && damage > 0) {
+      bonusMana += spell.manaOnEvent.value || 1;
+    }
+    const controlApplied = Boolean(
+      (spell.applyEnemyStatus && (spell.applyEnemyStatus.id === "stun" || spell.applyEnemyStatus.id === "slow" || spell.applyEnemyStatus.id === "freeze"))
+      || (Array.isArray(spell.applyEnemyStatuses) && spell.applyEnemyStatuses.some((s) => s.id === "stun" || s.id === "slow" || s.id === "freeze"))
+    );
+    if (spell.manaOnEvent?.event === "onControlApplied" && controlApplied) {
+      bonusMana += spell.manaOnEvent.value || 1;
+    }
+    if (spell.manaOnCondition?.condition === "selfShieldPositive" && player.shield > 0) {
+      bonusMana += spell.manaOnCondition.value || 1;
+    }
+    if (spell.manaOnCondition?.condition === "selfManaLow" && selfManaLowBeforeCast) {
+      bonusMana += spell.manaOnCondition.value || 1;
+    }
+    if (bonusMana > 0) {
+      player.mp = player.mp + bonusMana;
+      line += ` 마나 +${bonusMana}.`;
+      queueSpellProcEffect("player", slotIndex, { iconPath: MANA_CRYSTAL_ICON_PATH, label: `+${bonusMana}`, tone: "mana" });
+    }
+
+    const cycleGain = applyCycleCorePassive(player, playerCore);
+    if (cycleGain > 0) {
+      line += ` [${playerCore.name}] 마나 +${cycleGain}.`;
+      queueSpellProcEffect("player", slotIndex, { iconPath: MANA_CRYSTAL_ICON_PATH, label: `+${cycleGain}`, tone: "mana" });
     }
 
     if (spell.manaFlow) {
       systems.statusSystem.applyPlayer({ id: "manaFlow", duration: spell.manaFlow.duration, bonus: spell.manaFlow.bonus, stacks: 1 });
+      queueStatusProc("player", slotIndex, { id: "manaFlow", stacks: 1 });
+    }
+
+    if (spell.applySelfStatus) {
+      systems.statusSystem.applyPlayer(spell.applySelfStatus);
+      queueStatusProc("player", slotIndex, spell.applySelfStatus);
     }
 
     if (spell.enemyMpBurn) {
@@ -2122,8 +3781,9 @@
       enemy.mp = Math.max(0, enemy.mp - actualBurn);
       if (spell.mpStealRatio) {
         const gain = Math.floor(actualBurn * spell.mpStealRatio);
-        player.mp = Math.min(player.maxMp, player.mp + gain);
+        player.mp = player.mp + gain;
         line += ` 적 MP ${actualBurn} 소각, MP ${gain} 흡수.`;
+        queueSpellProcEffect("player", slotIndex, { iconPath: MANA_CRYSTAL_ICON_PATH, label: `+${gain}`, tone: "mana" });
       } else {
         line += ` 적 MP ${actualBurn} 소각.`;
       }
@@ -2131,10 +3791,12 @@
 
     if (spell.poisonRes) {
       systems.statusSystem.applyPlayer({ id: "poisonRes", duration: spell.poisonRes.duration, reduction: spell.poisonRes.reduction, stacks: 1 });
+      queueStatusProc("player", slotIndex, { id: "poisonRes", stacks: 1 });
     }
 
     if (spell.reactiveSlow) {
       systems.statusSystem.applyPlayer({ id: "reactiveSlow", duration: spell.reactiveSlow.duration, slowPct: spell.reactiveSlow.slowPct, stacks: 1 });
+      queueStatusProc("player", slotIndex, { id: "reactiveSlow", stacks: 1 });
     }
 
     if (spell.summonDryad) {
@@ -2145,10 +3807,13 @@
         dryadCastIndex: 0,
         ...spell.summonDryad
       });
+      queueStatusProc("player", slotIndex, { id: "dryad", stacks: 1 });
     }
 
     if (spell.chanceStun && Math.random() < spell.chanceStun) {
-      systems.statusSystem.applyEnemy({ id: "stun", stacks: 1, duration: 1.2 });
+      const stunStatus = applyCoreStatusBonus(playerCore, { id: "stun", stacks: 1, duration: 1.2 });
+      systems.statusSystem.applyEnemy(stunStatus);
+      queueStatusProc("player", slotIndex, stunStatus);
       if (spell.stunBonusDamage) {
         const bonus = randomInt(spell.stunBonusDamage[0], spell.stunBonusDamage[1]);
         enemy.hp = Math.max(0, enemy.hp - bonus);
@@ -2159,11 +3824,25 @@
     ui.combatLog.push(line, Boolean(spell.highCircle));
 
     if (spell.applyEnemyStatus) {
-      systems.statusSystem.applyEnemy(spell.applyEnemyStatus);
+      const boosted = applyCoreStatusBonus(playerCore, spell.applyEnemyStatus);
+      systems.statusSystem.applyEnemy(boosted);
+      queueStatusProc("player", slotIndex, boosted);
     }
     if (spell.applyEnemyStatuses) {
-      spell.applyEnemyStatuses.forEach((status) => systems.statusSystem.applyEnemy(status));
+      spell.applyEnemyStatuses.forEach((status) => {
+        const boosted = applyCoreStatusBonus(playerCore, status);
+        systems.statusSystem.applyEnemy(boosted);
+        queueStatusProc("player", slotIndex, boosted);
+      });
     }
+    if (healthDamage > 0 && enemy.statuses.burn && (enemy.statuses.burn.stackDecayOnHealthHit || 0) > 0) {
+      enemy.statuses.burn.stacks = Math.max(0, (enemy.statuses.burn.stacks || 1) - enemy.statuses.burn.stackDecayOnHealthHit);
+      if (enemy.statuses.burn.stacks <= 0) delete enemy.statuses.burn;
+    }
+    if (!isEchoCast && playerCore?.passive?.type === "red_double_cast" && spell.color === "red") {
+      castPlayerSpell(slotIndex, spell, { echoCast: true });
+    }
+    return true;
   }
 
   function castEnemySpell(spellId, options = {}) {
@@ -2174,12 +3853,26 @@
     if (enemy.mp < spell.manaCost) return { ok: false, reason: "mana" };
 
     enemy.mp = Math.max(0, enemy.mp - spell.manaCost);
+    const selfManaLowBeforeCast = enemy.mp <= 2;
     enemy.cooldowns[spell.id] = spell.cooldown;
+    const enemyCore = getCurrentEnemyCore();
 
     let damage = 0;
     const hitCount = spell.hits || 1;
     for (let i = 0; i < hitCount; i += 1) {
       damage += randomInt(spell.damage[0], spell.damage[1]);
+    }
+
+    const hasTacticalEffect = Boolean(
+      spell.addPlayerStatus
+      || spell.enemyMpBurn
+      || spell.mpRestore
+      || spell.manaFlow
+      || spell.manaOnEvent
+      || spell.manaOnCondition
+    );
+    if (damage <= 0 && hasTacticalEffect) {
+      damage = 1;
     }
 
     if (spell.critBase) {
@@ -2192,15 +3885,53 @@
     if (options.rampBonus) {
       damage += options.rampBonus;
     }
+    damage += corePassiveDamageBonus(enemy, enemyCore, spell);
 
     const dealt = dealPlayerDamage(damage, { shieldBreakMul: spell.shieldBreakMul || 1 });
     applyReactiveSlow();
 
+    if (spell.mpRestore) {
+      const gain = randomInt(spell.mpRestore[0], spell.mpRestore[1]);
+      enemy.mp = enemy.mp + gain;
+      queueSpellProcEffect("enemy", options.slotIndex, { iconPath: MANA_CRYSTAL_ICON_PATH, label: `+${gain}`, tone: "mana" });
+    }
+    if (spell.manaFlow && spell.manaFlow.bonus) {
+      enemy.mp = enemy.mp + Math.max(1, Math.floor(spell.manaFlow.bonus / 2));
+      queueStatusProc("enemy", options.slotIndex, { id: "manaFlow", stacks: 1 });
+    }
+
+    let enemyBonusMana = 0;
+    if (spell.manaOnEvent?.event === "onDamageDealt" && dealt > 0) {
+      enemyBonusMana += spell.manaOnEvent.value || 1;
+    }
+    const enemyControlApplied = Boolean(spell.addPlayerStatus && (spell.addPlayerStatus.id === "stun" || spell.addPlayerStatus.id === "slow" || spell.addPlayerStatus.id === "freeze"));
+    if (spell.manaOnEvent?.event === "onControlApplied" && enemyControlApplied) {
+      enemyBonusMana += spell.manaOnEvent.value || 1;
+    }
+    if (spell.manaOnCondition?.condition === "selfShieldPositive" && spell.color === "green") {
+      enemyBonusMana += spell.manaOnCondition.value || 1;
+    }
+    if (spell.manaOnCondition?.condition === "selfManaLow" && selfManaLowBeforeCast) {
+      enemyBonusMana += spell.manaOnCondition.value || 1;
+    }
+    if (enemyBonusMana > 0) {
+      enemy.mp = enemy.mp + enemyBonusMana;
+      queueSpellProcEffect("enemy", options.slotIndex, { iconPath: MANA_CRYSTAL_ICON_PATH, label: `+${enemyBonusMana}`, tone: "mana" });
+    }
+    const enemyCycleGain = applyCycleCorePassive(enemy, enemyCore);
+    if (enemyCycleGain > 0) {
+      queueSpellProcEffect("enemy", options.slotIndex, { iconPath: MANA_CRYSTAL_ICON_PATH, label: `+${enemyCycleGain}`, tone: "mana" });
+    }
+
     if (spell.addPlayerStatus) {
-      systems.statusSystem.applyPlayer(spell.addPlayerStatus);
+      const boosted = applyCoreStatusBonus(enemyCore, spell.addPlayerStatus);
+      systems.statusSystem.applyPlayer(boosted);
+      queueStatusProc("enemy", options.slotIndex, boosted);
     }
     if (spell.addEnemyStatus) {
-      systems.statusSystem.applyEnemy(spell.addEnemyStatus);
+      const boosted = applyCoreStatusBonus(enemyCore, spell.addEnemyStatus);
+      systems.statusSystem.applyEnemy(boosted);
+      queueStatusProc("enemy", options.slotIndex, boosted);
     }
     if (spell.selfBurnPct) {
       const selfBurn = Math.floor(enemy.maxHp * spell.selfBurnPct);
@@ -2214,13 +3945,20 @@
     } else {
       ui.combatLog.push(`알렌의 ${message}! ${dealt} 피해.`);
     }
+    if (Math.random() < 0.18) {
+      ui.spellBar.randomizeEnemyLayout({ maxMoves: 1, rotateChance: 0.35 });
+    }
+    if (dealt > 0 && player.statuses.burn && (player.statuses.burn.stackDecayOnHealthHit || 0) > 0) {
+      player.statuses.burn.stacks = Math.max(0, (player.statuses.burn.stacks || 1) - player.statuses.burn.stackDecayOnHealthHit);
+      if (player.statuses.burn.stacks <= 0) delete player.statuses.burn;
+    }
     return { ok: true, dealt };
   }
 
   function runAutoCast(dt) {
     state.castGap = Math.max(0, state.castGap - dt);
     if (state.castGap > 0) return;
-    if (player.statuses.stun) return;
+    if (player.statuses.stun || player.statuses.freeze) return;
 
     for (let i = 0; i < player.spellSlots.length; i += 1) {
       const spell = spellLibrary[player.spellSlots[i]];
@@ -2228,9 +3966,9 @@
       if ((state.cooldowns[spell.id] || 0) > 0) continue;
       if (player.mp < spell.manaCost) continue;
 
-      castPlayerSpell(i, spell);
+      if (!castPlayerSpell(i, spell)) continue;
       let castDelay = Math.max(0.25, spell.castTime || 0, spell.channelTime || 0);
-      if (spell.id === "aerisAzureSeal" && (enemy.statuses.slow || enemy.statuses.stun)) {
+      if (spell.id === "aerisAzureSeal" && (enemy.statuses.slow || enemy.statuses.stun || enemy.statuses.freeze)) {
         castDelay *= 0.7;
       }
       state.castGap = castDelay;
@@ -2250,109 +3988,77 @@
   }
 
   function playerManaRegenPerSec() {
-    const flow = player.statuses.manaFlow ? (player.statuses.manaFlow.bonus || 0) : 0;
-    const bluePulse = player.statuses.bluePulse ? (player.statuses.bluePulse.bonus || 0) : 0;
-    return player.manaRegen + flow + bluePulse;
+    const flow = player.statuses.manaFlow;
+    const flowBonus = flow ? (flow.manaPerTick || flow.bonus || 0) : 0;
+    return player.manaRegen + flowBonus;
+  }
+
+  function enemyAutoCast(dt, baseInterval, jitter = 0.4) {
+    state.ai.basicTimer -= dt;
+    if (state.ai.basicTimer > 0) return;
+    state.ai.basicTimer = Math.max(0.45, baseInterval + (Math.random() * jitter));
+
+    function preferredColor() {
+      if (state.enemyProfileId === "dalahans") return "blue";
+      if (state.enemyProfileId === "serion") return "green";
+      return "red";
+    }
+
+    const pref = preferredColor();
+    const secondary = pref === "red" ? "blue" : pref === "blue" ? "green" : "red";
+
+    function scoreSpell(spell) {
+      const cd = enemy.cooldowns[spell.id] || 0;
+      if (cd > 0) return -9999;
+      const affordable = enemy.mp >= spell.manaCost;
+      const manaEngine = Boolean(spell.mpRestore || spell.manaFlow || spell.manaCost === 0);
+      const avgDamage = ((spell.damage?.[0] || 0) + (spell.damage?.[1] || 0)) / 2;
+      let score = 0;
+      if (affordable) score += 120;
+      if (!affordable) score -= (spell.manaCost - enemy.mp) * 20;
+      if (manaEngine && enemy.mp <= 2) score += 150;
+      if (manaEngine && enemy.mp <= Math.floor(enemy.maxMp * 0.35)) score += 80;
+      if (manaEngine && enemy.mp >= Math.floor(enemy.maxMp * 0.6)) score -= 60;
+      if (!manaEngine && enemy.mp >= Math.floor(enemy.maxMp * 0.5)) score += (spell.heartCost || 0) * 22;
+      if (avgDamage > 0 && affordable) score += 55 + avgDamage * 8;
+      if (avgDamage <= 0 && enemy.mp >= Math.floor(enemy.maxMp * 0.5)) score -= 35;
+      score += (spell.heartCost || 0) * 5;
+      score -= spell.manaCost * 2;
+      if (spell.color === pref) score += 65;
+      else if (spell.color === secondary) score += 20;
+      else score -= 8;
+      if (pref === "red" && spell.archetype && spell.archetype.includes("속공")) score += 18;
+      if (pref === "blue" && spell.archetype && spell.archetype.includes("제어")) score += 18;
+      if (pref === "green" && spell.archetype && spell.archetype.includes("생존")) score += 18;
+      return score;
+    }
+
+    const candidateIds = [...enemy.spellSlots].sort((a, b) => {
+      const sa = enemySpellLibrary[a];
+      const sb = enemySpellLibrary[b];
+      return (scoreSpell(sb) - scoreSpell(sa));
+    });
+    for (let i = 0; i < candidateIds.length; i += 1) {
+      const slotIndex = enemy.spellSlots.indexOf(candidateIds[i]);
+      const cast = castEnemySpell(candidateIds[i], { slotIndex });
+      if (cast.ok) return;
+    }
   }
 
   function phase1AI(dt) {
-    state.ai.rapidTimer -= dt;
-    state.ai.burstTimer -= dt;
-
-    if (state.ai.rapidTimer <= 0) {
-      state.ai.rapidTimer += 1.05 + Math.random() * 0.25;
-      const cast = castEnemySpell("flareBurst");
-      if (!cast.ok) {
-        castEnemySpell("scarletShard");
-      }
-    }
-
-    if (state.ai.burstTimer <= 0) {
-      state.ai.burstTimer += 4.6 + Math.random() * 1.2;
-      const cast = castEnemySpell("allenTrueName", { logName: `4서클 마법 '${currentPhase().name}'`, important: true });
-      if (!cast.ok) {
-        castEnemySpell("brandBreaker");
-      }
-    }
+    enemyAutoCast(dt, 1.6, 0.5);
   }
 
   function phase2AI(dt) {
-    state.ai.basicTimer -= dt;
-
-    if (state.ai.charging) {
-      state.ai.chargeRemaining -= dt;
-      if (state.ai.chargeRemaining <= 0) {
-        state.ai.charging = false;
-        state.ai.chargeRemaining = 3.4 + Math.random() * 1.1;
-        const cast = castEnemySpell("skyFallingFlame", { logName: "4서클 마법 '불꽃이 내리는 하늘'", important: true });
-        if (!cast.ok) {
-          castEnemySpell("infernoCharge");
-        }
-      }
-    } else {
-      state.ai.chargeRemaining -= dt;
-      if (state.ai.chargeRemaining <= 0) {
-        state.ai.charging = true;
-        state.ai.chargeRemaining = 1.35 + Math.random() * 0.55;
-      }
-    }
-
-    if (state.ai.basicTimer <= 0) {
-      state.ai.basicTimer += 2.9;
-      const cast = castEnemySpell("flameStrike");
-      if (!cast.ok) {
-        castEnemySpell("allensMark");
-      }
-    }
-
-    systems.statusSystem.applyEnemy({ id: "overheat", stacks: 1, duration: 2.1, critPct: 15 });
+    enemyAutoCast(dt, 1.25, 0.45);
   }
 
   function phase3AI(dt) {
-    state.ai.meltdownRemaining -= dt;
-    state.ai.phase3Tick += dt;
-    state.ai.phase3BurnTick += dt;
-    state.ai.frenzyTimer -= dt;
-
-    if (state.ai.phase3Tick >= 1) {
-      state.ai.phase3Tick -= 1;
-      state.ai.phase3Ramp += 1;
-      const selfBurn = Math.floor(enemy.maxHp * (0.032 + state.ai.phase3Ramp * 0.004));
-      enemy.hp = Math.max(0, enemy.hp - selfBurn);
-      ui.damageFloat.show(selfBurn);
-      systems.statusSystem.applyEnemy({ id: "overheat", stacks: Math.min(8, 1 + Math.floor(state.ai.phase3Ramp / 2)), duration: 1.2, critPct: 15 });
-    }
-
-    if (state.ai.phase3BurnTick >= 2) {
-      state.ai.phase3BurnTick -= 2;
-      systems.statusSystem.applyPlayer({ id: "burn", stacks: 1 + Math.floor(state.ai.phase3Ramp / 2), duration: 6, dps: 4 });
-    }
-
-    if (state.ai.frenzyTimer <= 0) {
-      state.ai.frenzyTimer += Math.max(1.3, 2.4 - state.ai.phase3Ramp * 0.08);
-      const cast = castEnemySpell("ragingFlare", { rampBonus: state.ai.phase3Ramp * 3, important: true });
-      if (!cast.ok) {
-        castEnemySpell("purgatoriumEcho", { rampBonus: Math.floor(state.ai.phase3Ramp * 1.5), important: true });
-      }
-    }
-
-    if (state.ai.meltdownRemaining <= 0) {
-      const cast = castEnemySpell("selfImmolation", { logName: "푸르가토리움 붕괴", important: true });
-      if (!cast.ok) {
-        const dealt = dealPlayerDamage(randomInt(96, 132));
-        applyReactiveSlow();
-        ui.combatLog.push(`알렌: 푸르가토리움 붕괴! ${dealt} 피해.`, true);
-      }
-      if (player.hp > 0) {
-        state.mode = "victory";
-        systems.combatLoop.setPaused(true);
-        ui.combatLog.push("자폭을 버텨냈다. 전투 승리.", true);
-      }
-    }
+    enemyAutoCast(dt, 0.95, 0.4);
   }
 
   function runEnemyAI(dt) {
-    if (enemy.statuses.stun) {
+    if (enemy.statuses.stun || enemy.statuses.freeze) {
       return;
     }
     const slowRate = systems.statusSystem.enemySlowRate();
@@ -2361,20 +4067,38 @@
     if (state.phaseIndex === 0) phase1AI(scaledDt);
     if (state.phaseIndex === 1) phase2AI(scaledDt);
     if (state.phaseIndex === 2) phase3AI(scaledDt);
+
+    state.ai.enemyRearrangeTimer -= scaledDt;
+    if (state.ai.enemyRearrangeTimer <= 0) {
+      const moveCount = state.phaseIndex >= 2 ? 2 : 1;
+      const rotated = ui.spellBar.randomizeEnemyLayout({ maxMoves: moveCount, rotateChance: 0.5 });
+      if (rotated) {
+        ui.combatLog.push("알렌이 술식 배열을 재정렬했다.");
+      }
+      if (state.phaseIndex === 0) {
+        state.ai.enemyRearrangeTimer = randomInt(45, 70) / 10;
+      } else if (state.phaseIndex === 1) {
+        state.ai.enemyRearrangeTimer = randomInt(34, 56) / 10;
+      } else {
+        state.ai.enemyRearrangeTimer = randomInt(24, 44) / 10;
+      }
+    }
   }
 
   function runCombat(dt) {
-    player.mp = Math.min(player.maxMp, player.mp + playerManaRegenPerSec() * dt);
-    enemy.mp = Math.min(enemy.maxMp, enemy.mp + enemy.manaRegen * dt);
+    player.mp = player.mp + playerManaRegenPerSec() * dt;
+    enemy.mp = enemy.mp + enemy.manaRegen * dt;
     if (player.statuses.greenWard && player.statuses.greenWard.regenPerSec) {
       player.hp = Math.min(player.maxHp, player.hp + player.statuses.greenWard.regenPerSec * dt);
     }
 
+    const playerCdRate = systems.statusSystem.playerCooldownRate();
+    const enemyCdRate = systems.statusSystem.enemyCooldownRate();
     spellList.forEach((spell) => {
-      state.cooldowns[spell.id] = Math.max(0, (state.cooldowns[spell.id] || 0) - dt);
+      state.cooldowns[spell.id] = Math.max(0, (state.cooldowns[spell.id] || 0) - (dt * playerCdRate));
     });
     Object.keys(enemy.cooldowns).forEach((id) => {
-      enemy.cooldowns[id] = Math.max(0, (enemy.cooldowns[id] || 0) - dt);
+      enemy.cooldowns[id] = Math.max(0, (enemy.cooldowns[id] || 0) - (dt * enemyCdRate));
     });
 
     systems.statusSystem.tickEnemy(dt);
@@ -2392,6 +4116,9 @@
     }
 
     if (player.hp <= 0 && state.mode === "running") {
+      if (handlePlayerFormulaBreak()) {
+        return;
+      }
       state.mode = "defeat";
       systems.combatLoop.setPaused(true);
       ui.combatLog.push("전투 패배.", true);
@@ -2442,18 +4169,38 @@
 
   function updateUI() {
     dom.playerHpFill.style.width = `${Math.max(0, (player.hp / player.maxHp) * 100)}%`;
-    dom.playerMpFill.style.width = `${Math.max(0, (player.mp / player.maxMp) * 100)}%`;
     dom.bossHpFill.style.width = `${Math.max(0, (enemy.hp / enemy.maxHp) * 100)}%`;
-    dom.bossMpFill.style.width = `${Math.max(0, (enemy.mp / enemy.maxMp) * 100)}%`;
 
     dom.playerHpText.textContent = `${Math.floor(player.hp)} / ${player.maxHp}`;
-    dom.playerMpText.textContent = `${Math.floor(player.mp)} / ${player.maxMp}`;
     dom.bossHpText.textContent = `${Math.floor(enemy.hp)} / ${enemy.maxHp}`;
-    dom.bossMpText.textContent = `${Math.floor(enemy.mp)} / ${enemy.maxMp}`;
 
-    dom.heartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts} | 보호막 ${Math.floor(player.shield)}`;
-    dom.enemyHeartText.textContent = `보스 하트: ${enemyUsedHearts()} / ${enemy.maxHearts}`;
+    const playerCore = getActiveFormulaCore();
+    const enemyCore = getCurrentEnemyCore();
+    const activeFormula = getActiveFormula();
+    const phase = currentPhase();
+    dom.heartText.textContent = `핵: ${playerCore.name} | 전투 마나하트: ${Math.floor(player.manaHearts)} / ${player.maxManaHearts} | 보호막 ${Math.floor(player.shield)}`;
+    dom.enemyHeartText.textContent = `핵: ${enemyCore.name} | 하트: ${enemyUsedHearts()} / ${enemy.maxHearts}`;
     dom.loadoutHeartText.textContent = `마나 하트: ${usedHearts()} / ${player.maxHearts}`;
+
+    ui.statusSummary.render(player.statuses, enemy.statuses);
+    if (dom.playerCorePassiveTip) {
+      const text = playerCore?.passive?.text || "패시브 없음";
+      dom.playerCorePassiveTip.textContent = text;
+      dom.playerCorePassiveTip.title = text;
+    }
+    if (dom.bossCorePassiveTip) {
+      const text = enemyCore?.passive?.text || "패시브 없음";
+      dom.bossCorePassiveTip.textContent = text;
+      dom.bossCorePassiveTip.title = text;
+    }
+    if (dom.playerNameText) dom.playerNameText.textContent = "죽은 마법사";
+    if (dom.enemyNameText) dom.enemyNameText.textContent = currentEnemyProfile().name;
+    if (dom.playerGridTitle) {
+      dom.playerGridTitle.textContent = `내 술식: ${activeFormula?.name || "이름 없는 술식"} [${playerCore.name}] ${playerCore?.passive?.text || ""}`;
+    }
+    if (dom.enemyGridTitle) {
+      dom.enemyGridTitle.textContent = `상대 술식: ${phase?.name || currentEnemyProfile().name} [${enemyCore.name}] ${enemyCore?.passive?.text || ""}`;
+    }
     dom.loadoutSlots.querySelectorAll("select").forEach((select) => {
       select.disabled = state.mode !== "prep";
     });
@@ -2461,7 +4208,7 @@
     dom.speedBtn.classList.toggle("active", state.speed > 1);
 
     if (state.mode === "running") dom.phasePill.textContent = `페이즈 ${state.phaseIndex + 1}`;
-    if (state.mode === "rearrange") dom.phasePill.textContent = "재배치";
+    if (state.mode === "rearrange") dom.phasePill.textContent = "교체 선택";
     if (state.mode === "phase-transition") dom.phasePill.textContent = "전환";
     if (state.mode === "victory") dom.phasePill.textContent = "승리";
     if (state.mode === "defeat") dom.phasePill.textContent = "패배";
@@ -2477,20 +4224,24 @@
     state.speed = 1;
     state.castGap = 0;
     state.rearrangeRemaining = 0;
+    state.rearrangeSelectedFormulaIndex = null;
+    state.rearrangeEntryFormulaIndex = null;
+    state.brokenFormulaIds = new Set();
     state.pendingTimeout = null;
-    state.phaseBuffChosen = false;
-    state.phaseBuffChoice = null;
 
     resetCooldowns();
 
     player.hp = player.maxHp;
-    player.mp = player.maxMp;
+    player.mp = 0;
+    player.manaHearts = player.maxManaHearts;
+    player.coreCastCount = 0;
     player.shield = 0;
     player.statuses = {};
     const legacySlots = loadStoredSpellSlots() || [...DEFAULT_PLAYER_SPELL_SLOTS];
     player.formulaBook = loadStoredFormulaBook(legacySlots);
     player.activeFormulaIndex = player.formulaBook.activeFormulaIndex;
     syncPlayerSlotsFromActiveFormula();
+    ui.spellBar.resetPlayerLayout();
     persistPlayerFormulaState();
     renderPrepLoadout();
 
@@ -2498,12 +4249,14 @@
 
     dom.rearrangePanel.classList.add("hidden");
     dom.phaseBuffChoices.innerHTML = "";
-    dom.phaseBuffHint.textContent = "페이즈 강화 1개를 선택하세요.";
+    dom.phaseBuffHint.textContent = "";
     dom.readyBtn.disabled = false;
     systems.combatLoop.setPaused(true);
 
     ui.combatLog.clear();
     ui.combatLog.push("전투 초기화 완료.");
+    if (dom.combatLogBody) dom.combatLogBody.classList.add("hidden");
+    if (dom.combatLogToggle) dom.combatLogToggle.textContent = "전투 로그 보기";
     updateUI();
     ui.spellBar.render();
     ui.enemyStatusBar.render(enemy.statuses);
@@ -2518,6 +4271,12 @@
       resetBattle();
     }
     setWorldMode("battle");
+    state.brokenFormulaIds = new Set();
+    player.coreCastCount = 0;
+    const openGain = applyOpeningCorePassive(player, getActiveFormulaCore());
+    if (openGain > 0) {
+      ui.combatLog.push(`핵 패시브 발동: 시작 마나 +${openGain}.`);
+    }
     state.mode = "running";
     systems.combatLoop.setPaused(false);
   }
@@ -2532,6 +4291,13 @@
     dom.readyBtn.addEventListener("click", () => {
       systems.phaseSystem.exitRearrange();
     });
+    if (dom.combatLogToggle && dom.combatLogBody) {
+      dom.combatLogToggle.addEventListener("click", () => {
+        const open = !dom.combatLogBody.classList.contains("hidden");
+        dom.combatLogBody.classList.toggle("hidden", open);
+        dom.combatLogToggle.textContent = open ? "전투 로그 보기" : "전투 로그 닫기";
+      });
+    }
     document.addEventListener("click", () => {
       dom.spellSlots.querySelectorAll(".spell-slot").forEach((el) => el.classList.remove("open"));
     });

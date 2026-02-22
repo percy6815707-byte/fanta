@@ -1,11 +1,11 @@
 :root {
-  --bg-0: #07131f;
-  --bg-1: #10273b;
-  --panel: rgba(6, 18, 30, 0.9);
-  --line: rgba(145, 185, 208, 0.24);
-  --text: #edf7ff;
-  --muted: #b9cad6;
-  --heart: #f1c26f;
+  --bg-0: #120d0b;
+  --bg-1: #1d1411;
+  --panel: rgba(20, 14, 11, 0.9);
+  --line: rgba(206, 170, 125, 0.3);
+  --text: #f2e9dc;
+  --muted: #c3b29c;
+  --heart: #e2bb84;
 }
 
 * { box-sizing: border-box; }
@@ -15,7 +15,9 @@ body {
   min-height: 100vh;
   color: var(--text);
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-  background: linear-gradient(160deg, var(--bg-0), var(--bg-1));
+  background:
+    radial-gradient(circle at 14% 8%, rgba(168, 124, 79, 0.16), transparent 30%),
+    linear-gradient(160deg, var(--bg-0), var(--bg-1));
 }
 
 .book-shell {
@@ -31,8 +33,11 @@ body {
 .hint-panel {
   border: 1px solid var(--line);
   border-radius: 14px;
-  background: var(--panel);
+  background:
+    linear-gradient(180deg, rgba(34, 24, 19, 0.92), rgba(16, 12, 10, 0.94)),
+    repeating-linear-gradient(10deg, rgba(255, 255, 255, 0.017) 0 2px, rgba(0, 0, 0, 0.025) 2px 7px);
   padding: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 228, 188, 0.07);
 }
 
 .book-head {
@@ -50,10 +55,11 @@ body {
 .back-link {
   text-decoration: none;
   color: #ffd7a2;
-  border: 1px solid rgba(255, 215, 162, 0.35);
+  border: 1px solid rgba(226, 188, 136, 0.45);
   border-radius: 10px;
   padding: 8px 10px;
   font-size: 13px;
+  background: rgba(35, 24, 19, 0.8);
 }
 
 .heart-info {
@@ -73,7 +79,7 @@ body {
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 6px 10px;
-  background: rgba(13, 34, 48, 0.95);
+  background: rgba(30, 21, 16, 0.95);
   color: var(--text);
   font-size: 12px;
   cursor: pointer;
@@ -100,37 +106,74 @@ body {
   width: 100%;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(9, 25, 35, 0.95);
+  background: rgba(24, 17, 13, 0.95);
   color: var(--text);
   padding: 8px;
 }
 
-.slot-form {
+.formula-core {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(24, 17, 13, 0.95);
+  color: var(--text);
+  padding: 8px;
+}
+
+.spell-pool-panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(24, 17, 13, 0.88);
+  padding: 10px;
+  margin-bottom: 12px;
+}
+
+.spell-pool-panel h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.spell-pool-hint {
+  margin: 6px 0 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.spell-pool {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
+  max-height: 180px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
-.slot-item {
+.spell-pool-item {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 8px;
   display: grid;
   gap: 6px;
+  cursor: grab;
+  background: rgba(24, 17, 13, 0.95);
 }
 
-.slot-item label {
+.spell-pool-item:active {
+  cursor: grabbing;
+}
+
+.spell-pool-item.used {
+  border-color: rgba(231, 195, 134, 0.72);
+  background: rgba(46, 32, 24, 0.95);
+}
+
+.spell-pool-item strong {
   font-size: 12px;
-  color: var(--muted);
 }
 
-.slot-item select {
-  width: 100%;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: rgba(9, 25, 35, 0.95);
-  color: var(--text);
-  padding: 8px;
+.spell-pool-item span {
+  font-size: 11px;
+  color: var(--muted);
 }
 
 .save-btn {
@@ -139,8 +182,210 @@ body {
   border-radius: 10px;
   padding: 10px 12px;
   font-weight: 700;
-  color: #2f1800;
-  background: linear-gradient(90deg, #f1c26f, #d89a48);
+  color: #f7ebd8;
+  border: 1px solid rgba(226, 188, 136, 0.5);
+  background: linear-gradient(180deg, #7f5a3e, #4d3527);
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
+}
+
+.grid-editor-panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(24, 17, 13, 0.88);
+}
+
+.grid-editor-panel h2 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.grid-hint {
+  margin: 6px 0 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.formula-grid {
+  --cols: 6;
+  --rows: 3;
+  --cell: 44px;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), var(--cell));
+  grid-template-rows: repeat(var(--rows), var(--cell));
+  gap: 3px;
+  justify-content: center;
+  padding: 4px;
+  border: 1px solid rgba(173, 130, 84, 0.45);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(37, 26, 21, 0.94), rgba(20, 14, 11, 0.95)),
+    repeating-linear-gradient(12deg, rgba(255, 255, 255, 0.017) 0 2px, rgba(0, 0, 0, 0.03) 2px 8px);
+}
+
+.grid-cell {
+  border: 1px solid rgba(120, 82, 51, 0.42);
+  border-radius: 4px;
+  background: rgba(90, 61, 39, 0.24);
+}
+
+.grid-cell.blocked {
+  border-color: rgba(74, 52, 35, 0.7);
+  background:
+    repeating-linear-gradient(135deg, rgba(40, 30, 22, 0.75) 0 6px, rgba(22, 16, 12, 0.9) 6px 12px);
+}
+
+.grid-item {
+  position: relative;
+  border-radius: 6px;
+  border: 1px solid rgba(225, 193, 153, 0.62);
+  overflow: hidden;
+  cursor: grab;
+  display: grid;
+  place-items: center;
+}
+
+.grid-item:active {
+  cursor: grabbing;
+}
+
+.grid-item img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.88;
+  filter: saturate(0.86) contrast(1.08) brightness(0.86) sepia(0.1);
+  z-index: 0;
+}
+
+.grid-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 50% 110%, rgba(0, 0, 0, 0.42), transparent 64%),
+    repeating-linear-gradient(14deg, rgba(255, 255, 255, 0.012) 0 1px, rgba(0, 0, 0, 0.02) 1px 6px);
+}
+
+.grid-item span {
+  position: relative;
+  z-index: 2;
+  background: rgba(20, 11, 8, 0.5);
+  color: #fdf1dd;
+  border-radius: 4px;
+  font-size: 10px;
+  line-height: 1.2;
+  padding: 2px 3px;
+}
+
+.grid-item.red { background: linear-gradient(180deg, rgba(128, 48, 38, 0.92), rgba(86, 31, 24, 0.92)); }
+.grid-item.blue { background: linear-gradient(180deg, rgba(41, 81, 124, 0.92), rgba(29, 56, 88, 0.92)); }
+.grid-item.green { background: linear-gradient(180deg, rgba(58, 103, 52, 0.92), rgba(35, 72, 31, 0.92)); }
+
+.grid-rotate-btn {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(240, 218, 186, 0.7);
+  background: rgba(35, 20, 14, 0.78);
+  color: #ffe8c7;
+  font-size: 11px;
+  line-height: 1;
+  padding: 0;
+  min-height: 0;
+}
+
+.grid-remove-btn {
+  position: absolute;
+  left: 2px;
+  top: 2px;
+  z-index: 3;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(240, 218, 186, 0.7);
+  background: rgba(35, 20, 14, 0.78);
+  color: #ffe8c7;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+  min-height: 0;
+}
+
+.catalog-panel {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 10px;
+  background: rgba(24, 17, 13, 0.88);
+}
+
+.catalog-panel h2 {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+
+.catalog-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.catalog-filters label {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.catalog-filters select {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(24, 17, 13, 0.95);
+  color: var(--text);
+  padding: 7px 8px;
+}
+
+.spell-catalog {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-height: 320px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.spell-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px;
+  background: rgba(24, 17, 13, 0.95);
+}
+
+.spell-card h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.spell-card p {
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.35;
+}
+
+.spell-card.locked {
+  border-color: rgba(118, 101, 84, 0.5);
+  background: rgba(22, 20, 21, 0.92);
 }
 
 .save-msg {
@@ -162,6 +407,9 @@ body {
 }
 
 @media (max-width: 680px) {
-  .slot-form { grid-template-columns: 1fr; }
   .book-head { align-items: flex-start; flex-direction: column; }
+  .spell-pool { grid-template-columns: 1fr; }
+  .formula-grid { --cell: 34px; }
+  .catalog-filters { grid-template-columns: 1fr; }
+  .spell-catalog { grid-template-columns: 1fr; }
 }

@@ -20,58 +20,6 @@
       <div id="story-choices" class="story-choices"></div>
     </section>
 
-    <header class="top-panel">
-      <div class="bar-group">
-        <div class="bar-wrap">
-          <div class="bar-label-row">
-            <span>플레이어 HP</span>
-            <span id="player-hp-text">0 / 0</span>
-          </div>
-          <div class="meter hp"><div id="player-hp-fill" class="meter-fill"></div></div>
-        </div>
-
-        <div class="bar-wrap">
-          <div class="bar-label-row">
-            <span>플레이어 MP</span>
-            <span id="player-mp-text">0 / 0</span>
-          </div>
-          <div class="meter mp"><div id="player-mp-fill" class="meter-fill"></div></div>
-        </div>
-      </div>
-
-      <div class="phase-center">
-        <h1>방랑 마도사의 길</h1>
-        <div id="phase-pill" class="phase-pill">준비</div>
-        <div id="heart-text" class="heart-text">마나 하트: 0 / 0</div>
-
-        <section class="enemy-portrait-area" aria-label="적 초상화">
-          <div id="enemy-portrait-frame" class="enemy-portrait-frame">
-            <img id="enemy-portrait-img" class="enemy-portrait-img" src="assets/적/enemy_allen_v2.png" alt="적색의 알렌 초상화">
-            <div id="enemy-float-layer" class="enemy-float-layer"></div>
-          </div>
-          <div id="enemy-status-bar" class="enemy-status-bar"></div>
-        </section>
-      </div>
-
-      <div class="bar-group">
-        <div class="bar-wrap">
-          <div class="bar-label-row">
-            <span>보스 HP</span>
-            <span id="boss-hp-text">0 / 0</span>
-          </div>
-          <div class="meter boss"><div id="boss-hp-fill" class="meter-fill"></div></div>
-        </div>
-        <div class="bar-wrap">
-          <div class="bar-label-row">
-            <span>보스 MP</span>
-            <span id="boss-mp-text">0 / 0</span>
-          </div>
-          <div class="meter mp"><div id="boss-mp-fill" class="meter-fill"></div></div>
-        </div>
-        <div id="enemy-heart-text" class="heart-text">보스 하트: 0 / 0</div>
-      </div>
-    </header>
-
     <section class="control-panel">
       <button id="start-btn" class="btn-primary">전투 시작</button>
       <button id="reset-btn" class="btn-secondary">전투 초기화</button>
@@ -93,15 +41,72 @@
     </section>
 
     <main class="battle-panel">
+      <section class="enemy-grid-panel">
+        <h3 id="enemy-grid-title">상대 술식</h3>
+        <div id="enemy-board" class="battle-grid battle-grid-enemy"></div>
+      </section>
+      <header class="top-panel duel-top">
+        <section class="duel-side duel-player">
+          <div id="player-portrait-frame" class="player-portrait-frame" aria-label="플레이어 초상화">
+            <div class="player-portrait-placeholder">?</div>
+          </div>
+          <p id="player-name-text" class="duel-name">죽은 마법사</p>
+          <div class="bar-wrap">
+            <div class="bar-label-row">
+              <span>내구도</span>
+              <span id="player-hp-text">0 / 0</span>
+            </div>
+            <div class="meter hp"><div id="player-hp-fill" class="meter-fill"></div></div>
+          </div>
+          <div class="status-split">
+            <p id="player-buffs-text">버프: MP 0</p>
+            <p id="player-debuffs-text">디버프: 없음</p>
+            <p class="core-passive-line">핵 패시브: <span id="player-core-passive-tip" class="core-passive-tip" title="">확인</span></p>
+          </div>
+        </section>
+
+        <div class="phase-center duel-center">
+          <h1>방랑 마도사의 길</h1>
+          <div id="phase-pill" class="phase-pill">준비</div>
+          <div class="duel-versus">VS</div>
+          <div id="heart-text" class="heart-text">마나 하트: 0 / 0</div>
+        </div>
+
+        <section class="duel-side duel-enemy">
+          <section class="enemy-portrait-area" aria-label="적 초상화">
+            <div id="enemy-portrait-frame" class="enemy-portrait-frame">
+              <img id="enemy-portrait-img" class="enemy-portrait-img" src="assets/적/enemy_allen_v2.png" alt="적색의 알렌 초상화">
+              <div id="enemy-float-layer" class="enemy-float-layer"></div>
+            </div>
+            <div id="enemy-status-bar" class="enemy-status-bar"></div>
+          </section>
+          <p id="enemy-name-text" class="duel-name">적색의 알렌</p>
+          <div class="bar-wrap">
+            <div class="bar-label-row">
+              <span>내구도</span>
+              <span id="boss-hp-text">0 / 0</span>
+            </div>
+            <div class="meter boss"><div id="boss-hp-fill" class="meter-fill"></div></div>
+          </div>
+          <div class="status-split">
+            <p id="boss-buffs-text">버프: MP 0</p>
+            <p id="boss-debuffs-text">디버프: 없음</p>
+            <p class="core-passive-line">핵 패시브: <span id="boss-core-passive-tip" class="core-passive-tip" title="">확인</span></p>
+          </div>
+          <div id="enemy-heart-text" class="heart-text">보스 하트: 0 / 0</div>
+        </section>
+      </header>
+      <section class="player-grid-panel">
+        <h3 id="player-grid-title">내 술식</h3>
+        <div id="spell-slots" class="spell-slots"></div>
+      </section>
       <section class="combat-log-panel">
-        <h3>전투 로그</h3>
-        <ul id="combat-log" class="combat-log"></ul>
+        <button id="combat-log-toggle" type="button" class="btn-secondary combat-log-toggle">전투 로그 보기</button>
+        <div id="combat-log-body" class="combat-log-body hidden">
+          <ul id="combat-log" class="combat-log"></ul>
+        </div>
       </section>
     </main>
-
-    <footer class="spell-panel">
-      <div id="spell-slots" class="spell-slots"></div>
-    </footer>
   </div>
 
   <section id="story-dock" class="story-dock">
@@ -130,10 +135,10 @@
 
   <section id="rearrange-panel" class="rearrange-panel hidden" aria-live="polite">
     <div class="rearrange-card">
-      <h2>술식 재배치 시간</h2>
+      <h2>술식 교체 선택 시간</h2>
       <p id="rearrange-timer-text">남은 시간: 10.0초</p>
-      <p id="rearrange-heart-text">마나 하트: 0 / 0</p>
-      <p id="phase-buff-hint" class="rearrange-hint">페이즈 강화 1개를 선택하세요.</p>
+      <p id="rearrange-heart-text">선택 술식 하트: 0 / 0</p>
+      <p id="phase-buff-hint" class="rearrange-hint">3개 술식 중 교체할 술식을 선택하세요.</p>
       <div id="phase-buff-choices" class="phase-buff-choices"></div>
       <p id="rearrange-error" class="rearrange-error"></p>
       <div id="rearrange-slots" class="rearrange-slots"></div>
