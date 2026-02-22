@@ -1275,7 +1275,25 @@
     player.shield = 0;
     player.coreCastCount = 0;
     state.castGap = 0;
-    ui.combatLog.push(`${getActiveFormula().name} 자동 기동. (전투 마나하트 ${Math.floor(player.manaHearts)})`, true);
+    const nextFormula = getActiveFormula();
+    const formulaHeartCost = usedHearts(nextFormula.spellIds || []);
+    let unstableDeficit = 0;
+    if (player.manaHearts >= formulaHeartCost) {
+      player.manaHearts = Math.max(0, player.manaHearts - formulaHeartCost);
+    } else {
+      unstableDeficit = formulaHeartCost - player.manaHearts;
+      player.manaHearts = 0;
+      player.hp = Math.max(0, player.hp - unstableDeficit);
+    }
+    let triggerLine = `${nextFormula.name} 자동 기동. (술식 하트 -${formulaHeartCost})`;
+    if (unstableDeficit > 0) {
+      triggerLine += ` 하트 부족으로 불안정 기동(내구도 -${unstableDeficit}).`;
+    }
+    ui.combatLog.push(triggerLine, true);
+    if (player.hp <= 0) {
+      ui.combatLog.push("불안정 기동으로 내구도가 0이 되어 전투 불가.", true);
+      return false;
+    }
     return true;
   }
 
@@ -2475,10 +2493,7 @@
 
     function renderRow(state, statuses, mpValue) {
       if (state.mana) {
-        const heartFlag = state.config.key === "playerBuff"
-          ? ` <span class="inline-mana-flag"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나수정">하트 ${Math.floor(player.manaHearts)} / ${player.maxManaHearts}</span>`
-          : "";
-        state.mana.innerHTML = `<span class="inline-mana-flag"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나수정">MP ${Math.floor(mpValue)}</span>${heartFlag}`;
+        state.mana.innerHTML = `<span class="inline-mana-flag"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나수정">MP ${Math.floor(mpValue)}</span>`;
       }
 
       const entries = rowEntries(statuses, state.config.kind);
@@ -3659,15 +3674,6 @@
   function castPlayerSpell(slotIndex, spell, options = {}) {
     const playerCore = getActiveFormulaCore();
     const isEchoCast = Boolean(options.echoCast);
-    const heartCost = Math.max(1, spell.heartCost || spell.circle || 1);
-    let unstableDeficit = 0;
-    if (player.manaHearts >= heartCost) {
-      player.manaHearts = Math.max(0, player.manaHearts - heartCost);
-    } else {
-      unstableDeficit = heartCost - player.manaHearts;
-      player.manaHearts = 0;
-      player.hp = Math.max(0, player.hp - unstableDeficit);
-    }
     if (!isEchoCast) {
       player.mp = Math.max(0, player.mp - spell.manaCost);
     }
@@ -3719,10 +3725,6 @@
     const healthDamage = Math.max(0, enemyHpBefore - enemy.hp);
 
     let line = `${isEchoCast ? `[${playerCore.name}] 메아리 발동!` : `플레이어의 ${spell.name} 발동!`} ${damage} 피해.`;
-    line += ` 마나하트 -${heartCost}.`;
-    if (unstableDeficit > 0) {
-      line += ` 하트 부족으로 불안정 발동(내구도 -${unstableDeficit}).`;
-    }
 
     if (spell.shield) {
       player.shield += spell.shield;
@@ -4283,6 +4285,28 @@
     }
     setWorldMode("battle");
     state.brokenFormulaIndexes = new Set();
+    const openingFormula = getActiveFormula();
+    const openingHeartCost = usedHearts(openingFormula?.spellIds || []);
+    let openingDeficit = 0;
+    if (player.manaHearts >= openingHeartCost) {
+      player.manaHearts = Math.max(0, player.manaHearts - openingHeartCost);
+    } else {
+      openingDeficit = openingHeartCost - player.manaHearts;
+      player.manaHearts = 0;
+      player.hp = Math.max(0, player.hp - openingDeficit);
+    }
+    let openingLine = `전투 시작: ${openingFormula?.name || "현재 술식"} 기동 (술식 하트 -${openingHeartCost}).`;
+    if (openingDeficit > 0) {
+      openingLine += ` 하트 부족으로 불안정 기동(내구도 -${openingDeficit}).`;
+    }
+    ui.combatLog.push(openingLine, true);
+    if (player.hp <= 0) {
+      state.mode = "defeat";
+      systems.combatLoop.setPaused(true);
+      ui.combatLog.push("초기 술식 기동 실패로 전투 불가.", true);
+      resolveStoryBattle("defeat");
+      return;
+    }
     player.coreCastCount = 0;
     const openGain = applyOpeningCorePassive(player, getActiveFormulaCore());
     if (openGain > 0) {
