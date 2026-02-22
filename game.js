@@ -1092,16 +1092,146 @@
   ];
 
   const ACT1_RANDOM_SCENE_POOL = [
-    { id: "wagon", title: "사라진 수레의 흔적", body: "대로 한복판에 전복된 수레가 있다. 짐은 남아 있고 사람만 사라졌다. 천 아래에서 검은 손이 꿈틀거린다.", image: "assets/씬/scene_village_stone_lane.png", tone: "amber", enemyName: "수레 잔영체", enemyProfileId: "road_wraith", fightLabel: "전투 준비한다", fleeLabel: "물러선다" },
-    { id: "forest_edge", title: "숲의 경계선", body: "바람이 멎고 숲이 숨을 죽인다. 정령의 시선이 피부를 긁는다.", image: "assets/씬/scene_valley_bridge_path.png", tone: "green", enemyName: "경계 정령", enemyProfileId: "forest_watcher", fightLabel: "맞선다", fleeLabel: "마력을 거둔다" },
-    { id: "toy", title: "묻힌 아이의 장난감", body: "길가의 나무 인형을 드는 순간 땅이 갈라지고 작은 형체가 올라온다.", image: "assets/씬/scene_ruined_gate_trail.png", tone: "blue", enemyName: "빈껍질 아이", enemyProfileId: "road_wraith", fightLabel: "제거한다", fleeLabel: "인형을 내려놓는다" },
-    { id: "seal", title: "불에 그을린 봉인석", body: "문양이 녹아내린 봉인석이 갈라지고 검은 연기가 피어난다.", image: "assets/씬/scene_crimson_sky_tower.png", tone: "red", enemyName: "봉인 파열체", enemyProfileId: "seal_husk", fightLabel: "봉인을 파괴한다", fleeLabel: "손을 떼고 물러난다" },
-    { id: "porter", title: "길목의 짐꾼", body: "짐꾼이 도와달라 말하지만 천 사이로 검은 액체가 흐른다.", image: "assets/씬/scene_village_stone_lane.png", tone: "amber", enemyName: "짐짝 변이체", enemyProfileId: "seal_husk", fightLabel: "짐을 연다", fleeLabel: "등을 돌린다" },
-    { id: "hunter", title: "현상금 사냥꾼", body: "가면 쓴 사내가 길을 막고 단검을 꺼낸다.", image: "assets/씬/scene_valley_bridge_path.png", tone: "red", enemyName: "현상금 사냥꾼", enemyProfileId: "bounty_hunter", fightLabel: "공격한다", fleeLabel: "골드를 던진다" },
-    { id: "village", title: "버려진 마을의 저녁", body: "열린 문, 식탁 위 마른 빵. 사람 형체가 비틀거리며 일어난다.", image: "assets/씬/scene_village_stone_lane.png", tone: "amber", enemyName: "공허 주민", enemyProfileId: "road_wraith", fightLabel: "마력을 모은다", fleeLabel: "물러난다" },
-    { id: "beast", title: "마력에 잠긴 짐승", body: "눈이 푸르게 빛나는 사슴이 몸을 떨며 울부짖는다.", image: "assets/씬/scene_valley_bridge_path.png", tone: "green", enemyName: "광화 사슴", enemyProfileId: "forest_watcher", fightLabel: "끝낸다", fleeLabel: "지켜본다" },
-    { id: "bridge", title: "무너진 다리", body: "검게 흐르는 강 위의 붕괴된 다리. 물 아래에서 그림자가 움직인다.", image: "assets/씬/scene_ruined_gate_trail.png", tone: "blue", enemyName: "강의 그림자", enemyProfileId: "road_wraith", fightLabel: "마력을 준비한다", fleeLabel: "돌아간다" },
-    { id: "candle", title: "폐가의 촛불", body: "비어 있는 폐가 중앙의 촛불 뒤에서 어둠이 눈을 뜬다.", image: "assets/씬/scene_ruined_gate_trail.png", tone: "red", enemyName: "암야 잠식체", enemyProfileId: "seal_husk", fightLabel: "빛을 만든다", fleeLabel: "문을 닫는다" }
+    {
+      id: "wagon",
+      title: "사라진 수레의 흔적",
+      body: "대로 한가운데 수레가 옆으로 넘어져 있다. 바퀴는 부서져 있고 말은 보이지 않는다.\n짐은 그대로다. 사람만 사라졌다.\n\n바람이 분다.\n수레 아래에서 무언가가 꿈틀거린다.\n\n▶ 수레를 살펴본다.\n천 아래에서 검게 젖은 손이 튀어나온다.\n\"아직… 따뜻…\"\n형체가 천천히 일어난다. 눈동자가 없다.",
+      image: "assets/씬/scene_village_stone_lane.png",
+      tone: "amber",
+      enemyName: "수레 잔영체",
+      enemyProfileId: "road_wraith",
+      fightLabel: "전투 준비한다",
+      fleeLabel: "물러선다",
+      winLog: "형체는 마력과 함께 흩어진다. 낡은 주문 조각이 남는다. → 주문 1개 획득",
+      fleeLog: "형체는 더 이상 쫓아오지 않는다. \"집…\" 목소리가 바람에 흩어진다.",
+      loseLog: "차가운 손이 목을 움켜쥔다. 시야가 어두워진다."
+    },
+    {
+      id: "forest_edge",
+      title: "숲의 경계선",
+      body: "숲이 갑자기 조용해진다. 바람이 멎는다.\n보이지 않는 시선이 느껴진다.\n\n▶ 마력을 흘려본다.\n빛이 나뭇가지 사이로 스친다. 정령이 모습을 드러낸다.\n\"이질적이다.\" \"너는 이 땅의 시간이 아니다.\"",
+      image: "assets/씬/scene_valley_bridge_path.png",
+      tone: "green",
+      enemyName: "경계 정령",
+      enemyProfileId: "forest_watcher",
+      fightLabel: "맞선다",
+      fleeLabel: "마력을 거둔다",
+      winLog: "정령은 빛으로 흩어진다. 빛의 파편이 손에 스며든다. → 주문 1개 획득",
+      fleeLog: "정령은 한동안 바라보다 사라진다. 숲은 다시 숨을 쉰다.",
+      loseLog: "빛의 창이 가슴을 꿰뚫는다."
+    },
+    {
+      id: "toy",
+      title: "묻힌 아이의 장난감",
+      body: "길가에 작은 나무 인형이 떨어져 있다. 눈이 정면을 향하고 있다.\n\n▶ 인형을 집는다.\n땅이 갈라진다. 작은 손이 올라온다.\n아이의 형체. 그러나 얼굴은 없다.",
+      image: "assets/씬/scene_ruined_gate_trail.png",
+      tone: "blue",
+      enemyName: "빈껍질 아이",
+      enemyProfileId: "road_wraith",
+      fightLabel: "제거한다",
+      fleeLabel: "인형을 내려놓는다",
+      winLog: "형체는 소리 없이 흩어진다. 작은 마력의 조각이 남는다. → 주문 1개 획득",
+      fleeLog: "아무 일도 일어나지 않는다. 그러나 몇 걸음 뒤 등 뒤에서 숨소리가 들린다.",
+      loseLog: "땅 아래로 끌려 들어간다."
+    },
+    {
+      id: "seal",
+      title: "불에 그을린 봉인석",
+      body: "길가 언덕 위에 검게 그을린 돌기둥이 서 있다. 문양이 반쯤 녹아내렸다.\n누군가 급히 봉인하려다 실패한 흔적. 주변 공기가 묘하게 무겁다.\n\n▶ 돌기둥에 손을 댄다.\n차가운 마력이 손끝을 타고 스며든다.\n돌기둥이 갈라지며 검은 연기가 흘러나온다.",
+      image: "assets/씬/scene_crimson_sky_tower.png",
+      tone: "red",
+      enemyName: "봉인 파열체",
+      enemyProfileId: "seal_husk",
+      fightLabel: "봉인을 완전히 파괴한다",
+      fleeLabel: "손을 떼고 물러난다",
+      winLog: "검은 형체가 찢기듯 흩어진다. 돌기둥 안쪽에서 응축된 주문 핵이 떨어진다. → 주문 1개 획득",
+      fleeLog: "돌기둥은 다시 잠잠해진다. 그러나 문양 일부가 빛난다. 불길한 예감이 남는다.",
+      loseLog: "연기가 폐를 채운다. 숨을 들이쉴 수 없다."
+    },
+    {
+      id: "porter",
+      title: "길목의 짐꾼",
+      body: "대로 옆, 짐을 잔뜩 실은 남자가 앉아 있다. 얼굴이 창백하다.\n\"도와주시오…\"\n짐은 천으로 단단히 묶여 있다. 안에서 무언가가 꿈틀거린다.\n\n▶ 짐에 대해 묻는다.\n\"마탑에서 맡긴 물건이오…\"",
+      image: "assets/씬/scene_village_stone_lane.png",
+      tone: "amber",
+      enemyName: "짐짝 변이체",
+      enemyProfileId: "seal_husk",
+      fightLabel: "짐을 연다",
+      fleeLabel: "등을 돌린다",
+      winLog: "짐 안에서 튀어나온 변이체가 쓰러진다. 남자의 주머니에서 주문 기록 조각이 떨어진다. → 주문 1개 획득",
+      fleeLog: "\"아무것도 보지 마시오…\" 걸음을 옮기자 뒤에서 비명이 울린다.",
+      loseLog: "검은 촉수가 다리를 붙잡는다. 땅으로 끌려간다."
+    },
+    {
+      id: "hunter",
+      title: "현상금 사냥꾼",
+      body: "대로 한복판. 가면을 쓴 사내가 길을 막는다.\n\"마력 냄새가 진하군. 최근에 현상금이 걸렸지.\"\n\n그의 손에는 짧은 단검 두 자루.",
+      image: "assets/씬/scene_valley_bridge_path.png",
+      tone: "red",
+      enemyName: "현상금 사냥꾼",
+      enemyProfileId: "bounty_hunter",
+      fightLabel: "공격한다",
+      fleeLabel: "골드를 던진다",
+      winLog: "가면이 깨지며 사내가 쓰러진다. 허리춤에서 주문 각인석이 떨어진다. → 주문 1개 획득",
+      fleeLog: "골드를 집어든 사내는 웃으며 물러난다. \"다음엔 목숨값이 더 오를 거다.\"",
+      loseLog: "차가운 칼날이 심장을 스친다."
+    },
+    {
+      id: "village",
+      title: "버려진 마을의 저녁",
+      body: "해가 기울 무렵 작은 마을에 도착한다. 문은 열려 있고 식탁 위에는 마른 빵.\n급히 떠난 흔적.\n\n▶ 안으로 들어간다.\n어둠 속에서 무언가가 비틀거리며 일어난다. 사람의 형체. 그러나 눈동자가 흐리다.",
+      image: "assets/씬/scene_village_stone_lane.png",
+      tone: "amber",
+      enemyName: "공허 주민",
+      enemyProfileId: "road_wraith",
+      fightLabel: "마력을 모은다",
+      fleeLabel: "물러난다",
+      winLog: "형체는 재처럼 흩어진다. 바닥에서 희미한 주문 파편이 발견된다. → 주문 1개 획득",
+      fleeLog: "형체는 쫓아오지 않는다. 그러나 마을 전체가 숨을 죽인 듯 고요하다.",
+      loseLog: "차가운 손이 얼굴을 덮는다."
+    },
+    {
+      id: "beast",
+      title: "마력에 잠긴 짐승",
+      body: "숲 가장자리. 눈이 푸르게 빛나는 사슴이 서 있다.\n몸이 경련하듯 떨린다.\n\n▶ 다가간다.\n사슴이 고개를 들어 울부짖는다. 뿔 끝에서 마력이 번쩍인다.",
+      image: "assets/씬/scene_valley_bridge_path.png",
+      tone: "green",
+      enemyName: "광화 사슴",
+      enemyProfileId: "forest_watcher",
+      fightLabel: "끝낸다",
+      fleeLabel: "지켜본다",
+      winLog: "짐승은 조용히 무너진다. 그 자리에 응축된 주문 문양이 남는다. → 주문 1개 획득",
+      fleeLog: "사슴은 숲 속으로 사라진다. 잠시 후 울음소리가 멎는다.",
+      loseLog: "뿔이 가슴을 꿰뚫는다."
+    },
+    {
+      id: "bridge",
+      title: "무너진 다리",
+      body: "강 위의 돌다리가 반쯤 붕괴되어 있다. 강물은 검게 흐른다.\n\n▶ 다리 위로 오른다.\n강 아래에서 그림자가 꿈틀거린다.",
+      image: "assets/씬/scene_ruined_gate_trail.png",
+      tone: "blue",
+      enemyName: "강의 그림자",
+      enemyProfileId: "road_wraith",
+      fightLabel: "마력을 준비한다",
+      fleeLabel: "돌아간다",
+      winLog: "강물이 잠잠해진다. 물 위에 떠오른 마력 결정이 손에 들어온다. → 주문 1개 획득",
+      fleeLog: "돌아가는 동안 강물에서 시선이 느껴진다.",
+      loseLog: "발목이 붙잡힌다. 차가운 물이 몸을 덮친다."
+    },
+    {
+      id: "candle",
+      title: "폐가의 촛불",
+      body: "대로에서 조금 벗어난 폐가. 창문 안쪽에서 촛불이 흔들린다.\n\n▶ 문을 연다.\n안은 텅 비어 있다. 촛불만 중앙에 놓여 있다.\n그 뒤에서 눈이 뜨인다.",
+      image: "assets/씬/scene_ruined_gate_trail.png",
+      tone: "red",
+      enemyName: "암야 잠식체",
+      enemyProfileId: "seal_husk",
+      fightLabel: "빛을 만든다",
+      fleeLabel: "문을 닫는다",
+      winLog: "어둠이 갈라지며 사라진다. 바닥에 새겨진 주문 문양이 빛난다. → 주문 1개 획득",
+      fleeLog: "문을 닫자 촛불이 꺼진다. 집은 다시 죽은 공간이 된다.",
+      loseLog: "어둠이 삼킨다."
+    }
   ];
 
   function shuffledCopy(list) {
@@ -1133,7 +1263,7 @@
       {
         id: "s1",
         title: "01. 기억의 잔향",
-        body: "나는 죽었다. ...아마도.\n\n무언가 무너졌다는 감각만 남아 있다.\n세상은 평온하지만, 설명할 수 없는 충동이 내 안에서 꿈틀거린다.\n\n영원의 마탑. 그곳으로 가야 한다.\n\n희미한 주문을 엮어 불완전한 술식을 구성했다. 완전하진 않지만, 길 위에서 살아남을 정도는 된다.",
+        body: "나는 죽었다.\n\n…아마도.\n\n그 순간을 떠올리려 하면 머릿속이 흐려진다.\n무언가가 무너지고 있었다는 감각만이 남아 있다.\n\n그 이상은 떠오르지 않는다.\n기억은 파편처럼 흩어져 있다.\n\n따뜻한 바람이 불어온다.\n숲이 우거진 흙길이 앞으로 펼쳐져 있다.\n세상은 평온해 보인다.\n\n그러나 가슴 깊은 곳에서 설명할 수 없는 충동이 꿈틀거린다.\n\n영원의 마탑.\n그곳으로 가야만 한다.\n\n▶ 주위를 살펴본다.\n길 가장자리에는 수레 바퀴 자국이 남아 있다.\n사람들이 오가고 있다는 뜻이다.\n숲 너머로 연기가 올라간다.\n작은 마을이 있는 듯하다.\n\n다만—\n이곳은 분명 처음이 아니다. 그러나 기억은 없다.\n\n희미하게 남은 주문들을 엮어 간신히 하나의 술식을 구성했다.\n완전하진 않다. 하지만 스스로를 지킬 정도는 될 것이다.",
         image: "assets/씬/scene_valley_bridge_path.png",
         tone: "neutral",
         choices: [
@@ -1146,7 +1276,7 @@
       {
         id: "s5",
         title: "05. 여관 1차 방문",
-        body: "길가의 오래된 여관은 낡았지만 따뜻하다.\n난로 냄새, 잔 부딪히는 소리, 여행객들의 낮은 목소리.\n\n여관 주인은 푸근한 얼굴로 말한다.\n\"이곳은 안전합니다. 여행객은 언제든 환영이지요.\"",
+        body: "대로를 따라 걷다 보니 길가에 오래된 여관이 보인다.\n빛이 바랜 간판. 그러나 지붕은 새 기와로 덮여 있고 문 앞 화분에는 작은 꽃이 피어 있다.\n\n문을 밀고 들어간다.\n따뜻한 공기가 얼굴을 감싼다.\n나무 타는 냄새. 잔이 부딪히는 소리. 낮은 웃음.\n\n푸근한 인상의 여관 주인이 다가온다.\n\"이곳은 안전합니다. 여행객은 언제든 환영이지요.\"\n\n그 말은 거짓처럼 들리지 않는다.",
         image: "assets/씬/scene_village_stone_lane.png",
         tone: "amber",
         choices: [
@@ -1162,7 +1292,7 @@
       {
         id: "s10",
         title: "10. 여관 급습",
-        body: "다시 도착한 여관은 여전히 따뜻하지만, 복도엔 낯선 기척이 가득하다.\n문을 여는 순간 여관 주인과 무장한 그림자들이 길을 막는다.\n\n\"미안하오. 요즘은 이런 기회를... 잡아야 하지.\"\n\n어떤 선택을 하든 전투로 수렴한다.",
+        body: "대로 끝, 익숙한 간판이 보인다.\n빛바랜 글씨, 문 앞 화분. 변한 것은 없다.\n\n문을 열자 따뜻한 공기가 다시 얼굴을 감싼다.\n여관 주인이 당신을 알아보고 웃는다.\n\"돌아오셨군요.\"\n\n방으로 올라간다.\n—\n똑, 똑.\n\"접니다. 잠깐… 이야기 좀.\"\n\n문이 열리는 순간 복도에는 여관 주인과 낯선 그림자들이 서 있다.\n계단 아래, 술을 마시던 모험가들이 조용히 무기를 든다.\n\n\"미안하오.\"\n\"이 일대에 현상금이 걸렸소. 요즘은 이런 기회가 오면… 잡아야 하지.\"\n\n원망은 없다. 체념과 책임만이 남아 있다.\n어떤 선택을 하든 전투로 수렴한다.",
         image: "assets/씬/scene_crimson_sky_tower.png",
         tone: "red",
         choices: [
@@ -1599,17 +1729,20 @@
         phase1EnemyHpMul: 0.95,
         resetToStartScene: true,
         onWin: () => {
-          pushStoryLog("전투 잔재에서 주문 조각을 회수했다.");
+          if (randomScene?.winLog) pushStoryLog(randomScene.winLog);
         },
         onLose: () => {
           state.story.sceneIndex = 0;
-          pushStoryLog("패배. 기억이 끊기며 1막 1씬으로 되돌아왔다.");
+          if (randomScene?.loseLog) pushStoryLog(randomScene.loseLog);
+          pushStoryLog("— 기억은 파편처럼 흩어진다. (1막 1씬으로 복귀) —");
         }
       });
       return;
     }
     if (typeof effectId === "string" && effectId.startsWith("flee_random:")) {
-      pushStoryLog("위험 징후를 피해 경로를 유지했다.");
+      const randomId = effectId.split(":")[1] || "";
+      const randomScene = ACT1_RANDOM_SCENE_POOL.find((item) => item.id === randomId);
+      pushStoryLog(randomScene?.fleeLog || "위험 징후를 피해 경로를 유지했다.");
       sceneContinueButton();
       return;
     }
@@ -1619,7 +1752,10 @@
         enemyProfileId: "inn_raider",
         phase1EnemyHpMul: 1.05,
         onWin: () => {
-          pushStoryLog("불타는 여관을 등지고 수도로 향할 단서를 얻었다.");
+          pushStoryLog("여관 내부는 부서지고, 불길이 천장으로 번진다.");
+          pushStoryLog("쓰러진 여관 주인은 마지막 힘으로 현상금 문서를 건넨다.");
+          pushStoryLog("\"영원의 마탑을 찾는 자… 수도로 가시오.\"");
+          pushStoryLog("1막 종료. 불타는 여관을 등지고 동쪽, 수도를 향한다.");
           state.story.enemyIntel += 1;
         }
       });
