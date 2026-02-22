@@ -52,6 +52,9 @@
     storySceneBody: document.getElementById("story-scene-body"),
     storyLog: document.getElementById("story-log"),
     storyChoices: document.getElementById("story-choices"),
+    storyMapPanel: document.getElementById("story-map-panel"),
+    storyMapTitle: document.getElementById("story-map-title"),
+    storyMapNodes: document.getElementById("story-map-nodes"),
     storyDock: document.getElementById("story-dock"),
     storyInfoBtn: document.getElementById("story-info-btn"),
     storyMenuBtn: document.getElementById("story-menu-btn"),
@@ -453,6 +456,107 @@
           enemyMaxMp: 5,
           enemyManaRegen: 0,
           enemyLoadout: ["green_life_breath"]
+        }
+      ]
+    },
+    road_wraith: {
+      id: "road_wraith",
+      name: "도로 잔영체",
+      portrait: "assets/적/enemy_allen_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "흔적 포식",
+          title: "도로 잔영체 - 흔적 포식",
+          quote: "남은 것들을 끌어안아라.",
+          maxHp: 14,
+          coreId: "core_balanced",
+          enemyMaxMp: 6,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_flame_shard", "blue_frost_poke", "green_absorb", "red_heat_stock"]
+        }
+      ]
+    },
+    forest_watcher: {
+      id: "forest_watcher",
+      name: "숲 경계 감시자",
+      portrait: "assets/적/enemy_serion_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "수림의 응시",
+          title: "숲 감시자 - 수림의 응시",
+          quote: "너는 이 땅의 시간이 아니다.",
+          maxHp: 15,
+          coreId: "core_lance",
+          enemyMaxMp: 6,
+          enemyManaRegen: 0,
+          enemyLoadout: ["green_guard_bud", "green_natural_recover", "blue_chill_condense", "green_venom_seed"]
+        }
+      ]
+    },
+    seal_husk: {
+      id: "seal_husk",
+      name: "봉인 파열체",
+      portrait: "assets/적/enemy_dalahans_v3.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "균열 누출",
+          title: "봉인 파열체 - 균열 누출",
+          quote: "해방... 해방...",
+          maxHp: 16,
+          coreId: "core_bastion",
+          enemyMaxMp: 7,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_ignite", "blue_suppress", "green_absorb", "red_blast_chain"]
+        }
+      ]
+    },
+    bounty_hunter: {
+      id: "bounty_hunter",
+      name: "현상금 사냥꾼",
+      portrait: "assets/적/enemy_allen_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "급습 태세",
+          title: "현상금 사냥꾼 - 급습 태세",
+          quote: "현상금은 살아있는 자에게만 가치가 있지.",
+          maxHp: 17,
+          coreId: "core_lance",
+          enemyMaxMp: 7,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_lunge", "red_quick_slash", "blue_analyze", "green_guard_bud"]
+        }
+      ]
+    },
+    inn_raider: {
+      id: "inn_raider",
+      name: "여관 급습대",
+      portrait: "assets/적/enemy_allen_v2.png",
+      phaseDefs: [
+        {
+          id: 1,
+          name: "포위 개시",
+          title: "여관 급습대 - 포위 개시",
+          quote: "좋게 끝낼 생각은 없소.",
+          maxHp: 18,
+          coreId: "core_balanced",
+          enemyMaxMp: 8,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_flame_shard", "blue_frost_poke", "green_absorb", "red_overheat_cycle", "blue_flow_block"]
+        },
+        {
+          id: 2,
+          name: "현상금 집행",
+          title: "여관 급습대 - 현상금 집행",
+          quote: "여기서 끝내자.",
+          maxHp: 22,
+          coreId: "core_lance",
+          enemyMaxMp: 10,
+          enemyManaRegen: 0,
+          enemyLoadout: ["red_quick_slash", "red_blast_chain", "blue_mana_seal", "green_thorn_barrage", "red_full_focus"]
         }
       ]
     },
@@ -987,128 +1091,90 @@
     "잔광의 인장"
   ];
 
-  const act1Scenes = [
-    {
-      id: "s1",
-      title: "① 기억의 잔향",
-      body: "나는 바람이 스치는 초원 위, 길 한가운데에 서 있다.\n\n어디서 왔는지 기억나지 않는다.\n\n머릿속에는 불타는 탑과, 누군가를 해친 감각만이 파편처럼 남아 있다.\n\n단 하나 확실한 것.\n\n세상 끝, 영원의 마탑으로 가야 한다는 사실.\n\n이유는 모른다. 하지만 몸은 이미 그 방향을 알고 있다.\n\n나는 허공에 마력을 그어본다. 냉기. 미약한 화염. 희미한 치유. 어설픈 주문들을 엮어 작은 술식을 구성한다.\n\n정보가 필요하다. 이 세계가 어떤 상태인지 알아야 한다.\n\n앞에는 두 갈래 길이 놓여 있다. 왼쪽은 마을, 오른쪽은 숲. 그리고 등 뒤에는, 기억나지 않는 길이 이어져 있다.",
-      image: "assets/씬/scene_valley_bridge_path.png",
-      tone: "neutral",
-      choices: [
-        { label: "마을로 향한다.", effect: "battle_farmer" },
-        { label: "숲으로 향한다.", effect: "gain_random_circle1" },
-        { label: "뒤로 돌아, 오던 길을 거슬러 걷는다.", effect: "memory_plus" }
-      ]
-    },
-    {
-      id: "s2",
-      title: "② 버려진 마을",
-      body: "불탄 흔적과 마력 잔재가 골목을 채운다.",
-      image: "assets/씬/scene_village_stone_lane.png",
-      tone: "amber",
-      choices: [
-        { label: "집을 수색한다", effect: "battle_farmer" },
-        { label: "술식핵 공명을 조사한다", effect: "relic_pick" },
-        { label: "그냥 떠난다", effect: "heal_small" }
-      ]
-    },
-    {
-      id: "s3",
-      title: "③ 숲의 속삭임",
-      body: "녹빛 안개가 계약의 문장을 속삭인다.",
-      image: "assets/씬/scene_valley_bridge_path.png",
-      tone: "green",
-      choices: [
-        { label: "계약한다", effect: "gain_green_spell" },
-        { label: "힘으로 제압한다", effect: "battle_dryad_reward" },
-        { label: "무시한다", effect: "mana_recover" }
-      ]
-    },
-    {
-      id: "s4",
-      title: "④ 붉은 하늘",
-      body: "폭발음이 멀리서 울리고 붉은 잔광이 번진다.",
-      image: "assets/씬/scene_crimson_sky_tower.png",
-      tone: "red",
-      choices: [
-        { label: "근원으로 간다", effect: "battle_red_mage" },
-        { label: "멀리서 관찰한다", effect: "enemy_intel" },
-        { label: "숨겨진 술식핵 흔적을 쫓는다", effect: "relic_pick" }
-      ]
-    },
-    {
-      id: "s5",
-      title: "⑤ 폐허의 금서",
-      body: "마탑 서고의 잔해 속에서 금서가 맥동한다.",
-      image: "assets/씬/scene_ruined_gate_trail.png",
-      tone: "amber",
-      choices: [
-        { label: "읽는다", effect: "gain_circle3_with_hp_cost" },
-        { label: "봉인한다", effect: "max_heart_up" },
-        { label: "찢어버린다", effect: "status_res_up" }
-      ]
-    },
-    {
-      id: "s6",
-      title: "⑥ 청색의 달라한스",
-      body: "푸른 마법사 달라한스가 길목에서 술식을 펼친다.",
-      image: "assets/씬/scene_valley_bridge_path.png",
-      tone: "blue",
-      choices: [
-        { label: "전투", effect: "battle_dalahans_blue" },
-        { label: "대화 시도", effect: "intel_and_weaken" },
-        { label: "술식 교환 제안", effect: "random_spell_trade" }
-      ]
-    },
-    {
-      id: "s7",
-      title: "⑦ 오염 지역",
-      body: "마력이 뒤틀린 땅이 호흡처럼 요동친다.",
-      image: "assets/씬/scene_crimson_sky_tower.png",
-      tone: "red",
-      choices: [
-        { label: "핵 수호체를 격파한다", effect: "battle_hard_relic" },
-        { label: "가장자리 탐색", effect: "mid_reward" },
-        { label: "돌아간다", effect: "heal_small" }
-      ]
-    },
-    {
-      id: "s8",
-      title: "⑧ 사라진 제자의 흔적",
-      body: "익숙한 마력 파동이 끊긴 시간의 끝에서 스민다.",
-      image: "assets/씬/scene_ruined_gate_trail.png",
-      tone: "blue",
-      choices: [
-        { label: "추적한다", effect: "battle_trace_memory" },
-        { label: "기억을 되살린다", effect: "memory_plus" },
-        { label: "모른 척한다", effect: "no_change" }
-      ]
-    },
-    {
-      id: "s9",
-      title: "⑨ 세상 끝의 마탑",
-      body: "공간이 비틀리고 마탑의 그림자가 갈라진다.",
-      image: "assets/씬/scene_crimson_sky_tower.png",
-      tone: "red",
-      choices: [
-        { label: "정면 돌파", effect: "battle_boss_now" },
-        { label: "술식 정비 후 진입", effect: "heart_up_boss_up" },
-        { label: "술식핵 회수 루트 탐색", effect: "battle_miniboss_relic" }
-      ]
-    },
-    {
-      id: "s10",
-      title: "⑩ 마도왕과의 대면",
-      body: "“나는 그들을 되살리고 싶었을 뿐이다.”",
-      image: "assets/씬/scene_crimson_sky_tower.png",
-      tone: "red",
-      choices: [
-        { label: "공격한다", effect: "battle_final_now" },
-        { label: "설득한다", effect: "battle_weaken_phase1" },
-        { label: "시간을 멈춘다", effect: "battle_with_shield_100" }
-      ]
-    }
+  const ACT1_RANDOM_SCENE_POOL = [
+    { id: "wagon", title: "사라진 수레의 흔적", body: "대로 한복판에 전복된 수레가 있다. 짐은 남아 있고 사람만 사라졌다. 천 아래에서 검은 손이 꿈틀거린다.", image: "assets/씬/scene_village_stone_lane.png", tone: "amber", enemyName: "수레 잔영체", enemyProfileId: "road_wraith", fightLabel: "전투 준비한다", fleeLabel: "물러선다" },
+    { id: "forest_edge", title: "숲의 경계선", body: "바람이 멎고 숲이 숨을 죽인다. 정령의 시선이 피부를 긁는다.", image: "assets/씬/scene_valley_bridge_path.png", tone: "green", enemyName: "경계 정령", enemyProfileId: "forest_watcher", fightLabel: "맞선다", fleeLabel: "마력을 거둔다" },
+    { id: "toy", title: "묻힌 아이의 장난감", body: "길가의 나무 인형을 드는 순간 땅이 갈라지고 작은 형체가 올라온다.", image: "assets/씬/scene_ruined_gate_trail.png", tone: "blue", enemyName: "빈껍질 아이", enemyProfileId: "road_wraith", fightLabel: "제거한다", fleeLabel: "인형을 내려놓는다" },
+    { id: "seal", title: "불에 그을린 봉인석", body: "문양이 녹아내린 봉인석이 갈라지고 검은 연기가 피어난다.", image: "assets/씬/scene_crimson_sky_tower.png", tone: "red", enemyName: "봉인 파열체", enemyProfileId: "seal_husk", fightLabel: "봉인을 파괴한다", fleeLabel: "손을 떼고 물러난다" },
+    { id: "porter", title: "길목의 짐꾼", body: "짐꾼이 도와달라 말하지만 천 사이로 검은 액체가 흐른다.", image: "assets/씬/scene_village_stone_lane.png", tone: "amber", enemyName: "짐짝 변이체", enemyProfileId: "seal_husk", fightLabel: "짐을 연다", fleeLabel: "등을 돌린다" },
+    { id: "hunter", title: "현상금 사냥꾼", body: "가면 쓴 사내가 길을 막고 단검을 꺼낸다.", image: "assets/씬/scene_valley_bridge_path.png", tone: "red", enemyName: "현상금 사냥꾼", enemyProfileId: "bounty_hunter", fightLabel: "공격한다", fleeLabel: "골드를 던진다" },
+    { id: "village", title: "버려진 마을의 저녁", body: "열린 문, 식탁 위 마른 빵. 사람 형체가 비틀거리며 일어난다.", image: "assets/씬/scene_village_stone_lane.png", tone: "amber", enemyName: "공허 주민", enemyProfileId: "road_wraith", fightLabel: "마력을 모은다", fleeLabel: "물러난다" },
+    { id: "beast", title: "마력에 잠긴 짐승", body: "눈이 푸르게 빛나는 사슴이 몸을 떨며 울부짖는다.", image: "assets/씬/scene_valley_bridge_path.png", tone: "green", enemyName: "광화 사슴", enemyProfileId: "forest_watcher", fightLabel: "끝낸다", fleeLabel: "지켜본다" },
+    { id: "bridge", title: "무너진 다리", body: "검게 흐르는 강 위의 붕괴된 다리. 물 아래에서 그림자가 움직인다.", image: "assets/씬/scene_ruined_gate_trail.png", tone: "blue", enemyName: "강의 그림자", enemyProfileId: "road_wraith", fightLabel: "마력을 준비한다", fleeLabel: "돌아간다" },
+    { id: "candle", title: "폐가의 촛불", body: "비어 있는 폐가 중앙의 촛불 뒤에서 어둠이 눈을 뜬다.", image: "assets/씬/scene_ruined_gate_trail.png", tone: "red", enemyName: "암야 잠식체", enemyProfileId: "seal_husk", fightLabel: "빛을 만든다", fleeLabel: "문을 닫는다" }
   ];
+
+  function shuffledCopy(list) {
+    const next = [...list];
+    for (let i = next.length - 1; i > 0; i -= 1) {
+      const j = randomInt(0, i);
+      [next[i], next[j]] = [next[j], next[i]];
+    }
+    return next;
+  }
+
+  function makeRandomAct1Scene(slotNo, seed) {
+    return {
+      id: `s${slotNo}`,
+      title: `${slotNo < 10 ? `0${slotNo}` : slotNo}. ${seed.title}`,
+      body: seed.body,
+      image: seed.image,
+      tone: seed.tone,
+      choices: [
+        { label: seed.fightLabel, effect: `battle_random:${seed.id}` },
+        { label: seed.fleeLabel, effect: `flee_random:${seed.id}` }
+      ]
+    };
+  }
+
+  function buildAct1Scenes() {
+    const picks = shuffledCopy(ACT1_RANDOM_SCENE_POOL).slice(0, 7);
+    return [
+      {
+        id: "s1",
+        title: "01. 기억의 잔향",
+        body: "나는 죽었다. ...아마도.\n\n무언가 무너졌다는 감각만 남아 있다.\n세상은 평온하지만, 설명할 수 없는 충동이 내 안에서 꿈틀거린다.\n\n영원의 마탑. 그곳으로 가야 한다.\n\n희미한 주문을 엮어 불완전한 술식을 구성했다. 완전하진 않지만, 길 위에서 살아남을 정도는 된다.",
+        image: "assets/씬/scene_valley_bridge_path.png",
+        tone: "neutral",
+        choices: [
+          { label: "여정 시작하기", effect: "gain_random_circle1" }
+        ]
+      },
+      makeRandomAct1Scene(2, picks[0]),
+      makeRandomAct1Scene(3, picks[1]),
+      makeRandomAct1Scene(4, picks[2]),
+      {
+        id: "s5",
+        title: "05. 여관 1차 방문",
+        body: "길가의 오래된 여관은 낡았지만 따뜻하다.\n난로 냄새, 잔 부딪히는 소리, 여행객들의 낮은 목소리.\n\n여관 주인은 푸근한 얼굴로 말한다.\n\"이곳은 안전합니다. 여행객은 언제든 환영이지요.\"",
+        image: "assets/씬/scene_village_stone_lane.png",
+        tone: "amber",
+        choices: [
+          { label: "방에 들어가 휴식한다", effect: "heal_small" },
+          { label: "모험가 파티 술자리에 합류한다", effect: "mid_reward" },
+          { label: "여관 주인에게 정보를 묻는다", effect: "enemy_intel" }
+        ]
+      },
+      makeRandomAct1Scene(6, picks[3]),
+      makeRandomAct1Scene(7, picks[4]),
+      makeRandomAct1Scene(8, picks[5]),
+      makeRandomAct1Scene(9, picks[6]),
+      {
+        id: "s10",
+        title: "10. 여관 급습",
+        body: "다시 도착한 여관은 여전히 따뜻하지만, 복도엔 낯선 기척이 가득하다.\n문을 여는 순간 여관 주인과 무장한 그림자들이 길을 막는다.\n\n\"미안하오. 요즘은 이런 기회를... 잡아야 하지.\"\n\n어떤 선택을 하든 전투로 수렴한다.",
+        image: "assets/씬/scene_crimson_sky_tower.png",
+        tone: "red",
+        choices: [
+          { label: "칼을 뽑는다", effect: "battle_inn_raid" },
+          { label: "대화로 시간을 번다", effect: "battle_inn_raid" },
+          { label: "선공한다", effect: "battle_inn_raid" }
+        ]
+      }
+    ];
+  }
+
+  const act1Scenes = buildAct1Scenes();
 
   unlockedSpellSet = loadUnlockedSpellSet();
   saveUnlockedSpellSet();
@@ -1380,6 +1446,8 @@
   }
 
   function renderStoryChoices(choices, onPick) {
+    if (dom.storyMapPanel) dom.storyMapPanel.classList.add("hidden");
+    if (dom.storyChoices) dom.storyChoices.classList.remove("hidden");
     dom.storyChoices.innerHTML = "";
     choices.forEach((choice, index) => {
       const button = document.createElement("button");
@@ -1391,11 +1459,71 @@
     });
   }
 
-  function sceneContinueButton() {
-    renderStoryChoices([{ label: "다음 장면으로" }], () => {
+  function isFixedSceneIndex(index) {
+    return index === 0 || index === 4 || index === 9;
+  }
+
+  function sceneHasBattle(scene) {
+    if (!scene || !Array.isArray(scene.choices)) return false;
+    return scene.choices.some((choice) => typeof choice.effect === "string" && choice.effect.startsWith("battle_"));
+  }
+
+  function nextSceneCandidates(currentIndex) {
+    const graph = {
+      0: [1, 2],
+      1: [2, 3],
+      2: [3, 4],
+      3: [4],
+      4: [5, 6],
+      5: [6, 7],
+      6: [7, 8],
+      7: [8, 9],
+      8: [9]
+    };
+    const raw = graph[currentIndex] || [currentIndex + 1];
+    return raw.filter((index) => index >= 0 && index < act1Scenes.length);
+  }
+
+  function renderSceneMapChoice() {
+    const options = nextSceneCandidates(state.story.sceneIndex);
+    if (!dom.storyMapPanel || !dom.storyMapNodes || options.length === 0) {
       state.story.sceneIndex += 1;
       renderStoryScene();
+      return;
+    }
+
+    if (dom.storyChoices) dom.storyChoices.classList.add("hidden");
+    dom.storyMapPanel.classList.remove("hidden");
+    const current = act1Scenes[state.story.sceneIndex];
+    if (dom.storyMapTitle) {
+      dom.storyMapTitle.textContent = `다음 경로 선택 (${current?.title || "현재 씬"})`;
+    }
+    dom.storyMapNodes.innerHTML = "";
+
+    options.forEach((sceneIndex) => {
+      const scene = act1Scenes[sceneIndex];
+      if (!scene) return;
+      const node = document.createElement("button");
+      node.type = "button";
+      node.className = "story-map-node";
+      const battle = sceneHasBattle(scene);
+      if (battle) node.classList.add("battle");
+      if (isFixedSceneIndex(sceneIndex)) node.classList.add("fixed");
+      node.innerHTML = `
+        <span class="icon">${battle ? "☠" : "?"}</span>
+        <span class="title">${scene.title}${isFixedSceneIndex(sceneIndex) ? " (고정)" : ""}</span>
+      `;
+      node.addEventListener("click", () => {
+        state.story.sceneIndex = sceneIndex;
+        pushStoryLog(`경로 선택: ${scene.title}`);
+        renderStoryScene();
+      });
+      dom.storyMapNodes.appendChild(node);
     });
+  }
+
+  function sceneContinueButton() {
+    renderSceneMapChoice();
   }
 
   function startStoryBattle(config) {
@@ -1462,6 +1590,41 @@
   }
 
   function applySceneEffect(effectId) {
+    if (typeof effectId === "string" && effectId.startsWith("battle_random:")) {
+      const randomId = effectId.split(":")[1] || "";
+      const randomScene = ACT1_RANDOM_SCENE_POOL.find((item) => item.id === randomId);
+      startStoryBattle({
+        enemyName: randomScene?.enemyName || "이형체",
+        enemyProfileId: randomScene?.enemyProfileId || "road_wraith",
+        phase1EnemyHpMul: 0.95,
+        resetToStartScene: true,
+        onWin: () => {
+          pushStoryLog("전투 잔재에서 주문 조각을 회수했다.");
+        },
+        onLose: () => {
+          state.story.sceneIndex = 0;
+          pushStoryLog("패배. 기억이 끊기며 1막 1씬으로 되돌아왔다.");
+        }
+      });
+      return;
+    }
+    if (typeof effectId === "string" && effectId.startsWith("flee_random:")) {
+      pushStoryLog("위험 징후를 피해 경로를 유지했다.");
+      sceneContinueButton();
+      return;
+    }
+    if (effectId === "battle_inn_raid") {
+      startStoryBattle({
+        enemyName: "여관 급습대",
+        enemyProfileId: "inn_raider",
+        phase1EnemyHpMul: 1.05,
+        onWin: () => {
+          pushStoryLog("불타는 여관을 등지고 수도로 향할 단서를 얻었다.");
+          state.story.enemyIntel += 1;
+        }
+      });
+      return;
+    }
     if (effectId === "memory_plus") {
       state.story.memoryFragments += 1;
       pushStoryLog("기억의 파편 +1");
@@ -1677,6 +1840,8 @@
   }
 
   function renderStoryScene() {
+    if (dom.storyMapPanel) dom.storyMapPanel.classList.add("hidden");
+    if (dom.storyChoices) dom.storyChoices.classList.remove("hidden");
     renderStoryHeroInfo();
     const scene = act1Scenes[state.story.sceneIndex];
     if (!scene) {
@@ -1738,6 +1903,11 @@
 
     setWorldMode("story");
     resetBattle();
+    if (result !== "victory" && pending.resetToStartScene) {
+      state.story.sceneIndex = 0;
+      renderStoryScene();
+      return;
+    }
     sceneContinueButton();
     renderStoryHeroInfo();
   }
