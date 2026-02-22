@@ -1639,10 +1639,9 @@
       const battle = sceneHasBattle(scene);
       if (battle) node.classList.add("battle");
       if (isFixedSceneIndex(sceneIndex)) node.classList.add("fixed");
-      node.innerHTML = `
-        <span class="icon">${battle ? "☠" : "?"}</span>
-        <span class="title">${scene.title}${isFixedSceneIndex(sceneIndex) ? " (고정)" : ""}</span>
-      `;
+      const iconPath = battle ? "assets/ui/map_node_battle.svg" : "assets/ui/map_node_unknown.svg";
+      node.setAttribute("aria-label", battle ? "전투 가능 경로" : "미확인 경로");
+      node.innerHTML = `<img class="story-map-icon" src="${iconPath}" alt="">`;
       node.addEventListener("click", () => {
         state.story.sceneIndex = sceneIndex;
         pushStoryLog(`경로 선택: ${scene.title}`);
