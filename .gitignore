@@ -1,0 +1,8 @@
+node_modules/
+dist/
+test-results/
+.tmp-review/
+.tmp-review_*
+*.log
+*.codex_backup*
+assets/Noto_Serif_KR.zip

@@ -3,39 +3,51 @@
   const FORMULA_BOOK_STORAGE_KEY = "fanta_formula_book_v2";
   const UNLOCKED_SPELLS_STORAGE_KEY = "fanta_unlocked_spells_v1";
   const UNLOCKED_CORES_STORAGE_KEY = "fanta_unlocked_cores_v1";
+  const FRAME_STYLE_STORAGE_KEY = "fanta_frame_style_v1";
+  const FONT_WEIGHT_STORAGE_KEY = "fanta_font_weight_v1";
+  const STORY_PROGRESS_STORAGE_KEY = "fanta_story_progress_v1";
+  const STARTING_TRAIT_STORAGE_KEY = "fanta_starting_trait_v1";
+  const STARTING_TRAIT_OFFER_STORAGE_KEY = "fanta_starting_trait_offer_v1";
+  const STORY_REVEAL_SPEED_STORAGE_KEY = "fanta_story_reveal_speed_v1";
+  const PROGRESS_RESET_VERSION_KEY = "fanta_progress_reset_version";
+  const BOOT_RESET_SESSION_KEY = "fanta_boot_reset_done_v1";
+  const RESET_ALL_PROGRESS_ON_EACH_BOOT = false;
   const MAX_HEARTS = 12;
   const DEFAULT_CORE_ID = "core_balanced";
   const CORE_LIBRARY = {
-    core_balanced: { id: "core_balanced", rarity: "common", name: "낡은 마도서", cols: 4, rows: 4, blocked: [], passiveText: "[일반] 전투 시작 시 마나 +1" },
-    core_lance: { id: "core_lance", rarity: "common", name: "빛바랜 오브", cols: 5, rows: 5, blocked: [[0, 0], [4, 0], [0, 4], [4, 4]], passiveText: "[일반] 주문 3회 발동마다 마나 +1" },
-    core_bastion: { id: "core_bastion", rarity: "common", name: "고목나무 지팡이", cols: 2, rows: 8, blocked: [], passiveText: "[일반] 2서클 이상 주문 피해 +1" },
-    core_grimoire_plus: { id: "core_grimoire_plus", rarity: "rare", name: "고급 마도서", cols: 4, rows: 4, blocked: [], passiveText: "[희귀] 전투 시작 시 마나 +5" },
-    core_frozen_staff: { id: "core_frozen_staff", rarity: "rare", name: "얼어붙은 지팡이", cols: 5, rows: 4, blocked: [[0, 0], [4, 0]], passiveText: "[희귀] 한기/둔화/동결 부여 시 스택 +1" },
-    core_morellonomicon: { id: "core_morellonomicon", rarity: "legendary", name: "모렐로노미콘", cols: 5, rows: 5, blocked: [], passiveText: "[전설] 전투 시작 시 마나 +50" },
-    core_inferno_orb: { id: "core_inferno_orb", rarity: "legendary", name: "연옥의 오브", cols: 6, rows: 4, blocked: [[0, 0], [5, 0], [0, 3], [5, 3]], passiveText: "[전설] 모든 적색 술식 2회 발동" }
+    core_balanced: { id: "core_balanced", rarity: "common", name: "낡은 마도서", cols: 3, rows: 3, blocked: [], passiveText: "[일반] 전투 시작 시 마나 +1 | 기본 마나재생 +1/s" },
+    core_lance: {
+      id: "core_lance",
+      rarity: "common",
+      name: "빛바랜 오브",
+      cols: 4,
+      rows: 4,
+      blocked: [[0, 0], [2, 0], [3, 0], [3, 1], [0, 2], [0, 3], [1, 3], [3, 3]],
+      passiveText: "[일반] 주문 2회 발동마다 마나 +2 | 기본 마나재생 +2/s"
+    },
+    core_bastion: { id: "core_bastion", rarity: "common", name: "고목나무 지팡이", cols: 2, rows: 4, blocked: [], passiveText: "[일반] 2서클 이상 주문 피해 +1 | 기본 마나재생 +1/s" },
+    core_grimoire_plus: { id: "core_grimoire_plus", rarity: "rare", name: "고급 마도서", cols: 4, rows: 4, blocked: [], passiveText: "[희귀] 전투 시작 시 마나 +8 | 기본 마나재생 +2/s" },
+    core_frozen_staff: { id: "core_frozen_staff", rarity: "rare", name: "얼어붙은 지팡이", cols: 5, rows: 4, blocked: [[0, 0], [4, 0]], passiveText: "[희귀] 한기/둔화/동결 부여 시 스택 +2 | 기본 마나재생 +2/s" },
+    core_morellonomicon: { id: "core_morellonomicon", rarity: "legendary", name: "모렐로노미콘", cols: 5, rows: 5, blocked: [], passiveText: "[전설] 전투 시작 시 마나 +50 | 기본 마나재생 +3/s" },
+    core_inferno_orb: { id: "core_inferno_orb", rarity: "legendary", name: "연옥의 오브", cols: 6, rows: 4, blocked: [[0, 0], [5, 0], [0, 3], [5, 3]], passiveText: "[전설] 모든 적색 술식 2회 발동 | 기본 마나재생 +3/s" }
   };
-  const STARTER_CORE_IDS = ["core_balanced", "core_lance", "core_bastion"];
+  const STARTER_CORE_IDS = ["core_balanced"];
   const STARTER_SPELL_IDS = [
     "red_flame_shard",
-    "red_heat_stock",
-    "blue_frost_poke",
-    "blue_chill_condense",
-    "green_guard_bud",
-    "green_life_breath"
+    "red_heat_stock"
   ];
-  const DEFAULT_SLOTS = ["red_flame_shard", "blue_frost_poke", "green_guard_bud", "red_heat_stock"];
+  const DEFAULT_SLOTS = ["red_flame_shard", "red_heat_stock"];
   const DEFAULT_FORMULAS = [
-    { id: "formula_1", name: "술식 1", coreId: "core_balanced", spellIds: ["red_flame_shard", "blue_frost_poke", "green_guard_bud", "red_heat_stock"], gridLayout: {} },
-    { id: "formula_2", name: "술식 2", coreId: "core_lance", spellIds: ["blue_chill_condense", "green_life_breath", "red_flame_shard", "green_guard_bud"], gridLayout: {} },
-    { id: "formula_3", name: "술식 3", coreId: "core_bastion", spellIds: ["green_life_breath", "red_heat_stock", "blue_frost_poke", "green_guard_bud"], gridLayout: {} }
+    { id: "formula_1", name: "기초 술식", coreId: "core_balanced", spellIds: ["red_flame_shard", "red_heat_stock"], gridLayout: {} },
+    { id: "formula_2", name: "잠긴 술식 II", coreId: "core_lance", spellIds: ["red_flame_shard", "red_heat_stock"], gridLayout: {} },
+    { id: "formula_3", name: "잠긴 술식 III", coreId: "core_bastion", spellIds: ["red_flame_shard", "red_heat_stock"], gridLayout: {} }
   ];
 
   const dom = {
     tabs: document.getElementById("formula-tabs"),
     nameInput: document.getElementById("formula-name"),
     coreSelect: document.getElementById("formula-core"),
-    spellPool: document.getElementById("spell-pool"),
-    grid: document.getElementById("formula-grid"),
+    circleSlots: document.getElementById("circle-slots"),
     catalog: document.getElementById("spell-catalog"),
     colorFilter: document.getElementById("catalog-color-filter"),
     circleFilter: document.getElementById("catalog-circle-filter"),
@@ -50,12 +62,65 @@
   let sortedUnlocked = [];
   let currentFormulaIndex = 0;
   let formulaBook = null;
-  let dragState = null;
   let unlockedSet = new Set();
   let unlockedCoreSet = new Set();
+  let selectedSlotIndex = 1;
+  let draggingSpellId = null;
+  const MANA_CRYSTAL_ICON_PATH = "assets/status/mana_crystal.svg";
+
+  function resetAllProgressForFreshBoot() {
+    if (!RESET_ALL_PROGRESS_ON_EACH_BOOT) return;
+    try {
+      if (sessionStorage.getItem(BOOT_RESET_SESSION_KEY) === "1") return;
+      sessionStorage.setItem(BOOT_RESET_SESSION_KEY, "1");
+    } catch {
+      // ignore and continue reset
+    }
+    try {
+      [
+        UNLOCKED_SPELLS_STORAGE_KEY,
+        UNLOCKED_CORES_STORAGE_KEY,
+        LOADOUT_STORAGE_KEY,
+        FORMULA_BOOK_STORAGE_KEY,
+        STORY_PROGRESS_STORAGE_KEY,
+        STARTING_TRAIT_STORAGE_KEY,
+        STARTING_TRAIT_OFFER_STORAGE_KEY,
+        STORY_REVEAL_SPEED_STORAGE_KEY,
+        FRAME_STYLE_STORAGE_KEY,
+        FONT_WEIGHT_STORAGE_KEY,
+        PROGRESS_RESET_VERSION_KEY
+      ].forEach((key) => localStorage.removeItem(key));
+    } catch {
+      // ignore
+    }
+  }
 
   function colorKo(color) {
-    return color === "red" ? "적" : color === "green" ? "녹" : "청";
+    const map = { red: "적", blue: "청", yellow: "황", green: "녹", white: "백", black: "흑" };
+    return map[color] || color;
+  }
+
+  function spellIconPathById(spellId) {
+    const starterIcons = {
+      red_flame_shard: "assets/spells/v2/starter_basic_bolt.svg",
+      red_heat_stock: "assets/spells/v2/starter_basic_focus.svg"
+    };
+    return starterIcons[spellId] || `assets/spells/v2/${spellId}.svg`;
+  }
+
+  function statusKo(id) {
+    const map = {
+      burn: "화상",
+      poison: "중독",
+      slow: "둔화",
+      freeze: "동결",
+      stun: "봉인",
+      weak: "약화",
+      petrify: "석화",
+      blind: "실명",
+      confuse: "혼란"
+    };
+    return map[id] || id;
   }
 
   function hashCode(text) {
@@ -180,14 +245,32 @@
 
   function sanitizeFormula(formula) {
     if (!formula || typeof formula !== "object") return null;
-    const spellIds = sanitizeSlots(formula.spellIds);
-    if (!spellIds) return null;
+    const seedSpellIds = Array.isArray(formula.spellIds) ? formula.spellIds : [];
+    const slotMap = defaultActionSlots();
+    if (formula.slotMap && typeof formula.slotMap === "object") {
+      [1, 2, 3, 4].forEach((slotIndex) => {
+        const spellId = formula.slotMap[slotIndex];
+        const spell = byId[spellId];
+        if (!spell || !isUnlocked(spellId)) return;
+        slotMap[slotIndex] = spellId;
+      });
+    }
+    seedSpellIds.forEach((spellId, i) => {
+      const spell = byId[spellId];
+      if (!spell || !isUnlocked(spellId)) return;
+      const slotIndex = i + 1;
+      if (slotIndex < 1 || slotIndex > 4) return;
+      if (!slotMap[slotIndex]) slotMap[slotIndex] = spellId;
+    });
+    const spellIds = spellIdsFromActionSlots(slotMap);
+    if (spellIds.length < 1) return null;
     return {
       id: typeof formula.id === "string" && formula.id.trim() ? formula.id : `formula_${Math.random().toString(36).slice(2, 8)}`,
       name: typeof formula.name === "string" && formula.name.trim() ? formula.name.trim() : "이름 없는 술식",
-      coreId: (typeof formula.coreId === "string" && CORE_LIBRARY[formula.coreId] && isCoreUnlocked(formula.coreId)) ? formula.coreId : DEFAULT_CORE_ID,
+      coreId: (typeof formula.coreId === "string" && CORE_LIBRARY[formula.coreId]) ? formula.coreId : DEFAULT_CORE_ID,
       spellIds,
-      gridLayout: sanitizeGridLayout(formula.gridLayout)
+      slotMap,
+      gridLayout: {}
     };
   }
 
@@ -212,6 +295,11 @@
 
   function defaultFormulaBook(baseSlots) {
     const first = sanitizeSlots(baseSlots) || [...DEFAULT_SLOTS];
+    const firstSlotMap = defaultActionSlots();
+    first.forEach((spellId, i) => {
+      const slotIndex = i + 1;
+      if (slotIndex >= 1 && slotIndex <= 4 && !firstSlotMap[slotIndex]) firstSlotMap[slotIndex] = spellId;
+    });
     return {
       schemaVersion: 2,
       maxFormulaSlots: 3,
@@ -220,8 +308,9 @@
         id: formula.id,
         name: formula.name,
         coreId: formula.coreId || DEFAULT_CORE_ID,
-        spellIds: index === 0 ? [...first] : [...formula.spellIds],
-        gridLayout: sanitizeGridLayout(formula.gridLayout)
+        spellIds: index === 0 ? spellIdsFromActionSlots(firstSlotMap) : [...formula.spellIds],
+        slotMap: index === 0 ? { ...firstSlotMap } : defaultActionSlots(),
+        gridLayout: {}
       }))
     };
   }
@@ -256,76 +345,40 @@
     return CORE_LIBRARY[formula?.coreId] || CORE_LIBRARY[DEFAULT_CORE_ID];
   }
 
-  function slotEntries(formula) {
-    return formula.spellIds.map((id, slotIndex) => {
-      const spell = byId[id];
-      return spell ? { ...spell, slotIndex, itemKey: id, legacyItemKey: `${id}@${slotIndex}` } : null;
-    }).filter(Boolean);
+  function defaultActionSlots() {
+    return { 1: null, 2: null, 3: null, 4: null };
   }
 
-  function buildLayout(entries, manualLayout, core) {
-    const cols = core?.cols || CORE_LIBRARY[DEFAULT_CORE_ID].cols;
-    const rows = core?.rows || CORE_LIBRARY[DEFAULT_CORE_ID].rows;
-    const blockedSet = new Set((core?.blocked || []).map(([x, y]) => `${x},${y}`));
-    const occupied = Array.from({ length: rows }, () => Array(cols).fill(null));
-    const placed = [];
-    const pending = [];
-
-    function fits(shape, x, y) {
-      for (const [sx, sy] of shape) {
-        const px = x + sx;
-        const py = y + sy;
-        if (px < 0 || py < 0 || px >= cols || py >= rows) return false;
-        if (blockedSet.has(`${px},${py}`)) return false;
-        if (occupied[py][px]) return false;
-      }
-      return true;
-    }
-
-    function place(entry, shape, x, y, variant) {
-      if (!fits(shape, x, y)) return false;
-      shape.forEach(([sx, sy]) => { occupied[y + sy][x + sx] = entry.itemKey; });
-      placed.push({ ...entry, shape, x, y, variant });
-      return true;
-    }
-
-    entries.forEach((entry) => {
-      const preset = manualLayout[entry.itemKey] || manualLayout[entry.legacyItemKey];
-      if (!preset) {
-        pending.push(entry);
-        return;
-      }
-      const variants = makeShapeVariants(entry.circle);
-      const variant = Math.max(0, preset.variant || 0) % variants.length;
-      if (!place(entry, variants[variant], Math.floor(preset.x || 0), Math.floor(preset.y || 0), variant)) pending.push(entry);
+  function spellIdsFromActionSlots(slotMap) {
+    const out = [];
+    [1, 2, 3, 4].forEach((slotIndex) => {
+      const spellId = slotMap[slotIndex];
+      if (!spellId || !byId[spellId]) return;
+      if (!isUnlocked(spellId)) return;
+      out.push(spellId);
     });
+    return out;
+  }
 
-    pending.forEach((entry) => {
-      const variants = makeShapeVariants(entry.circle);
-      const start = hashCode(entry.itemKey) % variants.length;
-      const rotated = variants.slice(start).concat(variants.slice(0, start));
-      let ok = false;
-      for (let v = 0; v < rotated.length && !ok; v += 1) {
-        const shape = rotated[v];
-        const w = Math.max(...shape.map((c) => c[0])) + 1;
-        const h = Math.max(...shape.map((c) => c[1])) + 1;
-        for (let y = 0; y <= rows - h && !ok; y += 1) {
-          for (let x = 0; x <= cols - w && !ok; x += 1) {
-            ok = place(entry, shape, x, y, v);
-          }
-        }
-      }
-      if (!ok) {
-        for (let y = 0; y < rows && !ok; y += 1) {
-          for (let x = 0; x < cols && !ok; x += 1) {
-            if (blockedSet.has(`${x},${y}`)) continue;
-            ok = place(entry, [[0, 0]], x, y, 0);
-          }
-        }
-      }
+  function ensureFormulaActionSlots(formula) {
+    const next = defaultActionSlots();
+    if (formula && formula.slotMap && typeof formula.slotMap === "object") {
+      [1, 2, 3, 4].forEach((slotIndex) => {
+        const spellId = formula.slotMap[slotIndex];
+        if (!spellId || !byId[spellId]) return;
+        if (!isUnlocked(spellId)) return;
+        next[slotIndex] = spellId;
+      });
+    }
+    (Array.isArray(formula.spellIds) ? formula.spellIds : []).forEach((spellId, i) => {
+      const slotIndex = i + 1;
+      if (slotIndex > 4) return;
+      const spell = byId[spellId];
+      if (!spell) return;
+      if (!next[slotIndex]) next[slotIndex] = spellId;
     });
-
-    return placed;
+    formula.slotMap = next;
+    formula.spellIds = spellIdsFromActionSlots(next);
   }
 
   function renderTabs() {
@@ -363,207 +416,128 @@
   }
 
   function normalizeFormulaSpells(formula) {
-    formula.spellIds = formula.spellIds.filter((id, index, arr) => byId[id] && isUnlocked(id) && arr.indexOf(id) === index);
-    while (totalHearts(formula.spellIds) > MAX_HEARTS) {
-      formula.spellIds.pop();
-    }
+    ensureFormulaActionSlots(formula);
+    formula.spellIds = spellIdsFromActionSlots(formula.slotMap);
   }
 
-  function removeSpellFromFormula(spellId) {
-    const formula = currentFormula();
-    if (!formula.spellIds.includes(spellId)) return;
-    if (formula.spellIds.length <= 1) {
-      dom.saveMsg.textContent = "최소 1개 주문은 유지해야 합니다.";
-      dom.saveMsg.style.color = "#ffb2a0";
-      return;
-    }
-    formula.spellIds = formula.spellIds.filter((id) => id !== spellId);
-    delete formula.gridLayout[spellId];
-    dom.saveMsg.textContent = "";
-    render();
+  function spellDetailText(spell) {
+    if (!spell) return "장착 해제됨";
+    const raw = rawById[spell.id] || {};
+    const effects = [
+      ...((raw.effects || []).map((effect) => effectText(effect, spell.color))),
+      ...((raw.linkSynergy || []).map((rule) => linkSynergyText(rule)))
+    ];
+    return `${spell.name} | ${colorKo(spell.color)} ${spell.circle}서클 | MP ${spell.manaCost} | 하트 ${spell.heartCost} :: ${effects.join(" / ") || (raw.notes || "-")}`;
   }
 
-  function addSpellToFormula(spellId, presetPosition = null) {
+  function setSlotSpell(slotIndex, spellId) {
     const formula = currentFormula();
-    const spell = byId[spellId];
-    if (!spell || !isUnlocked(spellId)) return false;
-    if (formula.spellIds.includes(spellId)) return true;
-    if (totalHearts([...formula.spellIds, spellId]) > MAX_HEARTS) {
-      dom.saveMsg.textContent = "하트 한도를 초과했습니다.";
+    ensureFormulaActionSlots(formula);
+    const slots = formula.slotMap;
+    if (!Number.isInteger(slotIndex) || slotIndex < 1 || slotIndex > 4) return false;
+    if (spellId && (!byId[spellId] || !isUnlocked(spellId))) return false;
+    const beforeIds = spellIdsFromActionSlots(slots);
+    const beforeCount = beforeIds.length;
+
+    [1, 2, 3, 4].forEach((idx) => {
+      if (idx !== slotIndex && slots[idx] === spellId) slots[idx] = null;
+    });
+    slots[slotIndex] = spellId || null;
+    const afterIds = spellIdsFromActionSlots(slots);
+    if (beforeCount > 0 && afterIds.length < 1) {
+      slots[slotIndex] = beforeIds[0];
+      formula.spellIds = spellIdsFromActionSlots(slots);
+      dom.saveMsg.textContent = "최소 1개 주문은 장착되어야 합니다.";
       dom.saveMsg.style.color = "#ffb2a0";
       return false;
     }
-    formula.spellIds.push(spellId);
-    if (presetPosition) {
-      formula.gridLayout[spellId] = { x: presetPosition.x, y: presetPosition.y, variant: 0 };
-    }
-    const placed = buildLayout(slotEntries(formula), formula.gridLayout, currentCore()).some((entry) => entry.itemKey === spellId);
-    if (!placed) {
-      formula.spellIds = formula.spellIds.filter((id) => id !== spellId);
-      delete formula.gridLayout[spellId];
-      dom.saveMsg.textContent = "그리드 공간이 부족합니다.";
-      dom.saveMsg.style.color = "#ffb2a0";
-      return false;
-    }
+    formula.spellIds = afterIds;
     dom.saveMsg.textContent = "";
     dom.saveMsg.style.color = "#b8dfff";
+    render();
     return true;
   }
 
-  function renderSpellPool() {
-    if (!dom.spellPool) return;
-    dom.spellPool.innerHTML = "";
-    if (sortedUnlocked.length === 0) {
-      dom.spellPool.innerHTML = "<p>해금된 주문이 없습니다. 전투/이벤트를 통해 주문을 획득하세요.</p>";
-      return;
-    }
-    const usedSet = new Set(currentFormula().spellIds);
-    sortedUnlocked.forEach((spell) => {
-      const item = document.createElement("div");
-      item.className = "spell-pool-item";
-      if (usedSet.has(spell.id)) item.classList.add("used");
-      item.draggable = true;
-      item.dataset.spellId = spell.id;
-      item.innerHTML = `
-        <strong>${spell.name}</strong>
-        <span>${colorKo(spell.color)} ${spell.circle}서클 | MP ${spell.manaCost} | 하트 ${spell.heartCost}${usedSet.has(spell.id) ? " | 배치됨" : ""}</span>
-      `;
-      item.addEventListener("dragstart", (event) => {
-        event.dataTransfer?.setData("text/plain", spell.id);
-        event.dataTransfer?.setData("application/x-fanta-spell", spell.id);
-      });
-      dom.spellPool.appendChild(item);
-    });
-  }
-
-  function cellFromPointer(event) {
-    const core = currentCore();
-    const rect = dom.grid.getBoundingClientRect();
-    const cx = Math.floor(((event.clientX - rect.left) / rect.width) * core.cols);
-    const cy = Math.floor(((event.clientY - rect.top) / rect.height) * core.rows);
-    return {
-      x: Math.max(0, Math.min(core.cols - 1, cx)),
-      y: Math.max(0, Math.min(core.rows - 1, cy))
-    };
-  }
-
-  function renderGrid() {
+  function renderCircleSlots() {
     const formula = currentFormula();
-    const core = currentCore();
-    const blockedSet = new Set((core.blocked || []).map(([x, y]) => `${x},${y}`));
-    const entries = slotEntries(formula);
-    const layout = buildLayout(entries, formula.gridLayout, core);
-    dom.grid.innerHTML = "";
-    dom.grid.style.setProperty("--cols", String(core.cols));
-    dom.grid.style.setProperty("--rows", String(core.rows));
-    const cell = core.rows >= 7 ? 32 : (core.rows >= 5 || core.cols >= 5 ? 38 : 44);
-    dom.grid.style.setProperty("--cell", `${cell}px`);
+    ensureFormulaActionSlots(formula);
+    const slots = formula.slotMap;
+    dom.circleSlots.innerHTML = "";
+    const detailNode = document.createElement("div");
+    detailNode.className = "slot-spell-detail";
+    detailNode.textContent = "주문 도감 카드를 슬롯으로 드래그해서 장착하세요.";
+    const showDetail = (spell) => {
+      detailNode.textContent = spellDetailText(spell);
+    };
+    [1, 2, 3, 4].forEach((slotIndex) => {
+      const row = document.createElement("div");
+      row.className = "circle-slot-row";
+      if (selectedSlotIndex === slotIndex) row.classList.add("active");
+      const equippedId = slots[slotIndex] || "";
+      row.innerHTML = `
+        <label class="circle-slot-label">슬롯 ${slotIndex}</label>
+        <div class="circle-slot-cards"></div>
+      `;
+      const cardWrap = row.querySelector(".circle-slot-cards");
+      if (equippedId && byId[equippedId]) {
+        const spell = byId[equippedId];
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `circle-spell-card selected ${spell.color}`;
+        const iconPath = spellIconPathById(spell.id);
+        card.innerHTML = `
+          <div class="circle-spell-head">
+            <span class="circle-spell-icon"${iconPath ? ` style="background-image:url('${iconPath}')"` : ""}></span>
+            <strong>${spell.name}</strong>
+          </div>
+          <span>${colorKo(spell.color)} ${spell.circle}서클 | MP ${spell.manaCost}</span>
+        `;
+        card.addEventListener("mouseenter", () => showDetail(spell));
+        card.addEventListener("focus", () => showDetail(spell));
+        card.addEventListener("touchstart", () => showDetail(spell), { passive: true });
+        card.addEventListener("click", () => {
+          selectedSlotIndex = slotIndex;
+          showDetail(spell);
+          renderCircleSlots();
+        });
+        cardWrap.appendChild(card);
 
-    for (let y = 0; y < core.rows; y += 1) {
-      for (let x = 0; x < core.cols; x += 1) {
-        const cell = document.createElement("div");
-        cell.className = "grid-cell";
-        if (blockedSet.has(`${x},${y}`)) {
-          cell.classList.add("blocked");
-        }
-        dom.grid.appendChild(cell);
+        const clearBtn = document.createElement("button");
+        clearBtn.type = "button";
+        clearBtn.className = "slot-clear-btn";
+        clearBtn.textContent = "장착 해제";
+        clearBtn.addEventListener("click", (event) => {
+          event.stopPropagation();
+          setSlotSpell(slotIndex, null);
+        });
+        cardWrap.appendChild(clearBtn);
+      } else {
+        const empty = document.createElement("p");
+        empty.className = "circle-slot-empty";
+        empty.textContent = "여기에 주문을 드래그";
+        cardWrap.appendChild(empty);
       }
-    }
 
-    layout.forEach((entry) => {
-      const sortedShape = [...entry.shape].sort((a, b) => (a[1] - b[1]) || (a[0] - b[0]));
-      formula.gridLayout[entry.itemKey] = { x: entry.x, y: entry.y, variant: entry.variant || 0 };
-      sortedShape.forEach(([sx, sy], idx) => {
-        const tile = document.createElement("div");
-        tile.className = `grid-item ${entry.color}`;
-        tile.dataset.itemKey = entry.itemKey;
-        tile.dataset.sx = String(sx);
-        tile.dataset.sy = String(sy);
-        tile.style.gridColumn = `${entry.x + sx + 1}`;
-        tile.style.gridRow = `${entry.y + sy + 1}`;
-        if (idx === 0) {
-          const icon = document.createElement("img");
-          icon.src = `assets/spells/v2/${entry.id}.svg`;
-          icon.alt = `${entry.name} 아이콘`;
-          tile.appendChild(icon);
-          const label = document.createElement("span");
-          label.textContent = entry.name;
-          tile.appendChild(label);
-          const rotate = document.createElement("button");
-          rotate.type = "button";
-          rotate.className = "grid-rotate-btn";
-          rotate.dataset.itemKey = entry.itemKey;
-          rotate.textContent = "⟳";
-          rotate.addEventListener("click", (event) => {
-            event.stopPropagation();
-            const variants = makeShapeVariants(entry.circle);
-            const current = formula.gridLayout[entry.itemKey] || { x: entry.x, y: entry.y, variant: 0 };
-            formula.gridLayout[entry.itemKey] = { x: current.x, y: current.y, variant: (current.variant + 1) % variants.length };
-            renderGrid();
-          });
-          tile.appendChild(rotate);
-          const remove = document.createElement("button");
-          remove.type = "button";
-          remove.className = "grid-remove-btn";
-          remove.dataset.itemKey = entry.itemKey;
-          remove.textContent = "✕";
-          remove.addEventListener("click", (event) => {
-            event.stopPropagation();
-            removeSpellFromFormula(entry.id);
-          });
-          tile.appendChild(remove);
-        }
-        dom.grid.appendChild(tile);
+      row.addEventListener("click", () => {
+        selectedSlotIndex = slotIndex;
+        renderCircleSlots();
       });
+      row.addEventListener("dragover", (event) => {
+        event.preventDefault();
+        row.classList.add("drag-over");
+      });
+      row.addEventListener("dragleave", () => row.classList.remove("drag-over"));
+      row.addEventListener("drop", (event) => {
+        event.preventDefault();
+        row.classList.remove("drag-over");
+        const spellId = event.dataTransfer?.getData("text/plain") || draggingSpellId;
+        if (!spellId) return;
+        selectedSlotIndex = slotIndex;
+        setSlotSpell(slotIndex, spellId);
+      });
+      dom.circleSlots.appendChild(row);
     });
-  }
-
-  function bindGridEvents() {
-    dom.grid.addEventListener("dragover", (event) => {
-      event.preventDefault();
-    });
-    dom.grid.addEventListener("drop", (event) => {
-      event.preventDefault();
-      const spellId = event.dataTransfer?.getData("application/x-fanta-spell")
-        || event.dataTransfer?.getData("text/plain");
-      if (!spellId || !byId[spellId]) return;
-      const cell = cellFromPointer(event);
-      if (!addSpellToFormula(spellId, cell)) return;
-      render();
-    });
-    dom.grid.addEventListener("pointerdown", (event) => {
-      const tile = event.target.closest(".grid-item");
-      if (!tile || !dom.grid.contains(tile)) return;
-      dragState = {
-        itemKey: tile.dataset.itemKey,
-        offsetX: Number(tile.dataset.sx || 0),
-        offsetY: Number(tile.dataset.sy || 0)
-      };
-    });
-    window.addEventListener("pointermove", (event) => {
-      if (!dragState) return;
-      const formula = currentFormula();
-      const cell = cellFromPointer(event);
-      formula.gridLayout[dragState.itemKey] = {
-        ...(formula.gridLayout[dragState.itemKey] || { variant: 0 }),
-        x: cell.x - dragState.offsetX,
-        y: cell.y - dragState.offsetY
-      };
-      renderGrid();
-    });
-    window.addEventListener("pointerup", () => { dragState = null; });
-    dom.grid.addEventListener("dblclick", (event) => {
-      const tile = event.target.closest(".grid-item");
-      if (!tile || !dom.grid.contains(tile)) return;
-      const formula = currentFormula();
-      const itemKey = tile.dataset.itemKey;
-      const entry = slotEntries(formula).find((e) => e.itemKey === itemKey);
-      if (!entry) return;
-      const variants = makeShapeVariants(entry.circle);
-      const current = formula.gridLayout[itemKey] || { x: 0, y: 0, variant: 0 };
-      formula.gridLayout[itemKey] = { x: current.x, y: current.y, variant: (current.variant + 1) % variants.length };
-      renderGrid();
-    });
+    dom.circleSlots.appendChild(detailNode);
   }
 
   function render() {
@@ -573,12 +547,20 @@
     dom.heartInfo.textContent = `마나 하트: ${totalHearts(formula.spellIds)} / ${MAX_HEARTS}`;
     renderTabs();
     renderCoreSelect();
-    renderSpellPool();
-    renderGrid();
+    renderCircleSlots();
     renderCatalog();
   }
 
-  function effectText(e) {
+  function statusIconPath(effect, spellColor) {
+    if (effect.type === "silence") return "assets/status/freeze.svg";
+    if (effect.type === "frostSlow") return "assets/status/slow.svg";
+    if (effect.type === "status") return effect.id ? `assets/status/${effect.id}.svg` : "";
+    if (effect.type === "regen" || effect.type === "hot") return "assets/status/regen.svg";
+    if (effect.type === "dot") return (spellColor === "green" || spellColor === "black") ? "assets/status/poison.svg" : "assets/status/burn.svg";
+    return "";
+  }
+
+  function effectText(e, spellColor) {
     if (e.type === "damage") return `직접 피해 ${e.value}`;
     if (e.type === "conditionalDamage") return `조건부 피해 ${e.value}`;
     if (e.type === "heal") return `체력 회복 ${e.value}`;
@@ -587,7 +569,7 @@
     if (e.type === "manaOnEvent") {
       const map = {
         onDamageDealt: "피해를 주면",
-        onControlApplied: "제어 효과가 걸리면"
+        onControlApplied: "제어 효과를 부여하면"
       };
       return `${map[e.event] || "이벤트 성공 시"} 마나 +${e.value || 1}`;
     }
@@ -600,34 +582,117 @@
     }
     if (e.type === "manaReduce") return `상대 마나 -${e.value}`;
     if (e.type === "manaDelete") return "상대 마나 전량 삭제";
-    if (e.type === "silence") return `봉인 ${e.duration || 1}초`;
-    if (e.type === "dot") return `${e.duration || 2}초 동안 지속피해 ${e.value}`;
-    if (e.type === "regen") return `${e.duration || 2}초 동안 재생 ${e.value}/초`;
-    if (e.type === "frostSlow") return `${e.duration || 2}초 둔화 ${e.slowPct || 10}% (쿨회복 x${e.cooldownRate || 0.9})`;
+    if (e.type === "silence") return `봉인 상태부여 (${e.duration || 1}초)`;
+    if (e.type === "dot") return `${(spellColor === "green" || spellColor === "black") ? "중독" : "화상"} 상태부여 (${e.duration || 2}초, ${e.value})`;
+    if (e.type === "status") return `${statusKo(e.id)} 상태부여 (${e.duration || 2}초)`;
+    if (e.type === "regen") return `재생 상태부여 (${e.duration || 2}초, ${e.value}/초)`;
+    if (e.type === "hot") return `재생 상태부여 (${e.duration || 2}초, ${e.value || 1}/초)`;
+    if (e.type === "frostSlow") return `둔화 상태부여 (${e.duration || 2}초, ${e.slowPct || 10}%)`;
+    if (e.type === "cooldownAdd") return `상대 쿨다운 +${e.value || 0}초`;
+    if (e.type === "castRateMultiplier") return `시전속도 배율 x${e.value || 1}`;
+    if (e.type === "nullifyNextCast") return "다음 시전 무효화";
+    if (e.type === "freezeAllEffects") return "적 효과 일시 동결";
+    if (e.type === "allyColorDamageBonus") return `아군 ${colorKo(e.color || spellColor)}색 피해 +${e.value || 0}`;
     return e.type;
+  }
+
+  function effectHtml(effect, spellColor) {
+    const icon = statusIconPath(effect, spellColor);
+    const text = effectText(effect, spellColor);
+    const debuffTypes = new Set(["dot", "silence", "frostSlow", "status", "manaReduce", "manaDelete", "cooldownAdd", "nullifyNextCast"]);
+    const buffTypes = new Set(["regen", "hot", "shield", "heal", "manaGain", "manaOnEvent", "manaOnCondition", "manaFlow", "castRateMultiplier", "allyColorDamageBonus"]);
+    const tone = debuffTypes.has(effect.type) ? "debuff" : (buffTypes.has(effect.type) ? "buff" : "neutral");
+    const toneLabel = tone === "debuff" ? "디버프" : (tone === "buff" ? "버프" : "기타");
+    const iconHtml = icon ? `<img src="${icon}" alt="" class="effect-icon">` : "";
+    return `<span class="effect-line ${tone}">${iconHtml}<span>${text}</span><em class="effect-tone">${toneLabel}</em></span>`;
+  }
+
+  function linkSynergyText(rule) {
+    const colorLabel = colorKo(rule.neighborColor || "all");
+    if (rule.effect === "self_regen") return `공명: 인접 ${colorLabel} 1개당 재생 +${rule.scale || 1} (${rule.duration || 5}초)`;
+    if (rule.effect === "self_heal") return `공명: 인접 ${colorLabel} 1개당 즉시 회복 +${rule.scale || 1}`;
+    if (rule.effect === "self_mana") return `공명: 인접 ${colorLabel} 1개당 마나 +${rule.scale || 1}`;
+    if (rule.effect === "self_shield") return `공명: 인접 ${colorLabel} 1개당 보호막 +${rule.scale || 1}`;
+    if (rule.effect === "enemy_poison") return `공명: 인접 ${colorLabel} 1개당 중독 +${rule.scale || 1}`;
+    if (rule.effect === "enemy_burn") return `공명: 인접 ${colorLabel} 1개당 화상 +${rule.scale || 1}`;
+    if (rule.effect === "enemy_slow") return `공명: 인접 ${colorLabel} 1개당 둔화 부여`;
+    if (rule.effect === "enemy_petrify") return `공명: 인접 ${colorLabel} 1개당 석화 부여`;
+    if (rule.effect === "enemy_blind") return `공명: 인접 ${colorLabel} 1개당 실명 부여`;
+    if (rule.effect === "enemy_confuse") return `공명: 인접 ${colorLabel} 1개당 혼란 부여`;
+    if (rule.effect === "enemy_mana_burn") return `공명: 인접 ${colorLabel} 1개당 마나 소각 +${rule.scale || 1}`;
+    return `공명: ${rule.effect}`;
+  }
+
+  function linkSynergyHtml(rule) {
+    const text = linkSynergyText(rule);
+    return `<span class="effect-line buff"><span>${text}</span><em class="effect-tone">공명</em></span>`;
+  }
+
+  function hasManaGeneration(raw) {
+    return (raw.effects || []).some((e) => (
+      e.type === "manaGain"
+      || e.type === "manaOnEvent"
+      || e.type === "manaOnCondition"
+      || e.type === "hot"
+      || e.type === "manaFlow"
+    ));
   }
 
   function renderCatalog() {
     dom.catalog.innerHTML = "";
     const color = dom.colorFilter?.value || "all";
     const circle = dom.circleFilter?.value || "all";
-    sorted
+    const usedSet = new Set(currentFormula().spellIds);
+    sortedUnlocked
       .filter((spell) => (color === "all" ? true : spell.color === color))
       .filter((spell) => (circle === "all" ? true : String(spell.circle) === circle))
       .forEach((spell) => {
       const raw = rawById[spell.id];
       const card = document.createElement("article");
-      card.className = "spell-card";
-      const locked = !isUnlocked(spell.id);
-      if (locked) card.classList.add("locked");
-      const effects = (raw.effects || []).map(effectText);
+      card.className = `spell-card ${spell.color}`;
+      if (usedSet.has(spell.id)) card.classList.add("used");
+      card.dataset.spellId = spell.id;
+      card.draggable = true;
+      const effects = [
+        ...(raw.effects || []).map((effect) => effectHtml(effect, spell.color)),
+        ...((raw.linkSynergy || []).map((rule) => linkSynergyHtml(rule)))
+      ];
+      const manaMaker = hasManaGeneration(raw);
       card.innerHTML = `
-        <h3>${spell.name}${locked ? " 🔒" : ""}</h3>
-        <p>${colorKo(spell.color)} ${spell.circle}서클 | MP ${spell.manaCost} | 하트 ${spell.heartCost}</p>
-        <p>${locked ? "미해금 주문: 전투/이벤트 보상으로 획득" : (effects.length > 0 ? effects.join("<br>") : (raw.notes || "-"))}</p>
+        <div class="spell-card-head">
+          <h3>${spell.name}</h3>
+          <div class="spell-head-badges">
+            ${manaMaker ? `<span class="spell-mana-badge"><img src="${MANA_CRYSTAL_ICON_PATH}" alt="마나 생성">마나 생성</span>` : ""}
+            ${usedSet.has(spell.id) ? "<span class=\"spell-used-badge\">배치됨</span>" : ""}
+          </div>
+        </div>
+        <p class="spell-meta"><span class="spell-color-dot ${spell.color}"></span>${colorKo(spell.color)} ${spell.circle}서클 | MP ${spell.manaCost} | 하트 ${spell.heartCost}</p>
+        <p class="spell-effects">${effects.length > 0 ? effects.join("") : (raw.notes || "-")}</p>
       `;
+      card.addEventListener("mouseenter", () => {
+        const detail = dom.circleSlots.querySelector(".slot-spell-detail");
+        if (detail) detail.textContent = spellDetailText(spell);
+      });
+      card.addEventListener("dragstart", (event) => {
+        draggingSpellId = spell.id;
+        card.classList.add("dragging");
+        if (event.dataTransfer) {
+          event.dataTransfer.setData("text/plain", spell.id);
+          event.dataTransfer.effectAllowed = "copy";
+        }
+      });
+      card.addEventListener("dragend", () => {
+        draggingSpellId = null;
+        card.classList.remove("dragging");
+      });
+      card.addEventListener("click", () => {
+        setSlotSpell(selectedSlotIndex, spell.id);
+      });
       dom.catalog.appendChild(card);
       });
+    if (dom.catalog.childElementCount === 0) {
+      dom.catalog.innerHTML = "<p class=\"catalog-empty\">조건에 맞는 보유 주문이 없습니다.</p>";
+    }
   }
 
   const rawById = {};
@@ -648,19 +713,21 @@
     });
     byId = Object.fromEntries(spells.map((spell) => [spell.id, spell]));
     sorted = [...spells].sort((a, b) => {
-      const order = { blue: 1, red: 2, green: 3 };
-      return (order[a.color] - order[b.color]) || (a.circle - b.circle) || a.name.localeCompare(b.name);
+      const order = { blue: 1, red: 2, yellow: 3, green: 4, white: 5, black: 6 };
+      const oa = order[a.color] ?? 99;
+      const ob = order[b.color] ?? 99;
+      return (oa - ob) || (a.circle - b.circle) || a.name.localeCompare(b.name);
     });
     unlockedSet = loadUnlockedSet();
     sortedUnlocked = sorted.filter((spell) => isUnlocked(spell.id));
   }
 
   async function init() {
+    resetAllProgressForFreshBoot();
     await loadCatalog();
     unlockedCoreSet = loadUnlockedCoreSet();
     formulaBook = loadFormulaBook();
     currentFormulaIndex = formulaBook.activeFormulaIndex;
-    bindGridEvents();
 
     dom.nameInput.addEventListener("input", () => {
       currentFormula().name = dom.nameInput.value.trim() || "이름 없는 술식";
@@ -673,9 +740,8 @@
         const formula = currentFormula();
         const picked = dom.coreSelect.value;
         formula.coreId = (CORE_LIBRARY[picked] && isCoreUnlocked(picked)) ? picked : DEFAULT_CORE_ID;
-        formula.gridLayout = {};
         dom.saveMsg.textContent = "";
-        renderGrid();
+        renderCircleSlots();
       });
     }
 

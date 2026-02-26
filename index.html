@@ -14,18 +14,25 @@
       </div>
       <div class="story-text-panel">
         <h2 id="story-scene-title">ACT 1 - 낯선 길 위에서</h2>
+        <div class="story-reveal-controls" aria-label="스토리 텍스트 제어">
+          <button id="story-reveal-speed-btn" type="button" class="btn-secondary story-reveal-btn">본문 x1</button>
+          <button id="story-reveal-skip-btn" type="button" class="btn-secondary story-reveal-btn">즉시 출력</button>
+        </div>
         <p id="story-scene-body" class="story-scene-body"></p>
         <ul id="story-log" class="story-log"></ul>
       </div>
       <div id="story-choices" class="story-choices"></div>
       <section id="story-map-panel" class="story-map-panel hidden" aria-live="polite">
-        <div class="story-map-head">
-          <h3 id="story-map-title">다음 경로 선택</h3>
-          <p>해골: 전투 가능성 높음 · ?: 미확인 구역</p>
-        </div>
-        <div class="story-map-canvas">
-          <img id="story-map-reference" class="story-map-reference" src="assets/ref/scene_route_map_reference.jpg" alt="경로 레퍼런스">
-          <div id="story-map-nodes" class="story-map-nodes"></div>
+        <div class="story-map-card">
+          <div class="story-map-head">
+            <h3 id="story-map-title">다음 경로 선택</h3>
+            <p>지나온 길을 따라 다음 경로를 고르세요</p>
+            <button id="story-map-close" class="story-map-close" type="button" aria-label="지도 닫기">닫기</button>
+          </div>
+          <div class="story-map-canvas">
+            <svg id="story-map-lines" class="story-map-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+            <div id="story-map-nodes" class="story-map-nodes"></div>
+          </div>
         </div>
       </section>
     </section>
@@ -34,7 +41,8 @@
       <button id="start-btn" class="btn-primary">전투 시작</button>
       <button id="reset-btn" class="btn-secondary">전투 초기화</button>
       <button id="speed-btn" class="btn-secondary">속도 x1</button>
-      <a href="spellbook.html" class="btn-nav">술식 관리</a>
+      <button id="frame-style-btn" class="btn-secondary">프레임: 각인</button>
+      <a href="spellbook.html" class="btn-nav">주문</a>
     </section>
 
     <section id="summon-structure" class="summon-structure" aria-live="polite">
@@ -45,25 +53,26 @@
     <section class="loadout-panel battle-hidden">
       <div class="loadout-head">
         <h3>주인공 술식 로드아웃</h3>
-        <p id="loadout-heart-text">마나 하트: 0 / 0</p>
+        <p id="loadout-heart-text">술식 점유량: 0 / 0</p>
       </div>
       <div id="loadout-slots" class="loadout-slots"></div>
     </section>
 
     <main class="battle-panel">
       <section class="enemy-grid-panel">
-        <h3 id="enemy-grid-title">상대 술식</h3>
+        <h3 id="enemy-grid-title" class="grid-title-main">[술식 : 상대 술식]</h3>
+        <p id="enemy-grid-core" class="grid-title-sub">술식핵 : -</p>
         <div id="enemy-board" class="battle-grid battle-grid-enemy"></div>
       </section>
       <header class="top-panel duel-top">
         <section class="duel-side duel-player">
           <div id="player-portrait-frame" class="player-portrait-frame" aria-label="플레이어 초상화">
-            <div class="player-portrait-placeholder">?</div>
+            <img id="player-portrait-img" class="player-portrait-img" src="assets/player/player_wandering_mage_pixel.png" alt="주인공 초상화">
           </div>
-          <p id="player-name-text" class="duel-name">죽은 마법사</p>
+          <p id="player-name-text" class="duel-name">마법사</p>
           <div class="bar-wrap">
             <div class="bar-label-row">
-              <span>내구도</span>
+              <span>술식핵 내구도</span>
               <span id="player-hp-text">0 / 0</span>
             </div>
             <div class="meter hp"><div id="player-hp-fill" class="meter-fill"></div></div>
@@ -71,15 +80,21 @@
           <div class="status-split">
             <p id="player-buffs-text">버프: MP 0</p>
             <p id="player-debuffs-text">디버프: 없음</p>
-            <p class="core-passive-line">핵 패시브: <span id="player-core-passive-tip" class="core-passive-tip" title="">확인</span></p>
           </div>
         </section>
 
         <div class="phase-center duel-center">
           <h1>방랑 마도사의 길</h1>
           <div id="phase-pill" class="phase-pill">준비</div>
+          <div class="battle-top-controls" aria-label="전투 컨트롤">
+            <button id="battle-speed-btn" type="button" class="btn-secondary">속도 x1</button>
+            <button id="battle-pause-btn" type="button" class="btn-secondary">일시정지</button>
+            <button id="battle-menu-btn" type="button" class="btn-secondary">메뉴</button>
+          </div>
           <div class="duel-versus">VS</div>
-          <div id="heart-text" class="heart-text">마나 하트: 0 / 0</div>
+          <div id="heart-text" class="heart-text">마나하트: 0 / 0</div>
+          <div id="resonance-grid" class="resonance-grid" aria-label="공명 그리드"></div>
+          <div id="resonance-hint" class="resonance-hint" aria-live="polite"></div>
         </div>
 
         <section class="duel-side duel-enemy">
@@ -93,7 +108,7 @@
           <p id="enemy-name-text" class="duel-name">적색의 알렌</p>
           <div class="bar-wrap">
             <div class="bar-label-row">
-              <span>내구도</span>
+              <span>술식핵 내구도</span>
               <span id="boss-hp-text">0 / 0</span>
             </div>
             <div class="meter boss"><div id="boss-hp-fill" class="meter-fill"></div></div>
@@ -101,26 +116,53 @@
           <div class="status-split">
             <p id="boss-buffs-text">버프: MP 0</p>
             <p id="boss-debuffs-text">디버프: 없음</p>
-            <p class="core-passive-line">핵 패시브: <span id="boss-core-passive-tip" class="core-passive-tip" title="">확인</span></p>
           </div>
           <div id="enemy-heart-text" class="heart-text">보스 하트: 0 / 0</div>
         </section>
       </header>
       <section class="player-grid-panel">
-        <h3 id="player-grid-title">내 술식</h3>
+        <h3 id="player-grid-title" class="grid-title-main">[술식 : 내 술식]</h3>
+        <p id="player-grid-core" class="grid-title-sub">술식핵 : -</p>
         <div id="spell-slots" class="spell-slots"></div>
       </section>
       <section class="combat-log-panel">
-        <button id="combat-log-toggle" type="button" class="btn-secondary combat-log-toggle">전투 로그 보기</button>
-        <div id="combat-log-body" class="combat-log-body hidden">
+        <div id="combat-log-body" class="combat-log-body">
           <ul id="combat-log" class="combat-log"></ul>
         </div>
       </section>
+      <section id="battle-action-bar" class="battle-action-bar" aria-label="플레이어 행동 선택">
+        <button id="battle-staff-btn" type="button" class="battle-action-btn action-staff">
+          <span class="battle-action-icon">🪄</span>
+          <span class="battle-action-label">휘두르기</span>
+          <span class="battle-action-sub"></span>
+        </button>
+        <button id="battle-circle-1-btn" type="button" class="battle-action-btn">
+          <span class="battle-action-icon"></span>
+          <span class="battle-action-label">슬롯 1</span>
+          <span class="battle-action-sub"></span>
+        </button>
+        <button id="battle-circle-2-btn" type="button" class="battle-action-btn">
+          <span class="battle-action-icon"></span>
+          <span class="battle-action-label">슬롯 2</span>
+          <span class="battle-action-sub"></span>
+        </button>
+        <button id="battle-circle-3-btn" type="button" class="battle-action-btn">
+          <span class="battle-action-icon"></span>
+          <span class="battle-action-label">슬롯 3</span>
+          <span class="battle-action-sub"></span>
+        </button>
+        <button id="battle-circle-4-btn" type="button" class="battle-action-btn">
+          <span class="battle-action-icon"></span>
+          <span class="battle-action-label">슬롯 4</span>
+          <span class="battle-action-sub"></span>
+        </button>
+      </section>
+      <section id="battle-action-detail" class="battle-action-detail" aria-live="polite"></section>
     </main>
   </div>
 
   <section id="story-dock" class="story-dock">
-    <a href="spellbook.html" class="story-dock-btn">술식 연구</a>
+    <a href="spellbook.html" class="story-dock-btn">주문</a>
     <button id="story-info-btn" type="button" class="story-dock-btn">주인공 정보</button>
     <button id="story-menu-btn" type="button" class="story-dock-btn">메뉴</button>
   </section>
@@ -137,17 +179,36 @@
     <div class="story-modal-card">
       <h3>메뉴</h3>
       <div class="story-modal-body">
-        <p>스토리 진행 중에도 언제든 술식 연구를 열어 조합을 바꿀 수 있습니다.</p>
+        <p>스토리 진행 중에도 언제든 주문 탭을 열어 슬롯 구성을 바꿀 수 있습니다.</p>
       </div>
       <button id="story-menu-close" class="btn-secondary" type="button">닫기</button>
     </div>
   </section>
 
+  <section id="start-trait-panel" class="story-modal start-trait-modal hidden" aria-live="polite">
+    <div class="story-modal-card start-trait-card">
+      <h3>시작 특전 선택</h3>
+      <div class="story-modal-body">
+        <p>무작위로 제시된 3개 특전 중 1개를 선택하세요.</p>
+        <p>초기 장비: 낡은 마도서 + 기본 주문 2개</p>
+      </div>
+      <div id="start-trait-choices" class="start-trait-choices"></div>
+    </div>
+  </section>
+
   <section id="rearrange-panel" class="rearrange-panel hidden" aria-live="polite">
     <div class="rearrange-card">
-      <h2>술식 교체 선택 시간</h2>
+      <div class="rearrange-enemy-head">
+        <div class="rearrange-enemy-portrait">
+          <img id="rearrange-enemy-portrait-img" src="assets/적/enemy_allen_v2.png" alt="적 초상화">
+        </div>
+        <div class="rearrange-enemy-meta">
+          <p id="rearrange-enemy-name" class="rearrange-enemy-name">적색의 알렌</p>
+          <p id="rearrange-enemy-formula" class="rearrange-enemy-formula">술식 : -</p>
+        </div>
+      </div>
       <p id="rearrange-timer-text">남은 시간: 10.0초</p>
-      <p id="rearrange-heart-text">선택 술식 하트: 0 / 0</p>
+      <p id="rearrange-heart-text">선택 술식 점유량: 0 / 0</p>
       <p id="phase-buff-hint" class="rearrange-hint">3개 술식 중 교체할 술식을 선택하세요.</p>
       <div id="phase-buff-choices" class="phase-buff-choices"></div>
       <p id="rearrange-error" class="rearrange-error"></p>
@@ -158,11 +219,17 @@
 
   <section id="phase-overlay" class="phase-overlay hidden" aria-live="polite">
     <div class="phase-overlay-card">
+      <div class="phase-overlay-head">
+        <div class="phase-overlay-portrait">
+          <img id="phase-overlay-portrait-img" src="assets/적/enemy_allen_v2.png" alt="적 초상화">
+        </div>
+        <p id="phase-overlay-enemy-name" class="phase-overlay-enemy-name">적색의 알렌</p>
+      </div>
       <h2 id="phase-overlay-title">페이즈 전환</h2>
       <p id="phase-overlay-quote"></p>
     </div>
   </section>
 
-  <script src="game.js"></script>
+  <script type="module" src="/src/main.ts"></script>
 </body>
 </html>

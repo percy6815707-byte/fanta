@@ -15,12 +15,15 @@
   "spellColors": [
     "red",
     "blue",
-    "green"
+    "green",
+    "yellow",
+    "white",
+    "black"
   ],
   "spells": [
     {
       "id": "red_flame_shard",
-      "name": "화염 파편",
+      "name": "기초 화염탄",
       "color": "red",
       "circle": 1,
       "gridCost": 1,
@@ -33,29 +36,12 @@
         },
         {
           "type": "dot",
-          "duration": 1,
-          "tick": 1,
-          "value": 1
-        }
-      ],
-      "notes": "기본 반복 공격 + 약화 연소"
-    },
-    {
-      "id": "red_heat_stock",
-      "name": "열기 축적",
-      "color": "red",
-      "circle": 1,
-      "gridCost": 1,
-      "manaCost": 0,
-      "cooldown": 2,
-      "effects": [
-        {
-          "type": "manaOnEvent",
           "value": 1,
-          "event": "onDamageDealt"
+          "duration": 1
         }
       ],
-      "notes": "공격 성공 기반 마나 생성"
+      "linkSynergy": [],
+      "notes": "초반 기본 공격 주문"
     },
     {
       "id": "red_ignite",
@@ -68,12 +54,12 @@
       "effects": [
         {
           "type": "dot",
-          "duration": 2,
-          "tick": 1,
-          "value": 1
+          "value": 1,
+          "duration": 2
         }
       ],
-      "notes": "2초간 매초 피해 1"
+      "linkSynergy": [],
+      "notes": "2초 도트"
     },
     {
       "id": "red_lunge",
@@ -90,12 +76,29 @@
         },
         {
           "type": "dot",
-          "duration": 1,
-          "tick": 1,
+          "value": 1,
+          "duration": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "개시 압박 + 점화"
+    },
+    {
+      "id": "red_heat_stock",
+      "name": "기초 마력집중",
+      "color": "red",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 0,
+      "cooldown": 2,
+      "effects": [
+        {
+          "type": "manaGain",
           "value": 1
         }
       ],
-      "notes": "개시 압박 + 점화"
+      "linkSynergy": [],
+      "notes": "초반 기본 충전 주문"
     },
     {
       "id": "red_blast_chain",
@@ -116,7 +119,25 @@
           "value": 1
         }
       ],
+      "linkSynergy": [],
       "notes": "피해 성공 시 마나 +1"
+    },
+    {
+      "id": "red_overheat_cycle",
+      "name": "과열 순환",
+      "color": "red",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "manaGain",
+          "value": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "리스크 충전"
     },
     {
       "id": "red_chain_strike",
@@ -133,29 +154,12 @@
         },
         {
           "type": "dot",
-          "duration": 2,
-          "tick": 1,
-          "value": 1
-        }
-      ],
-      "notes": "연쇄 타격 + 화상 연계"
-    },
-    {
-      "id": "red_overheat_cycle",
-      "name": "과열 순환",
-      "color": "red",
-      "circle": 2,
-      "gridCost": 2,
-      "manaCost": 2,
-      "cooldown": 3,
-      "effects": [
-        {
-          "type": "manaOnEvent",
           "value": 1,
-          "event": "onDamageTaken"
+          "duration": 2
         }
       ],
-      "notes": "리스크형 충전"
+      "linkSynergy": [],
+      "notes": "연쇄 타격 + 화상 연계"
     },
     {
       "id": "red_quick_slash",
@@ -172,11 +176,11 @@
         },
         {
           "type": "dot",
-          "duration": 1,
-          "tick": 1,
-          "value": 2
+          "value": 2,
+          "duration": 1
         }
       ],
+      "linkSynergy": [],
       "notes": "고타점 + 즉발 연소"
     },
     {
@@ -190,36 +194,12 @@
       "effects": [
         {
           "type": "dot",
-          "duration": 2,
-          "tick": 1,
-          "value": 2
+          "value": 2,
+          "duration": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "화상 부여"
-    },
-    {
-      "id": "red_burn_storm",
-      "name": "연소 폭풍",
-      "color": "red",
-      "circle": 3,
-      "gridCost": 3,
-      "manaCost": 3,
-      "cooldown": 5,
-      "effects": [
-        {
-          "type": "dot",
-          "duration": 3,
-          "tick": 1,
-          "value": 1
-        },
-        {
-          "type": "allyColorDamageBonus",
-          "targetColor": "red",
-          "value": 1,
-          "duration": 3
-        }
-      ],
-      "notes": "지속 압박 + 시너지"
     },
     {
       "id": "red_overheat_burst",
@@ -240,7 +220,26 @@
           "value": 1
         }
       ],
+      "linkSynergy": [],
       "notes": "결정타 + 연소 회수"
+    },
+    {
+      "id": "red_burn_storm",
+      "name": "연소 폭풍",
+      "color": "red",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 5,
+      "effects": [
+        {
+          "type": "dot",
+          "value": 1,
+          "duration": 3
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "지속 압박"
     },
     {
       "id": "red_full_focus",
@@ -257,9 +256,8 @@
         },
         {
           "type": "dot",
-          "duration": 2,
-          "tick": 1,
-          "value": 2
+          "value": 2,
+          "duration": 2
         },
         {
           "type": "manaOnCondition",
@@ -267,6 +265,7 @@
           "value": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "고위 타격 + 연소 누적"
     },
     {
@@ -284,55 +283,11 @@
         },
         {
           "type": "manaDelete",
-          "scope": "targetAllMana"
+          "value": 99
         }
       ],
-      "notes": "결정기 + 마나 삭제"
-    },
-    {
-      "id": "blue_analyze",
-      "name": "분석",
-      "color": "blue",
-      "circle": 1,
-      "gridCost": 1,
-      "manaCost": 1,
-      "cooldown": 2,
-      "effects": [
-        {
-          "type": "manaGain",
-          "value": 1,
-          "condition": "enemyMana > selfMana"
-        },
-        {
-          "type": "frostSlow",
-          "slowPct": 10,
-          "cooldownRate": 0.94,
-          "duration": 2
-        }
-      ],
-      "notes": "조건부 충전 + 둔화"
-    },
-    {
-      "id": "blue_chill_condense",
-      "name": "냉기 응집",
-      "color": "blue",
-      "circle": 1,
-      "gridCost": 1,
-      "manaCost": 0,
-      "cooldown": 3,
-      "effects": [
-        {
-          "type": "manaGain",
-          "value": 1
-        },
-        {
-          "type": "frostSlow",
-          "slowPct": 10,
-          "cooldownRate": 0.95,
-          "duration": 2
-        }
-      ],
-      "notes": "충전 + 약둔화"
+      "linkSynergy": [],
+      "notes": "마나 붕괴"
     },
     {
       "id": "blue_frost_poke",
@@ -355,11 +310,80 @@
         },
         {
           "type": "cooldownAdd",
-          "value": 0.5,
-          "target": "enemy"
+          "value": 0.5
         }
       ],
+      "linkSynergy": [],
       "notes": "쿨 지연 + 둔화"
+    },
+    {
+      "id": "blue_chill_condense",
+      "name": "냉기 응집",
+      "color": "blue",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 0,
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "manaGain",
+          "value": 1
+        },
+        {
+          "type": "frostSlow",
+          "slowPct": 10,
+          "cooldownRate": 0.95,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "충전 + 약둔화"
+    },
+    {
+      "id": "blue_suppress",
+      "name": "억제",
+      "color": "blue",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 2,
+      "effects": [
+        {
+          "type": "manaReduce",
+          "value": 1
+        },
+        {
+          "type": "frostSlow",
+          "slowPct": 14,
+          "cooldownRate": 0.9,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "마나 감소 + 둔화"
+    },
+    {
+      "id": "blue_analyze",
+      "name": "분석",
+      "color": "blue",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 2,
+      "effects": [
+        {
+          "type": "manaGain",
+          "value": 1
+        },
+        {
+          "type": "frostSlow",
+          "slowPct": 10,
+          "cooldownRate": 0.94,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "조건부 충전 + 둔화"
     },
     {
       "id": "blue_shard_shot",
@@ -381,104 +405,8 @@
           "duration": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "피해 + 둔화 견제"
-    },
-    {
-      "id": "blue_suppress",
-      "name": "억제",
-      "color": "blue",
-      "circle": 1,
-      "gridCost": 1,
-      "manaCost": 1,
-      "cooldown": 2,
-      "effects": [
-        {
-          "type": "manaReduce",
-          "value": 1,
-          "target": "enemy"
-        },
-        {
-          "type": "frostSlow",
-          "slowPct": 14,
-          "cooldownRate": 0.9,
-          "duration": 2
-        }
-      ],
-      "notes": "마나 감소 + 둔화"
-    },
-    {
-      "id": "blue_cooldown_chill",
-      "name": "냉각",
-      "color": "blue",
-      "circle": 2,
-      "gridCost": 2,
-      "manaCost": 2,
-      "cooldown": 3,
-      "effects": [
-        {
-          "type": "cooldownAdd",
-          "value": 1,
-          "target": "enemy"
-        }
-      ],
-      "notes": "쿨타임 지연"
-    },
-    {
-      "id": "blue_flow_block",
-      "name": "흐름 차단",
-      "color": "blue",
-      "circle": 2,
-      "gridCost": 2,
-      "manaCost": 2,
-      "cooldown": 4,
-      "effects": [
-        {
-          "type": "nullifyNextCast",
-          "target": "enemy",
-          "count": 1
-        }
-      ],
-      "notes": "다음 발동 무효"
-    },
-    {
-      "id": "blue_freeze_bind",
-      "name": "결빙 속박",
-      "color": "blue",
-      "circle": 2,
-      "gridCost": 2,
-      "manaCost": 2,
-      "cooldown": 3,
-      "effects": [
-        {
-          "type": "silence",
-          "duration": 1,
-          "target": "enemy"
-        },
-        {
-          "type": "manaOnEvent",
-          "event": "onControlApplied",
-          "value": 1
-        }
-      ],
-      "notes": "봉인 성공 시 마나 +1"
-    },
-    {
-      "id": "blue_frost_trace",
-      "name": "빙흔 추적",
-      "color": "blue",
-      "circle": 2,
-      "gridCost": 2,
-      "manaCost": 2,
-      "cooldown": 3.2,
-      "effects": [
-        {
-          "type": "frostSlow",
-          "slowPct": 22,
-          "cooldownRate": 0.8,
-          "duration": 2
-        }
-      ],
-      "notes": "둔화 각인"
     },
     {
       "id": "blue_ice_barrier",
@@ -500,39 +428,21 @@
           "duration": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "보호막 + 냉기 둔화"
     },
     {
-      "id": "blue_mana_seal",
-      "name": "마력 봉쇄",
+      "id": "blue_freeze_bind",
+      "name": "결빙 속박",
       "color": "blue",
-      "circle": 3,
-      "gridCost": 3,
-      "manaCost": 3,
-      "cooldown": 4,
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3,
       "effects": [
         {
-          "type": "manaReduce",
-          "value": 2,
-          "target": "enemy"
-        }
-      ],
-      "notes": "마나 기반 빌드 카운터"
-    },
-    {
-      "id": "blue_time_dilate",
-      "name": "시간 지연",
-      "color": "blue",
-      "circle": 3,
-      "gridCost": 3,
-      "manaCost": 3,
-      "cooldown": 5,
-      "effects": [
-        {
-          "type": "castRateMultiplier",
-          "target": "enemy",
-          "multiplier": 0.5,
-          "duration": 2
+          "type": "silence",
+          "duration": 1
         },
         {
           "type": "manaOnEvent",
@@ -540,7 +450,63 @@
           "value": 1
         }
       ],
-      "notes": "지연 성공 시 마나 +1"
+      "linkSynergy": [],
+      "notes": "동결(시전 봉인)"
+    },
+    {
+      "id": "blue_cooldown_chill",
+      "name": "냉각",
+      "color": "blue",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "frostSlow",
+          "slowPct": 30,
+          "cooldownRate": 0.7,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "쿨다운 둔화"
+    },
+    {
+      "id": "blue_flow_block",
+      "name": "흐름 차단",
+      "color": "blue",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 4,
+      "effects": [
+        {
+          "type": "silence",
+          "duration": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "발동 차단"
+    },
+    {
+      "id": "blue_frost_trace",
+      "name": "빙흔 추적",
+      "color": "blue",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3.2,
+      "effects": [
+        {
+          "type": "frostSlow",
+          "slowPct": 22,
+          "cooldownRate": 0.8,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "둔화 각인"
     },
     {
       "id": "blue_zero_bind",
@@ -556,7 +522,47 @@
           "duration": 1.5
         }
       ],
+      "linkSynergy": [],
       "notes": "강화 동결"
+    },
+    {
+      "id": "blue_mana_seal",
+      "name": "마력 봉쇄",
+      "color": "blue",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 4,
+      "effects": [
+        {
+          "type": "manaReduce",
+          "value": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "마나 봉쇄"
+    },
+    {
+      "id": "blue_time_dilate",
+      "name": "시간 지연",
+      "color": "blue",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 5,
+      "effects": [
+        {
+          "type": "silence",
+          "duration": 2
+        },
+        {
+          "type": "manaOnEvent",
+          "event": "onControlApplied",
+          "value": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "지연 성공 시 마나 +1"
     },
     {
       "id": "blue_stop_order",
@@ -569,8 +575,7 @@
       "effects": [
         {
           "type": "silence",
-          "duration": 2,
-          "target": "enemy"
+          "duration": 2
         },
         {
           "type": "manaOnEvent",
@@ -578,6 +583,7 @@
           "value": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "완전 정지 + 마나 회수"
     },
     {
@@ -590,18 +596,66 @@
       "cooldown": 9,
       "effects": [
         {
-          "type": "freezeAllEffects",
-          "target": "enemy",
+          "type": "silence",
           "duration": 2
         },
         {
           "type": "manaReduce",
-          "target": "enemy",
-          "value": 2,
-          "timing": "afterFreeze"
+          "value": 2
         }
       ],
-      "notes": "판도 전환 제어기"
+      "linkSynergy": [],
+      "notes": "판도 제어"
+    },
+    {
+      "id": "green_natural_recover",
+      "name": "자연 회복",
+      "color": "green",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 2,
+      "effects": [
+        {
+          "type": "heal",
+          "value": 1
+        },
+        {
+          "type": "regen",
+          "value": 1,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [
+        {
+          "neighborColor": "green",
+          "effect": "self_heal",
+          "scale": 1
+        }
+      ],
+      "notes": "기본 회복 + 재생 (인접 녹색당 추가 치유)"
+    },
+    {
+      "id": "green_life_breath",
+      "name": "생명의 숨결",
+      "color": "green",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 0,
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "manaGain",
+          "value": 1
+        },
+        {
+          "type": "manaFlow",
+          "value": 1,
+          "duration": 3
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "지속 충전"
     },
     {
       "id": "green_absorb",
@@ -622,28 +676,12 @@
         },
         {
           "type": "dot",
-          "duration": 2,
-          "tick": 1,
-          "value": 1
+          "value": 1,
+          "duration": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "흡혈 + 독성 침식"
-    },
-    {
-      "id": "green_brutal_branch",
-      "name": "난타 덩굴",
-      "color": "green",
-      "circle": 1,
-      "gridCost": 1,
-      "manaCost": 1,
-      "cooldown": 1.9,
-      "effects": [
-        {
-          "type": "damage",
-          "value": 2
-        }
-      ],
-      "notes": "순수 타격"
     },
     {
       "id": "green_guard_bud",
@@ -659,46 +697,32 @@
           "value": 1
         }
       ],
-      "notes": "기초 보호막"
-    },
-    {
-      "id": "green_life_breath",
-      "name": "생명의 숨결",
-      "color": "green",
-      "circle": 1,
-      "gridCost": 1,
-      "manaCost": 0,
-      "cooldown": 3,
-      "effects": [
+      "linkSynergy": [
         {
-          "type": "manaOnCondition",
-          "value": 1,
-          "condition": "selfShield > 0"
+          "neighborColor": "green",
+          "effect": "self_regen",
+          "scale": 1,
+          "duration": 5
         }
       ],
-      "notes": "보호막 유지형 마나 수급"
+      "notes": "기초 보호막 (인접 녹색 연계 재생)"
     },
     {
-      "id": "green_natural_recover",
-      "name": "자연 회복",
+      "id": "green_brutal_branch",
+      "name": "난타 덩굴",
       "color": "green",
       "circle": 1,
       "gridCost": 1,
       "manaCost": 1,
-      "cooldown": 2,
+      "cooldown": 1.9,
       "effects": [
         {
-          "type": "heal",
-          "value": 1
-        },
-        {
-          "type": "regen",
-          "duration": 2,
-          "tick": 1,
-          "value": 1
+          "type": "damage",
+          "value": 2
         }
       ],
-      "notes": "기본 회복 + 재생"
+      "linkSynergy": [],
+      "notes": "순수 타격"
     },
     {
       "id": "green_venom_seed",
@@ -711,57 +735,20 @@
       "effects": [
         {
           "type": "dot",
-          "duration": 3,
-          "tick": 1,
-          "value": 1
-        }
-      ],
-      "notes": "중독 씨앗 부여"
-    },
-    {
-      "id": "green_bark_skin",
-      "name": "수피 갑주",
-      "color": "green",
-      "circle": 2,
-      "gridCost": 2,
-      "manaCost": 2,
-      "cooldown": 3.4,
-      "effects": [
-        {
-          "type": "shield",
-          "value": 2
-        },
-        {
-          "type": "regen",
-          "duration": 3,
-          "tick": 1,
-          "value": 1
-        }
-      ],
-      "notes": "중형 보호막 + 재생"
-    },
-    {
-      "id": "green_cycle_boost",
-      "name": "순환 강화",
-      "color": "green",
-      "circle": 2,
-      "gridCost": 2,
-      "manaCost": 2,
-      "cooldown": 4,
-      "effects": [
-        {
-          "type": "manaOnCondition",
           "value": 1,
-          "condition": "selfHealthPercent <= 50"
-        },
-        {
-          "type": "regen",
-          "duration": 3,
-          "tick": 1,
-          "value": 1
+          "duration": 3
         }
       ],
-      "notes": "역전형 충전 + 재생"
+      "linkSynergy": [
+        {
+          "neighborColor": "green",
+          "effect": "enemy_poison",
+          "scale": 1,
+          "duration": 3,
+          "dps": 1
+        }
+      ],
+      "notes": "중독 씨앗 부여 (인접 녹색당 독성 강화)"
     },
     {
       "id": "green_life_curtain",
@@ -782,7 +769,54 @@
           "value": 1
         }
       ],
+      "linkSynergy": [],
       "notes": "보호막 유지 시 마나 +1"
+    },
+    {
+      "id": "green_cycle_boost",
+      "name": "순환 강화",
+      "color": "green",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 4,
+      "effects": [
+        {
+          "type": "manaGain",
+          "value": 1
+        },
+        {
+          "type": "regen",
+          "value": 1,
+          "duration": 3
+        }
+      ],
+      "linkSynergy": [
+        {
+          "neighborColor": "green",
+          "effect": "self_mana",
+          "scale": 1
+        }
+      ],
+      "notes": "역전 충전 + 재생 (인접 녹색당 마나 추가)"
+    },
+    {
+      "id": "green_regrowth",
+      "name": "재생",
+      "color": "green",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "regen",
+          "value": 1,
+          "duration": 4
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "초당 체력 회복"
     },
     {
       "id": "green_moss_grasp",
@@ -795,30 +829,78 @@
       "effects": [
         {
           "type": "dot",
-          "duration": 2,
-          "tick": 1,
-          "value": 2
+          "value": 2,
+          "duration": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "짧은 중독 속박"
     },
     {
-      "id": "green_regrowth",
-      "name": "재생",
+      "id": "green_thorn_barrage",
+      "name": "가시 탄막",
+      "color": "green",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 4.3,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 4
+        },
+        {
+          "type": "dot",
+          "value": 1,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "강한 단일 피해 + 독가시"
+    },
+    {
+      "id": "green_bark_skin",
+      "name": "수피 갑주",
       "color": "green",
       "circle": 2,
       "gridCost": 2,
       "manaCost": 2,
-      "cooldown": 3,
+      "cooldown": 3.4,
       "effects": [
         {
-          "type": "hot",
-          "duration": 3,
-          "tick": 1,
-          "value": 1
+          "type": "shield",
+          "value": 2
+        },
+        {
+          "type": "regen",
+          "value": 1,
+          "duration": 3
         }
       ],
-      "notes": "3초 회복"
+      "linkSynergy": [],
+      "notes": "중형 보호막 + 재생"
+    },
+    {
+      "id": "green_thorn_ward",
+      "name": "가시 수호",
+      "color": "green",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 4.6,
+      "effects": [
+        {
+          "type": "shield",
+          "value": 4
+        },
+        {
+          "type": "dot",
+          "value": 1,
+          "duration": 3
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "강한 보호막 + 독성 역장"
     },
     {
       "id": "green_cycle_oath",
@@ -839,6 +921,7 @@
           "value": 1
         }
       ],
+      "linkSynergy": [],
       "notes": "위기 반전 + 순환 회수"
     },
     {
@@ -859,51 +942,8 @@
           "value": 2
         }
       ],
-      "notes": "공수 동시 전환"
-    },
-    {
-      "id": "green_thorn_barrage",
-      "name": "가시 탄막",
-      "color": "green",
-      "circle": 3,
-      "gridCost": 3,
-      "manaCost": 3,
-      "cooldown": 4.3,
-      "effects": [
-        {
-          "type": "damage",
-          "value": 4
-        },
-        {
-          "type": "dot",
-          "duration": 2,
-          "tick": 1,
-          "value": 1
-        }
-      ],
-      "notes": "강한 단일 피해 + 독가시"
-    },
-    {
-      "id": "green_thorn_ward",
-      "name": "가시 수호",
-      "color": "green",
-      "circle": 3,
-      "gridCost": 3,
-      "manaCost": 3,
-      "cooldown": 4.6,
-      "effects": [
-        {
-          "type": "shield",
-          "value": 4
-        },
-        {
-          "type": "dot",
-          "duration": 3,
-          "tick": 1,
-          "value": 1
-        }
-      ],
-      "notes": "강한 보호막 + 독성 역장"
+      "linkSynergy": [],
+      "notes": "공수 전환"
     },
     {
       "id": "green_earth_guard",
@@ -924,6 +964,7 @@
           "value": 2
         }
       ],
+      "linkSynergy": [],
       "notes": "대형 방어 + 마나 순환"
     },
     {
@@ -941,11 +982,344 @@
         },
         {
           "type": "manaGain",
-          "value": 2,
-          "condition": "selfHealthPercent <= 30"
+          "value": 2
         }
       ],
-      "notes": "대회복 + 저체력 보너스"
+      "linkSynergy": [],
+      "notes": "대회복"
+    },
+    {
+      "id": "yellow_clay_guard",
+      "name": "황토 장벽",
+      "color": "yellow",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 2.1,
+      "effects": [
+        {
+          "type": "shield",
+          "value": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "기본 방어벽 전개"
+    },
+    {
+      "id": "yellow_stone_lance",
+      "name": "암석 창",
+      "color": "yellow",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 2,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "단일 관통 타격"
+    },
+    {
+      "id": "yellow_rampart",
+      "name": "지층 방벽",
+      "color": "yellow",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3.2,
+      "effects": [
+        {
+          "type": "shield",
+          "value": 3
+        },
+        {
+          "type": "manaOnCondition",
+          "condition": "selfShieldPositive",
+          "value": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "방어 유지 시 마나 회수"
+    },
+    {
+      "id": "yellow_gear_forge",
+      "name": "구성 연성",
+      "color": "yellow",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3.5,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 2
+        },
+        {
+          "type": "manaGain",
+          "value": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "타격과 동시 구성 마력 회수"
+    },
+    {
+      "id": "yellow_earthbind",
+      "name": "대지 결박",
+      "color": "yellow",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 4.7,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 3
+        },
+        {
+          "type": "status",
+          "id": "petrify",
+          "stacks": 1,
+          "duration": 2.5,
+          "slowPct": 32,
+          "cooldownRate": 0.66
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "석화로 행동을 크게 늦춤"
+    },
+    {
+      "id": "white_ray_pierce",
+      "name": "광휘 관통",
+      "color": "white",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 1.9,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "빛의 직선 타격"
+    },
+    {
+      "id": "white_mana_trace",
+      "name": "마력 추적",
+      "color": "white",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 2.2,
+      "effects": [
+        {
+          "type": "manaGain",
+          "value": 1
+        },
+        {
+          "type": "status",
+          "id": "weak",
+          "stacks": 1,
+          "duration": 2,
+          "vulnPct": 10
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "마력 감지로 약점 노출"
+    },
+    {
+      "id": "white_prism_shield",
+      "name": "프리즘 방호",
+      "color": "white",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3,
+      "effects": [
+        {
+          "type": "shield",
+          "value": 2
+        },
+        {
+          "type": "heal",
+          "value": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "방어 + 미약한 치유"
+    },
+    {
+      "id": "white_purify_wave",
+      "name": "정화 파동",
+      "color": "white",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 4.8,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 3
+        },
+        {
+          "type": "status",
+          "id": "blind",
+          "stacks": 1,
+          "duration": 2.4,
+          "damageOutMul": 0.75
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "적 위력을 낮추는 광역 정화광"
+    },
+    {
+      "id": "white_time_fold",
+      "name": "시공 접힘",
+      "color": "white",
+      "circle": 4,
+      "gridCost": 4,
+      "manaCost": 4,
+      "cooldown": 6.6,
+      "effects": [
+        {
+          "type": "manaGain",
+          "value": 2
+        },
+        {
+          "type": "status",
+          "id": "freeze",
+          "stacks": 1,
+          "duration": 1.4
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "짧은 시공 정지 + 자원 회수"
+    },
+    {
+      "id": "black_shadow_bite",
+      "name": "그림자 이빨",
+      "color": "black",
+      "circle": 1,
+      "gridCost": 1,
+      "manaCost": 1,
+      "cooldown": 1.8,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 2
+        },
+        {
+          "type": "dot",
+          "value": 1,
+          "duration": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "기본 침식 타격"
+    },
+    {
+      "id": "black_hex_mark",
+      "name": "오염 각인",
+      "color": "black",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3.4,
+      "effects": [
+        {
+          "type": "status",
+          "id": "weak",
+          "stacks": 1,
+          "duration": 3,
+          "vulnPct": 18
+        },
+        {
+          "type": "manaOnEvent",
+          "event": "onDamageDealt",
+          "value": 1
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "저주 표식 + 연계 회수"
+    },
+    {
+      "id": "black_mind_haze",
+      "name": "혼탁 장막",
+      "color": "black",
+      "circle": 2,
+      "gridCost": 2,
+      "manaCost": 2,
+      "cooldown": 3.8,
+      "effects": [
+        {
+          "type": "status",
+          "id": "confuse",
+          "stacks": 1,
+          "duration": 2.6,
+          "miscastChance": 0.35
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "혼란으로 시전 실패 유도"
+    },
+    {
+      "id": "black_puppet_string",
+      "name": "사령 인형실",
+      "color": "black",
+      "circle": 3,
+      "gridCost": 3,
+      "manaCost": 3,
+      "cooldown": 5.2,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 3
+        },
+        {
+          "type": "manaReduce",
+          "value": 1
+        },
+        {
+          "type": "status",
+          "id": "confuse",
+          "stacks": 1,
+          "duration": 2.2,
+          "miscastChance": 0.3
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "정신 교란 + 마나 침식"
+    },
+    {
+      "id": "black_night_requiem",
+      "name": "흑야 진혼",
+      "color": "black",
+      "circle": 5,
+      "gridCost": 5,
+      "manaCost": 5,
+      "cooldown": 8.4,
+      "effects": [
+        {
+          "type": "damage",
+          "value": 6
+        },
+        {
+          "type": "dot",
+          "value": 2,
+          "duration": 3
+        },
+        {
+          "type": "manaOnCondition",
+          "condition": "selfManaLow",
+          "value": 2
+        }
+      ],
+      "linkSynergy": [],
+      "notes": "고위 흑마법 피니시"
     }
   ]
 }

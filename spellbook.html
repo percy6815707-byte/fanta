@@ -3,34 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>술식 관리</title>
+  <title>주문</title>
   <link rel="stylesheet" href="spellbook.css">
 </head>
 <body>
   <main class="book-shell">
     <header class="book-head">
-      <h1>술식 관리</h1>
-      <a href="index.html" class="back-link">전투 화면으로</a>
+      <h1>주문</h1>
+      <a href="index.html" class="back-link">메인화면으로 가기</a>
     </header>
+
+    <section class="hint-panel">
+      <h2>설명</h2>
+      <p>상단 슬롯 4칸에 주문을 배치하면 전투 액션바에 그대로 반영됩니다.</p>
+      <p>아래 주문 도감에서 주문 카드를 드래그해 슬롯에 놓으세요.</p>
+      <p>미해금 주문은 슬롯에 넣을 수 없고, 전투/이벤트 보상으로 해금됩니다.</p>
+      <p class="tip-emphasis">Tip: 슬롯을 터치/클릭해 선택한 뒤, 도감 주문을 클릭해도 장착됩니다.</p>
+    </section>
 
     <section class="book-panel">
       <p id="heart-info" class="heart-info">마나 하트: 0 / 12</p>
       <div id="formula-tabs" class="formula-tabs"></div>
       <div class="formula-head">
-        <label for="formula-name">술식 이름</label>
+        <label for="formula-name">구성 이름</label>
         <input id="formula-name" class="formula-name" type="text" maxlength="24" placeholder="술식 이름 입력">
         <label for="formula-core">술식핵</label>
         <select id="formula-core" class="formula-core"></select>
       </div>
-      <section class="spell-pool-panel">
-        <h2>보유 주문</h2>
-        <p class="spell-pool-hint">주문을 드래그해서 아래 술식 그리드에 놓으세요.</p>
-        <div id="spell-pool" class="spell-pool"></div>
-      </section>
-      <section class="grid-editor-panel">
-        <h2>술식 그리드 배치</h2>
-        <p class="grid-hint">목록에서 드래그: 추가 · 타일 드래그: 이동 · 더블클릭/회전 버튼: 회전 · ✕: 제거</p>
-        <div id="formula-grid" class="formula-grid"></div>
+      <section class="circle-slot-panel">
+        <h2>전투 슬롯 (4칸)</h2>
+        <p class="grid-hint">슬롯 순서 1~4가 전투 하단 아이콘 순서와 동일합니다.</p>
+        <div id="circle-slots" class="circle-slots"></div>
       </section>
       <section class="catalog-panel">
         <h2>주문 도감 (효과 설명)</h2>
@@ -41,7 +44,10 @@
               <option value="all">전체</option>
               <option value="red">적색</option>
               <option value="blue">청색</option>
+              <option value="yellow">황색</option>
               <option value="green">녹색</option>
+              <option value="white">백색</option>
+              <option value="black">흑색</option>
             </select>
           </label>
           <label>
@@ -61,15 +67,8 @@
       <p id="save-msg" class="save-msg"></p>
       <button id="save-btn" type="button" class="save-btn">저장</button>
     </section>
-
-    <section class="hint-panel">
-      <h2>설명</h2>
-      <p>술식은 최대 3개까지 저장할 수 있고, 각 술식핵에 따라 그리드 모양과 패시브 효과가 달라집니다.</p>
-      <p>이 페이지에서 저장한 그리드 배치가 전투 화면의 플레이어 술식 보드에 그대로 반영됩니다.</p>
-      <p>미해금 주문은 슬롯에 넣을 수 없고, 전투/이벤트 보상으로 해금됩니다.</p>
-    </section>
   </main>
 
-  <script src="spellbook.js"></script>
+  <script type="module" src="/src/spellbook.ts"></script>
 </body>
 </html>
