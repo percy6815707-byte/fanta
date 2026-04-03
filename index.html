@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>전설은 늙지 않는다</title>
+  <script type="module" crossorigin src="./assets/main-BkGWJ1PT.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="./assets/main-CMN-7t66.css">
+</head>
+<body>
+  <section id="title-screen" class="title-screen">
+    <div class="title-card">
+      <img class="title-logo" src="./assets/title_logo_fee-BP8y9wlc.png" alt="전설은 늙지 않는다 로고">
+      <p class="title-sub">은퇴한 대마법사들이 돌아왔다</p>
+      <p class="title-sub">다크판타지 로그라이크 덱빌딩 RPG</p>
+      <div class="title-action-list">
+        <button id="title-start-btn" class="btn title-start-btn" type="button">새로운 여정 시작</button>
+        <button id="title-spellbook-btn" class="btn secondary title-start-btn" type="button">주문 도감</button>
+        <button id="title-shop-btn" class="btn secondary title-start-btn" type="button">상점</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="intro-screen" class="title-screen hidden">
+    <div class="title-card intro-card">
+      <p class="title-kicker">Dark Fantasy Roguelike Deckbuilding RPG</p>
+      <h1>전설은 늙지 않는다</h1>
+      <p class="title-desc intro-lines">
+        마녀의 침공으로 젊은 마법사들은 모두 쓰러졌다.<br>
+        이제, 은퇴했던 전설들이 다시 일어선다.<br>
+        전성기는 지났지만 마력은 아직 식지 않았다.
+      </p>
+      <button id="intro-next-btn" class="btn title-start-btn" type="button">대마법사 소집</button>
+    </div>
+  </section>
+
+  <section id="hero-select-screen" class="title-screen hidden">
+    <div class="title-card hero-select-card">
+      <h1>전설 선택</h1>
+      <p class="title-desc intro-lines hero-story">
+        이세계의 마녀들에게 침공당한 왕국은 멸망의 위기에 처했다.<br>
+        국왕은 절박한 심정으로 왕립 요양원에 전령을 보낸다.<br>
+        이미 전설이 된 이야기가 다시 흐른다.
+      </p>
+      <div class="hero-grid">
+        <button id="hero-pick-nagros" class="hero-pick active" type="button">
+          <img src="./assets/nagros-a4hfiZnP.png" alt="업화의 나그로스 초상화">
+          <strong>업화의 나그로스</strong>
+          <span>화염마법사 / 화력형 / 최선의 방어는 공격</span>
+        </button>
+        <button id="hero-pick-selin" class="hero-pick" type="button">
+          <img src="./assets/player_wandering_mage_pixel-Dp7yJNg3.png" alt="심연의 셀린 임시 초상화">
+          <strong>심연의 셀린</strong>
+          <span>냉기 / 제어 / 디버프</span>
+        </button>
+        <button id="hero-pick-seoden" class="hero-pick" type="button">
+          <img src="./assets/player_wandering_mage_pixel-Dp7yJNg3.png" alt="꽃밭의 세오덴 임시 초상화">
+          <strong>꽃밭의 세오덴</strong>
+          <span>재생 / 소환 / 지속딜</span>
+        </button>
+      </div>
+      <article id="hero-detail-panel" class="hero-detail hidden">
+        <h2 id="hero-detail-name">업화의 나그로스</h2>
+        <p id="hero-detail-traits" class="muted"></p>
+        <p id="hero-detail-passive" class="hero-passive"></p>
+        <p id="hero-detail-lore"></p>
+        <p id="hero-detail-quote" class="hero-quote"></p>
+        <button id="hero-start-btn" class="btn title-start-btn" type="button">이 대마법사로 출전</button>
+      </article>
+    </div>
+  </section>
+
+  <div class="device-shell">
+  <main class="app app-hidden">
+    <header class="top-resource-bar" aria-label="상단 자원 및 유물">
+      <div class="resource-pack">
+        <div id="gold-chip" class="resource-chip gold-chip" aria-label="현재 골드">
+          <span class="gold-icon">🪙</span>
+          <span id="gold-text">0</span>
+        </div>
+        <div class="resource-chip">
+          <span>턴</span>
+          <span id="turn-text">1</span>
+        </div>
+      </div>
+      <div id="relic-track" class="relic-track" aria-label="획득 유물"></div>
+      <p id="relic-text" class="muted">유물: 없음</p>
+    </header>
+    <section class="arena">
+      <article class="panel enemy-panel">
+        <div class="enemy-portrait-wrap" id="enemy-cast-zone" data-target-id="enemy-main">
+          <div id="cast-drop-hint" class="cast-drop-hint">카드를 여기로 드래그해 사용</div>
+          <div id="enemy-target-main" class="enemy-target-zone enemy-target-main" data-target-id="enemy-main" aria-label="중앙 적 타겟 영역"></div>
+          <div id="enemy-target-left" class="enemy-target-zone enemy-target-left" data-target-id="enemy-left" aria-label="왼쪽 적 타겟 영역"></div>
+          <div id="enemy-target-right" class="enemy-target-zone enemy-target-right" data-target-id="enemy-right" aria-label="오른쪽 적 타겟 영역"></div>
+          <div id="enemy-intent-icon" class="enemy-intent-icon" aria-label="적 의도 아이콘">•</div>
+          <div id="enemy-intent-value" class="enemy-intent-value hidden">0</div>
+          <img id="enemy-dancer-left-img" class="enemy-dancer enemy-dancer-left" src="./assets/%EB%AF%B8%EC%B9%9C%20%EC%B6%A4%EA%BE%BC-BuBP0B4K.png" alt="미친 춤꾼">
+          <div id="enemy-dancer-left-name" class="enemy-dancer-name hidden" aria-label="왼쪽 적 이름">미친 춤꾼</div>
+          <div id="enemy-dancer-left-hp" class="enemy-dancer-hp" aria-label="왼쪽 미친 춤꾼 체력">
+            <div id="enemy-dancer-left-hp-fill" class="enemy-dancer-hp-fill"></div>
+            <span id="enemy-dancer-left-hp-label" class="enemy-dancer-hp-label">0/0</span>
+          </div>
+          <div id="enemy-dancer-left-intent" class="enemy-dancer-intent hidden" aria-label="왼쪽 미친 춤꾼 의도">⚔ 0</div>
+          <img id="enemy-dancer-right-img" class="enemy-dancer enemy-dancer-right" src="./assets/%EB%AF%B8%EC%B9%9C%20%EC%B6%A4%EA%BE%BC-BuBP0B4K.png" alt="미친 춤꾼">
+          <div id="enemy-dancer-right-name" class="enemy-dancer-name hidden" aria-label="오른쪽 적 이름">미친 춤꾼</div>
+          <div id="enemy-dancer-right-hp" class="enemy-dancer-hp" aria-label="오른쪽 미친 춤꾼 체력">
+            <div id="enemy-dancer-right-hp-fill" class="enemy-dancer-hp-fill"></div>
+            <span id="enemy-dancer-right-hp-label" class="enemy-dancer-hp-label">0/0</span>
+          </div>
+          <div id="enemy-dancer-right-intent" class="enemy-dancer-intent hidden" aria-label="오른쪽 미친 춤꾼 의도">⚔ 0</div>
+          <img id="enemy-portrait-img" class="enemy-portrait-img" src="./assets/%EB%AF%B8%EC%B9%9C%EB%8A%91%EB%8C%80-BwZa_pLb.png" alt="적 초상화">
+        <div class="enemy-nameplate">
+          <h2 id="enemy-name">적</h2>
+          <div class="hp-bar">
+            <div id="enemy-hp-fill" class="hp-fill"></div>
+            <span id="enemy-hp-label" class="hp-label">0 / 0</span>
+          </div>
+          <div class="enemy-status-row">
+            <button id="enemy-passive-btn" class="enemy-passive-btn hidden" type="button" aria-label="적 패시브 정보">
+              <img id="enemy-passive-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSI5NiIgdmlld0JveD0iMCAwIDk2IDk2Ij4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iYmciIHgxPSIwIiB5MT0iMCIgeDI9IjAiIHkyPSIxIj4KICAgICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iI2U0Y2NmZiIvPgogICAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM2MzQwOTAiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHg9IjUiIHk9IjUiIHdpZHRoPSI4NiIgaGVpZ2h0PSI4NiIgcng9IjE4IiBmaWxsPSJ1cmwoI2JnKSIgc3Ryb2tlPSIjZjRlOWZmIiBzdHJva2Utd2lkdGg9IjQiLz4KICA8Y2lyY2xlIGN4PSI0OCIgY3k9IjQ4IiByPSIyNSIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjE4KSIgc3Ryb2tlPSJyZ2JhKDI1NSwyNTUsMjU1LDAuNDUpIiBzdHJva2Utd2lkdGg9IjIiLz4KICA8dGV4dCB4PSI0OCIgeT0iNTYiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJUcmVidWNoZXQgTVMsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMjQiIGZvbnQtd2VpZ2h0PSI3MDAiIGZpbGw9IiNmZmZmZmYiPk1LPC90ZXh0Pgo8L3N2Zz4K" alt="적 패시브">
+            </button>
+            <div id="enemy-status-icons" class="status-icons enemy-status-icons" aria-label="적 상태이상"></div>
+          </div>
+          <article id="enemy-passive-detail" class="enemy-passive-detail" aria-live="polite">
+            <p id="enemy-passive-name" class="enemy-passive-name"></p>
+            <p id="enemy-passive-desc" class="enemy-passive-desc"></p>
+          </article>
+        </div>
+        </div>
+        <div class="enemy-underbar">
+          <p id="enemy-block">보호막 0</p>
+          <p id="enemy-status">상태 없음</p>
+          <p id="enemy-intent" class="intent">의도: -</p>
+        </div>
+      </article>
+
+      <article class="panel summon-panel">
+        <h2 id="summon-title">소환수 (0/1)</h2>
+        <div id="summon-list" class="summon-list"></div>
+      </article>
+    </section>
+
+    <section id="node-panel" class="panel hidden">
+      <p id="node-act-label" class="node-act-label"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxODAgMzQnPgogIDxkZWZzPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSdhJyB4MT0nMCcgeTE9JzAnIHgyPScxJyB5Mj0nMCc+CiAgICAgIDxzdG9wIG9mZnNldD0nMCcgc3RvcC1jb2xvcj0nIzhkNmY0MycvPgogICAgICA8c3RvcCBvZmZzZXQ9JzEnIHN0b3AtY29sb3I9JyNkOGIwNzAnLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxyZWN0IHg9JzEnIHk9JzEnIHdpZHRoPScxNzgnIGhlaWdodD0nMzInIHJ4PScxNicgZmlsbD0ncmdiYSgxNCwyMiwxOCwwLjkyKScgc3Ryb2tlPSd1cmwoI2EpJyBzdHJva2Utd2lkdGg9JzInLz4KICA8dGV4dCB4PSc5MCcgeT0nMjInIGZpbGw9JyNmY2U3YmYnIHRleHQtYW5jaG9yPSdtaWRkbGUnIGZvbnQtc2l6ZT0nMTUnIGZvbnQtZmFtaWx5PSdBcmlhbCwgc2Fucy1zZXJpZicgZm9udC13ZWlnaHQ9JzcwMCc+MeuniSDCtyBBQ1QgSTwvdGV4dD4KPC9zdmc+Cg==" alt="1막"></p>
+      <h2 id="node-title">마녀 추적 경로</h2>
+      <p id="node-desc" class="muted"></p>
+      <div id="node-scene-art" class="node-scene-art hidden" aria-hidden="true">
+        <p id="node-scene-dialogue" class="node-scene-dialogue hidden"></p>
+        <img id="node-scene-art-img" alt="노드 장면 이미지">
+      </div>
+      <div id="node-route-map" class="node-route-map" aria-label="1막 진행 노드"></div>
+      <div id="node-choices" class="reward-cards"></div>
+      <button id="node-continue-btn" class="btn" type="button">다음 노드</button>
+    </section>
+
+    <section class="panel player-panel player-dock">
+      <div class="player-portrait-col">
+        <p id="player-name-title">업화의 나그로스</p>
+        <div class="player-portrait-frame">
+          <img id="player-hero-portrait" src="./assets/nagros-a4hfiZnP.png" alt="플레이어 초상화">
+        </div>
+        <div class="player-hp-row">
+          <div class="hp-bar">
+            <div id="player-hp-fill" class="hp-fill"></div>
+            <span id="player-hp-label" class="hp-label">0 / 0</span>
+          </div>
+          <div id="player-shield-badge" class="shield-badge hidden" aria-label="보호막">
+            <img src="./assets/shield_badge_new-BRv_qziP.png" alt="보호막">
+            <span>0</span>
+          </div>
+        </div>
+      </div>
+      <div class="player-info-col">
+        <div id="player-status-icons" class="status-icons" aria-label="플레이어 버프 디버프"></div>
+        <article id="player-passive-detail" class="player-passive-detail" aria-live="polite">
+          <p id="player-passive-name" class="player-passive-name"></p>
+          <p id="player-passive-desc" class="player-passive-desc"></p>
+        </article>
+      </div>
+      <p id="player-hp">HP 0 / 0</p>
+      <p id="player-block">방어 0</p>
+      <p id="player-energy">에너지 0 / 0</p>
+      <p id="player-status">상태 없음</p>
+    </section>
+
+    <div class="right-controls">
+      <button id="end-turn-btn" class="btn end-turn-fab" type="button" aria-label="턴 종료">
+        <img class="end-turn-icon" src="./assets/turn_end-BSjNBgpu.png" alt="턴 종료">
+        <span class="fab-label">턴종료</span>
+        <span id="end-turn-energy" class="fab-energy">0</span>
+      </button>
+    </div>
+
+    <section class="panel hand-panel">
+      <div class="hand-main" aria-label="손패 4장">
+        <div id="hand" class="hand"></div>
+        <p id="pile-info" class="muted">드로우 0 | 버림 0</p>
+        <div class="pile-icon-bar" aria-label="카드 더미 정보">
+          <button id="draw-pile-btn" class="pile-icon" type="button" aria-label="덱 보기">
+            <span class="pile-icon-glyph">🂠</span>
+            <span class="pile-icon-label">덱</span>
+            <strong id="draw-pile-count">0</strong>
+          </button>
+          <button id="used-pile-btn" class="pile-icon" type="button" aria-label="버림 더미 보기">
+            <span class="pile-icon-glyph">🗂</span>
+            <span class="pile-icon-label">버림</span>
+            <strong id="used-pile-count">0</strong>
+          </button>
+          <button id="exhaust-pile-btn" class="pile-icon" type="button" aria-label="소멸 더미 보기">
+            <span class="pile-icon-glyph">✦</span>
+            <span class="pile-icon-label">소멸</span>
+            <strong id="exhaust-pile-count">0</strong>
+          </button>
+        </div>
+      </div>
+      <aside class="mana-widget" aria-label="마나 정보">
+        <div class="mana-crystal">
+          <img class="mana-crystal-icon" src="./assets/mana_crystal_button-DBGzGR0j.png" alt="마나 수정">
+          <span id="hand-mana-text">마나 3/3</span>
+        </div>
+      </aside>
+    </section>
+
+    <article id="pile-detail-panel" class="pile-detail-panel" aria-live="polite">
+      <p id="pile-detail-title" class="pile-detail-title">덱 정보</p>
+      <div id="pile-detail-body" class="pile-detail-body">아이콘을 누르거나 올리면 상세 정보가 표시됩니다.</div>
+    </article>
+
+    <article id="card-detail-panel" class="card-detail-panel floating" aria-live="polite">
+      <p id="card-detail-name" class="card-detail-name">카드를 집어들면 상세 정보가 표시됩니다.</p>
+      <p id="card-detail-meta" class="card-detail-meta muted"></p>
+      <p id="card-detail-desc" class="card-detail-desc"></p>
+      <div id="card-detail-keywords" class="card-detail-keywords"></div>
+    </article>
+
+    <section id="reward-panel" class="panel reward-panel hidden">
+      <h2 id="reward-title">전투 보상</h2>
+      <p id="reward-sub" class="muted"></p>
+      <section id="battle-summary" class="battle-summary hidden" aria-label="전투 요약"></section>
+      <div id="reward-cards" class="reward-cards"></div>
+      <button id="reward-skip-btn" class="btn secondary" type="button">건너뛰기</button>
+    </section>
+
+    <section id="result-panel" class="panel result-panel hidden" aria-label="런 결과">
+      <h2 id="result-title">결과</h2>
+      <p id="result-sub" class="muted"></p>
+      <section id="result-stats" class="battle-summary"></section>
+      <div class="result-actions">
+        <button id="result-new-run-btn" class="btn" type="button">새 런 시작</button>
+        <button id="result-title-btn" class="btn secondary" type="button">타이틀로</button>
+      </div>
+    </section>
+
+    <section class="panel log-panel">
+      <h2>전투 로그</h2>
+      <ul id="log"></ul>
+    </section>
+  </main>
+  </div>
+
+  <div id="node-feedback-toast" class="node-feedback-toast hidden" aria-live="polite"></div>
+  <div id="branch-undo-bar" class="branch-undo-bar hidden" aria-live="polite">
+    <span id="branch-undo-text"></span>
+    <button id="branch-undo-btn" class="btn secondary" type="button">되돌리기</button>
+  </div>
+  <div id="scene-transition" class="scene-transition hidden" aria-hidden="true"></div>
+  <div id="ui-tooltip" class="ui-tooltip" role="tooltip" aria-hidden="true"></div>
+
+</body>
+</html>

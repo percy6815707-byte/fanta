@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>주문</title>
+  <script type="module" crossorigin src="./assets/spellbook-BdIgvmcP.js"></script>
+  <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
+  <link rel="stylesheet" crossorigin href="./assets/spellbook-rFJa7zsI.css">
+</head>
+<body>
+  <main class="book-shell">
+    <header class="book-head">
+      <h1>주문</h1>
+      <a href="index.html" class="back-link">메인화면으로 가기</a>
+    </header>
+
+    <section class="hint-panel">
+      <h2>설명</h2>
+      <p>상단 슬롯 4칸에 주문을 배치하면 전투 액션바에 그대로 반영됩니다.</p>
+      <p>아래 주문 도감에서 주문 카드를 드래그해 슬롯에 놓으세요.</p>
+      <p>미해금 주문은 슬롯에 넣을 수 없고, 전투/이벤트 보상으로 해금됩니다.</p>
+      <p class="tip-emphasis">Tip: 슬롯을 터치/클릭해 선택한 뒤, 도감 주문을 클릭해도 장착됩니다.</p>
+    </section>
+
+    <section class="book-panel">
+      <p id="heart-info" class="heart-info">마나 하트: 0 / 12</p>
+      <div id="formula-tabs" class="formula-tabs"></div>
+      <div class="formula-head">
+        <label for="formula-name">구성 이름</label>
+        <input id="formula-name" class="formula-name" type="text" maxlength="24" placeholder="술식 이름 입력">
+        <label for="formula-core">술식핵</label>
+        <select id="formula-core" class="formula-core"></select>
+      </div>
+      <section class="circle-slot-panel">
+        <h2>전투 슬롯 (4칸)</h2>
+        <p class="grid-hint">슬롯 순서 1~4가 전투 하단 아이콘 순서와 동일합니다.</p>
+        <div id="circle-slots" class="circle-slots"></div>
+      </section>
+      <section class="catalog-panel">
+        <h2>주문 도감 (효과 설명)</h2>
+        <div class="catalog-filters">
+          <label>
+            색상
+            <select id="catalog-color-filter">
+              <option value="all">전체</option>
+              <option value="red">적색</option>
+              <option value="blue">청색</option>
+              <option value="yellow">황색</option>
+              <option value="green">녹색</option>
+              <option value="white">백색</option>
+              <option value="black">흑색</option>
+            </select>
+          </label>
+          <label>
+            서클
+            <select id="catalog-circle-filter">
+              <option value="all">전체</option>
+              <option value="1">1서클</option>
+              <option value="2">2서클</option>
+              <option value="3">3서클</option>
+              <option value="4">4서클</option>
+              <option value="5">5서클</option>
+            </select>
+          </label>
+        </div>
+        <div id="spell-catalog" class="spell-catalog"></div>
+      </section>
+      <p id="save-msg" class="save-msg"></p>
+      <button id="save-btn" type="button" class="save-btn">저장</button>
+    </section>
+  </main>
+
+</body>
+</html>
