@@ -1,0 +1,18 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
+  <defs>
+    <linearGradient id='g2' x1='0' y1='0' x2='0' y2='1'>
+      <stop offset='0' stop-color='#f6e7a8'/>
+      <stop offset='1' stop-color='#d5a94e'/>
+    </linearGradient>
+  </defs>
+  <rect x='2' y='2' width='60' height='60' rx='14' fill='#19150f' stroke='#9c7c3f' stroke-width='2'/>
+  <path d='M15 19l7 4l10-10l10 10l7-4l-2.6 13.2H17.6z' fill='url(#g2)' stroke='#3b2d14' stroke-width='1.5'/>
+  <circle cx='22' cy='22' r='1.7' fill='#fff1bc'/>
+  <circle cx='32' cy='16.5' r='1.7' fill='#fff1bc'/>
+  <circle cx='42' cy='22' r='1.7' fill='#fff1bc'/>
+  <path d='M32 21c-10.5 0-18 7.3-18 16.3c0 6.8 4.1 11.5 8.8 13.4v4.8h18.4v-4.8c4.7-1.9 8.8-6.6 8.8-13.4C50 28.3 42.5 21 32 21z' fill='#e6ebe9' stroke='#253128' stroke-width='1.5'/>
+  <ellipse cx='25.5' cy='36.5' rx='4.4' ry='5.1' fill='#111814'/>
+  <ellipse cx='38.5' cy='36.5' rx='4.4' ry='5.1' fill='#111814'/>
+  <path d='M32 41.3l-3.2 5.2h6.4z' fill='#111814'/>
+  <rect x='24' y='48.2' width='16' height='6.4' rx='2.2' fill='#e9eeec' stroke='#253128' stroke-width='1.2'/>
+</svg>
